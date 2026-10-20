@@ -79,6 +79,9 @@ try {
     // Yalidine: communeId optional; Maystro: communeId required; ZRExpress: NOT_SUPPORTED.
     $desks = $client->getStopDesks(['wilayaId' => 16, 'communeId' => 1630]);
 
+    // Connectivity / credentials probe (always hits the network)
+    $health = $client->healthCheck(); // { ok: true, provider, latencyMs }
+
     $client->cancelParcel($parcel->trackingNumber);
 } catch (ShippingError $e) {
     // $e->code: AUTH_FAILED | VALIDATION_ERROR | NOT_FOUND | RATE_LIMITED | NOT_SUPPORTED

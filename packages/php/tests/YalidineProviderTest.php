@@ -239,4 +239,29 @@ final class YalidineProviderTest extends TestCase
         parse_str($this->history[0]['request']->getUri()->getQuery(), $query);
         self::assertSame(['page' => '1', 'page_size' => '1000'], $query);
     }
+
+    public function testHealthCheckProbesWilayasAndReturnsLatency(): void
+    {
+        $client = $this->client('yalidine', [self::json(200, self::WILAYAS)]);
+
+        $health = $client->healthCheck();
+
+        self::assertTrue($health->ok);
+        self::assertSame('yalidine', $health->provider);
+        self::assertGreaterThanOrEqual(0, $health->latencyMs);
+        self::assertCount(1, $this->history);
+    }
+
+    public function testHealthCheckBypassesWilayasCache(): void
+    {
+        $client = $this->client('yalidine', [
+            self::json(200, self::WILAYAS),
+            self::json(200, self::WILAYAS),
+        ]);
+
+        $client->getWilayas();
+        $client->healthCheck();
+
+        self::assertCount(2, $this->history);
+    }
 }

@@ -4,6 +4,7 @@ import { createStatusMapper } from '../status';
 import type {
   FeeQuery,
   FeeQuote,
+  HealthCheckResult,
   Location,
   Parcel,
   ParcelInput,
@@ -29,6 +30,7 @@ import {
   validateParcelInput,
   withRaw,
 } from '../utils';
+import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 export const ZREXPRESS_DEFAULT_BASE_URL = 'https://api.zrexpress.app';
@@ -300,6 +302,17 @@ export class ZRExpressProvider implements ShippingProvider {
     if (!ref) throw new ShippingError('VALIDATION_ERROR', 'trackingNumberOrId is required', { provider: PROVIDER });
     const id = isUuid(ref) ? ref : (await this.getParcel(ref)).id;
     await this.http.request({ method: 'DELETE', path: `${API}/parcels/${encodeURIComponent(id)}` });
+  }
+
+  /** Probes territories search for wilayas (bypasses cache). */
+  healthCheck(): Promise<HealthCheckResult> {
+    return probeWilayasHealth(
+      PROVIDER,
+      () => {
+        this.wilayasCache = undefined;
+      },
+      () => this.getWilayas(),
+    );
   }
 
   // --- internals -------------------------------------------------------------

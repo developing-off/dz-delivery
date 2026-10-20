@@ -45,6 +45,26 @@ describe('Yalidine', () => {
     expect(mock.calls[1]!.url.searchParams.get('wilaya_id')).toBe('16');
   });
 
+  it('healthCheck probes wilayas and returns latency', async () => {
+    const mock = mockFetch([{ status: 200, body: wilayas }]);
+    const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fetch: mock.fetch });
+    const health = await c.healthCheck();
+    expect(health).toMatchObject({ ok: true, provider: 'yalidine' });
+    expect(health.latencyMs).toBeGreaterThanOrEqual(0);
+    expect(mock.calls).toHaveLength(1);
+  });
+
+  it('healthCheck bypasses the wilayas cache', async () => {
+    const mock = mockFetch([
+      { status: 200, body: wilayas },
+      { status: 200, body: wilayas },
+    ]);
+    const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fetch: mock.fetch });
+    await c.getWilayas();
+    await c.healthCheck();
+    expect(mock.calls).toHaveLength(2);
+  });
+
   it('maps 429 to RATE_LIMITED', async () => {
     const mock = mockFetch([
       { status: 429, headers: { 'x-second-quota-left': '0' }, body: { error: { status_code: 429, message: 'Too many' } } },

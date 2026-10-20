@@ -6,6 +6,7 @@ namespace DzDelivery\Contracts;
 
 use DzDelivery\Models\FeeQuery;
 use DzDelivery\Models\FeeQuote;
+use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
@@ -44,4 +45,7 @@ interface ShippingProviderInterface
     public function getStopDesks(StopDeskQuery|array $query): array;
 
     public function cancelParcel(string $trackingNumberOrId): void;
+
+    /** Lightweight authenticated probe (wilayas listing). Always hits the network. */
+    public function healthCheck(): HealthCheckResult;
 }

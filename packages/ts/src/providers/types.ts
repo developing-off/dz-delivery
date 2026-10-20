@@ -1,4 +1,14 @@
-import type { FeeQuery, FeeQuote, Location, Parcel, ParcelInput, StopDesk, StopDeskQuery, TrackResult } from '../types';
+import type {
+  FeeQuery,
+  FeeQuote,
+  HealthCheckResult,
+  Location,
+  Parcel,
+  ParcelInput,
+  StopDesk,
+  StopDeskQuery,
+  TrackResult,
+} from '../types';
 
 /** Unified carrier interface — CONTRACT.md §5. */
 export interface ShippingProvider {
@@ -10,4 +20,6 @@ export interface ShippingProvider {
   getCommunes(wilayaId: string | number): Promise<Location[]>;
   getStopDesks(query: StopDeskQuery): Promise<StopDesk[]>;
   cancelParcel(trackingNumberOrId: string): Promise<void>;
+  /** Lightweight authenticated probe (wilayas listing). Always hits the network. */
+  healthCheck(): Promise<HealthCheckResult>;
 }

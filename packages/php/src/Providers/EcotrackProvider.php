@@ -10,6 +10,7 @@ use DzDelivery\Http\HttpClient;
 use DzDelivery\Models\ClientOptions;
 use DzDelivery\Models\FeeQuery;
 use DzDelivery\Models\FeeQuote;
+use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
@@ -19,6 +20,7 @@ use DzDelivery\Models\StopDeskQuery;
 use DzDelivery\Models\TrackingEvent;
 use DzDelivery\Models\TrackResult;
 use DzDelivery\Support\Dates;
+use DzDelivery\Support\Health;
 use DzDelivery\Support\Phone;
 use DzDelivery\Support\StatusMapper;
 use DzDelivery\Support\Text;
@@ -404,6 +406,18 @@ final class EcotrackProvider implements ShippingProviderInterface
                 self::NAME,
             );
         }
+    }
+
+    /** Probes `GET get/wilayas` (bypasses cache). */
+    public function healthCheck(): HealthCheckResult
+    {
+        return Health::probeWilayas(
+            self::NAME,
+            function (): void {
+                $this->wilayas = null;
+            },
+            fn () => $this->getWilayas(),
+        );
     }
 
     /**

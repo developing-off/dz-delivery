@@ -18,6 +18,7 @@ import { createStatusMapper, normalizeStatusKey } from '../status';
 import type {
   FeeQuery,
   FeeQuote,
+  HealthCheckResult,
   Location,
   MaystroConfig,
   Parcel,
@@ -30,6 +31,7 @@ import type {
   TrackResult,
 } from '../types';
 import { findLocationByName, isRecord, normalizeAlgerianPhone, str, validateParcelInput, withRaw } from '../utils';
+import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 export const MAYSTRO_DEFAULT_BASE_URL = 'https://orders-management.maystro-delivery.com';
@@ -394,6 +396,17 @@ export class MaystroProvider implements ShippingProvider {
   /** Not available: Maystro documents no order cancellation endpoint. */
   async cancelParcel(_trackingNumberOrId: string): Promise<void> {
     throw new ShippingError('NOT_SUPPORTED', 'Maystro has no order cancellation endpoint', { provider: PROVIDER });
+  }
+
+  /** Probes `GET /api/base/wilayas/` (bypasses cache). */
+  healthCheck(): Promise<HealthCheckResult> {
+    return probeWilayasHealth(
+      PROVIDER,
+      () => {
+        this.wilayasCache = undefined;
+      },
+      () => this.getWilayas(),
+    );
   }
 
   // --- internals -------------------------------------------------------------

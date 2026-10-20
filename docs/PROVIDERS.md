@@ -39,6 +39,7 @@ Every request sends:
 | `getCommunes` | `POST /api/v1/territories/search` | Filter `level = "commune"` and `parentId = <wilaya id>`. |
 | `getStopDesks` | — | `NOT_SUPPORTED`: no hub listing endpoint documented yet. Pass the hub UUID as `stopDeskId` yourself. |
 | `cancelParcel` | `DELETE /api/v1/parcels/{id}` | Requires the parcel **UUID**. If given a tracking number, resolve it first with `GET /api/v1/parcels/{trackingNumber}`. Returns `204`. |
+| `healthCheck` | `POST /api/v1/territories/search` (wilayas) | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
 ### `ParcelInput` → `POST /parcels` body
 
@@ -160,6 +161,7 @@ Extra client option: **`fromWilayaId`** (code `1`–`58`) or **`fromWilayaName`*
 | `getCommunes` | `GET communes/?wilaya_id=` | Paginated (`page_size=1000`). Items with `is_deliverable = 0` skipped. |
 | `getStopDesks` | `GET centers/?wilaya_id=[&commune_id=]` | Paginated. `center_id` → `StopDesk.id` (Yalidine's `stopdesk_id`), `name`, `address`, `commune_id`, `wilaya_id`. `communeId` is optional (id or name). |
 | `cancelParcel` | `DELETE parcels/{tracking}` | Response `[{ tracking, deleted }]`. Only parcels in `En préparation` can be deleted; `deleted: false` → `VALIDATION_ERROR`. `id` = tracking for Yalidine. |
+| `healthCheck` | `GET wilayas/` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
 ### `ParcelInput` → `POST parcels/` body
 
@@ -262,6 +264,7 @@ Same mapping as above, plus:
 | `getCommunes` | `GET /api/base/communes/?wilaya=<id>` | Response: `[{ id, wilaya, name, postcode, zone }]`. A DRF page `{ results: [...] }` is also accepted (first page only). |
 | `getStopDesks` | `GET /api/base/pickup-points?commune=<id>` | **`communeId` required** (`VALIDATION_ERROR` otherwise). Response `[{ name_lt, name_ar, commune, pickup_point, delivery_type, active }]`. Stop desk (`delivery_type: 2`, `pickup_point: null`) → `id` = commune id; pickup point (`delivery_type: 3`) → `id` = `pickup_point`. `active: false` skipped. |
 | `cancelParcel` | — | **Not supported** (`NOT_SUPPORTED`, no HTTP call): no documented cancellation endpoint. |
+| `healthCheck` | `GET /api/base/wilayas/` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
 ### `ParcelInput` → `POST /api/orders` body
 
@@ -416,6 +419,7 @@ Built-in `courier` keys (hosts from the integration notes, not all confirmed by 
 | `getCommunes` | `GET get/communes?wilaya_id=` | Answer is an **index-keyed object**, not a list. `Location.id` = `code_postal` (or the name when missing). |
 | `getStopDesks` | `GET get/communes?wilaya_id=` | Communes with `has_stop_desk: 1`; `StopDesk.id` = the commune's `code_postal` (Ecotrack "station code"). |
 | `cancelParcel` | `DELETE delete/order?tracking=` | Only before validation: error `10001` or `delete: "fail"` → `VALIDATION_ERROR`. |
+| `healthCheck` | `GET get/wilayas` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
 ### `ParcelInput` → `create/order` query
 

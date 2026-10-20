@@ -18,6 +18,7 @@ import { createStatusMapper } from '../status';
 import type {
   FeeQuery,
   FeeQuote,
+  HealthCheckResult,
   Location,
   Parcel,
   ParcelInput,
@@ -40,6 +41,7 @@ import {
   validateParcelInput,
   withRaw,
 } from '../utils';
+import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 export const YALIDINE_DEFAULT_BASE_URL = 'https://api.yalidine.app/v1';
@@ -457,6 +459,17 @@ export class YalidineProvider implements ShippingProvider {
         { provider: PROVIDER, httpStatus: res.status, raw: res.body },
       );
     }
+  }
+
+  /** Probes `GET /wilayas/` (bypasses cache). */
+  healthCheck(): Promise<HealthCheckResult> {
+    return probeWilayasHealth(
+      PROVIDER,
+      () => {
+        this.wilayasCache = undefined;
+      },
+      () => this.getWilayas(),
+    );
   }
 
   // --- internals -------------------------------------------------------------

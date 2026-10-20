@@ -125,6 +125,7 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 | `getWilayas` / `getCommunes` | yes | yes | yes | yes |
 | `getStopDesks` | `NOT_SUPPORTED` | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) |
 | `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) |
+| `healthCheck` | yes | yes | yes | yes |
 
 ### 3.1 `createParcel(ParcelInput|array $input): Parcel`
 
@@ -346,6 +347,17 @@ $client->cancelParcel($parcel->trackingNumber);
 - **ZRExpress**: accepts the UUID or the tracking number.
 - **Yalidine**: only parcels still in `En préparation` can be deleted; otherwise `VALIDATION_ERROR`.
 - **Maystro**: `NOT_SUPPORTED`.
+
+### 3.8 `healthCheck(): HealthCheckResult`
+
+Lightweight authenticated probe (wilayas listing). **Always hits the network** (bypasses the in-memory cache). On success returns `{ ok: true, provider, latencyMs }`; on failure throws `ShippingError` (`AUTH_FAILED`, `NETWORK_ERROR`, …).
+
+```php
+$health = $client->healthCheck();
+// $health->ok === true
+// $health->provider  // 'yalidine' | ...
+// $health->latencyMs // milliseconds
+```
 
 ---
 

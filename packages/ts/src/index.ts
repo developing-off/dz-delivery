@@ -25,6 +25,7 @@ export type {
   EcotrackConfig,
   FeeQuery,
   FeeQuote,
+  HealthCheckResult,
   Location,
   MaystroConfig,
   Parcel,

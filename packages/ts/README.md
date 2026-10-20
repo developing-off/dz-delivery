@@ -90,6 +90,7 @@ Every provider implements `ShippingProvider`:
 | `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
 | `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (Yalidine centers, Maystro stop desks / pickup points with `communeId` required; ZRExpress: `NOT_SUPPORTED`) |
 | `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
+| `healthCheck()` | `Promise<{ ok: true, provider, latencyMs }>` — authenticated connectivity probe (wilayas listing, cache bypassed) |
 
 Statuses are unified: `pending | created | in_transit | delivered | returned | cancelled | unknown`.
 An unmapped native status never throws — it maps to `unknown` and the native label stays in

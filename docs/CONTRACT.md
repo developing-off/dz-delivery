@@ -216,7 +216,7 @@ Each provider's native → unified table lives in `docs/PROVIDERS.md` and MUST b
 
 ## 5. `ShippingProvider` interface
 
-Five MVP operations (locations is split in two methods), plus `getStopDesks`:
+Five MVP operations (locations is split in two methods), plus `getStopDesks` and `healthCheck`:
 
 | # | Method | Input | Output |
 |---|--------|-------|--------|
@@ -227,6 +227,7 @@ Five MVP operations (locations is split in two methods), plus `getStopDesks`:
 | 4b | `getCommunes(wilayaId)` | `string \| int` (provider id or code 1–58) | `Location[]` |
 | 5 | `cancelParcel(trackingNumberOrId)` | `string` | `void` |
 | 6 | `getStopDesks(query)` | `StopDeskQuery` | `StopDesk[]` |
+| 7 | `healthCheck()` | — | `HealthCheckResult` = `{ ok: true, provider, latencyMs }` |
 
 ### TypeScript reference
 
@@ -234,6 +235,13 @@ Five MVP operations (locations is split in two methods), plus `getStopDesks`:
 export type ParcelStatus =
   | 'pending' | 'created' | 'in_transit' | 'delivered'
   | 'returned' | 'cancelled' | 'unknown';
+
+export interface HealthCheckResult {
+  ok: true;
+  provider: string;
+  /** Round-trip duration in milliseconds. */
+  latencyMs: number;
+}
 
 export interface ShippingProvider {
   readonly name: string; // 'zrexpress' | 'yalidine' | ...
@@ -244,6 +252,7 @@ export interface ShippingProvider {
   getCommunes(wilayaId: string | number): Promise<Location[]>;
   getStopDesks(query: StopDeskQuery): Promise<StopDesk[]>;
   cancelParcel(trackingNumberOrId: string): Promise<void>;
+  healthCheck(): Promise<HealthCheckResult>;
 }
 ```
 
@@ -265,6 +274,7 @@ interface ShippingProviderInterface
     /** @return StopDesk[] */
     public function getStopDesks(StopDeskQuery|array $query): array;
     public function cancelParcel(string $trackingNumberOrId): void;
+    public function healthCheck(): HealthCheckResult;
 }
 ```
 
@@ -277,6 +287,8 @@ interface ShippingProviderInterface
 5. **`cancelParcel`** — Accepts a tracking number or an internal ID. Resolves to the identifier the carrier needs. Throws `NOT_SUPPORTED` if the carrier cannot cancel, or `VALIDATION_ERROR` / `PROVIDER_ERROR` if the parcel is past the cancellable state.
 
 6. **`getStopDesks`** — Lists the stop desks / pickup points of a wilaya (optionally one commune). Throws `VALIDATION_ERROR` when a carrier needs `communeId` and it is missing, `NOT_SUPPORTED` when the carrier exposes no listing.
+
+7. **`healthCheck`** — Probes credentials and connectivity with a lightweight authenticated request (the carrier's wilayas listing). **Always hits the network** (bypasses the in-memory wilayas cache). On success returns `{ ok: true, provider, latencyMs }`. On failure throws `ShippingError` (`AUTH_FAILED`, `NETWORK_ERROR`, `RATE_LIMITED`, …) like any other method. Never throws `NOT_SUPPORTED`.
 
 > **Decision:** `cancelParcel` returns `void` (not `Parcel`) because some carriers answer with `204 No Content`. Call `track()` afterwards if you need the new status.
 

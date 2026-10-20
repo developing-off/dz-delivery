@@ -123,6 +123,14 @@ export interface StopDesk {
   raw?: unknown;
 }
 
+/** Result of `healthCheck()` — CONTRACT.md §5. Failures throw `ShippingError` instead. */
+export interface HealthCheckResult {
+  ok: true;
+  provider: string;
+  /** Round-trip duration in milliseconds. */
+  latencyMs: number;
+}
+
 export type ShippingErrorCode =
   | 'AUTH_FAILED'
   | 'VALIDATION_ERROR'

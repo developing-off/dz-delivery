@@ -20,6 +20,7 @@ import type {
   EcotrackConfig,
   FeeQuery,
   FeeQuote,
+  HealthCheckResult,
   Location,
   Parcel,
   ParcelInput,
@@ -42,6 +43,7 @@ import {
   validateParcelInput,
   withRaw,
 } from '../utils';
+import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 const PROVIDER = 'ecotrack';
@@ -464,6 +466,17 @@ export class EcotrackProvider implements ShippingProvider {
         provider: PROVIDER,
       });
     }
+  }
+
+  /** Probes `GET /get/wilayas` (bypasses cache). */
+  healthCheck(): Promise<HealthCheckResult> {
+    return probeWilayasHealth(
+      PROVIDER,
+      () => {
+        this.wilayasCache = undefined;
+      },
+      () => this.getWilayas(),
+    );
   }
 
   // --- internals -------------------------------------------------------------
