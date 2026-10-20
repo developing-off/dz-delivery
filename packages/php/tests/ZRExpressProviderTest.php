@@ -48,6 +48,7 @@ final class ZRExpressProviderTest extends TestCase
             length: 10,
             isStopDesk: true,
             stopDeskId: 'hub-1',
+            remark: 'fragile',
         ));
 
         self::assertSame('created', $parcel->status);
@@ -56,7 +57,7 @@ final class ZRExpressProviderTest extends TestCase
         self::assertSame('pickup-point', $body['deliveryType']);
         self::assertSame('hub-1', $body['hubId']);
         self::assertSame(['number1' => '+213661000000', 'number2' => '+213770000000'], $body['customer']['phone']);
-        self::assertSame('Mug x2', $body['description']);
+        self::assertSame('Mug x2 - fragile', $body['description']);
         self::assertSame(
             ['productName' => 'Mug', 'quantity' => 2, 'unitPrice' => 500, 'productSku' => 'MUG-1', 'stockType' => 'none', 'length' => 10],
             $body['orderedProducts'][0],
@@ -82,17 +83,30 @@ final class ZRExpressProviderTest extends TestCase
         }
     }
 
-    public function testGetStopDesksIsNotSupportedYet(): void
+    public function testGetStopDesksListsPickupHubsOfAWilaya(): void
     {
-        $client = $this->client('zrexpress', []);
+        $client = $this->client('zrexpress', self::nativeResponses('zrexpress/getStopDesks/by-wilaya.native.json'));
 
-        try {
-            $client->getStopDesks(['wilayaId' => 16]);
-            self::fail('ShippingError expected');
-        } catch (ShippingError $e) {
-            self::assertSame(ShippingError::NOT_SUPPORTED, $e->code);
-            self::assertCount(0, $this->history);
-        }
+        $desks = $client->getStopDesks(self::fixture('zrexpress/getStopDesks/by-wilaya.input.json'));
+
+        self::assertSame(
+            self::fixture('zrexpress/getStopDesks/by-wilaya.expected.json')['result'],
+            array_map(self::stopDeskToArray(...), $desks),
+        );
+        $this->assertRequests('zrexpress/getStopDesks/by-wilaya.request.json');
+    }
+
+    public function testGetStopDesksFiltersByCommuneName(): void
+    {
+        $client = $this->client('zrexpress', self::nativeResponses('zrexpress/getStopDesks/by-commune.native.json'));
+
+        $desks = $client->getStopDesks(self::fixture('zrexpress/getStopDesks/by-commune.input.json'));
+
+        self::assertSame(
+            self::fixture('zrexpress/getStopDesks/by-commune.expected.json')['result'],
+            array_map(self::stopDeskToArray(...), $desks),
+        );
+        $this->assertRequests('zrexpress/getStopDesks/by-commune.request.json');
     }
 
     public function testCreateParcelValidatesBeforeAnyHttpCall(): void
@@ -114,6 +128,28 @@ final class ZRExpressProviderTest extends TestCase
         } catch (ShippingError $e) {
             self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
             self::assertSame('wilayaId', $e->details[0]['field']);
+        }
+        self::assertCount(0, $this->history);
+    }
+
+    public function testCreateParcelRejectsAmountAboveCeiling(): void
+    {
+        $client = $this->client('zrexpress', []);
+
+        try {
+            $client->createParcel([
+                'recipientName' => 'Client Test',
+                'phone' => '0550123456',
+                'address' => 'x',
+                'wilayaId' => self::WILAYA_16,
+                'communeId' => self::WILAYA_16,
+                'productName' => 'Tee',
+                'price' => 150001,
+            ]);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
+            self::assertSame('price', $e->details[0]['field'] ?? null);
         }
         self::assertCount(0, $this->history);
     }

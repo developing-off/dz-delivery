@@ -1,1 +1,9 @@
-[{ "method": "GET", "path": "/api/base/delivery-options/", "query": { "commune": 9999 } }]
+[
+  { "method": "GET", "path": "/api/stores/delivery_price/", "query": { "commune": 9999, "delivery_type": 1, "express": "false" } },
+  { "method": "GET", "path": "/api/base/delivery-options/", "query": { "commune": 9999 } },
+  {
+    "method": "GET",
+    "path": "/api/base/delivery-prices/",
+    "query": { "commune": 9999, "delivery_type": 1 }
+  }
+]

@@ -37,6 +37,7 @@ export const ZREXPRESS_DEFAULT_BASE_URL = 'https://api.zrexpress.app';
 const PROVIDER = 'zrexpress';
 const API = '/api/v1';
 const PAGE_SIZE = 1000;
+const MAX_AMOUNT = 150_000;
 
 /**
  * Native state → unified status. Matching is case-, accent- and separator-insensitive
@@ -50,15 +51,18 @@ export const mapZRExpressStatus = createStatusMapper({
     OrderReceived: 'pending',
     pret_a_expedier: 'created',
     ReadyToDispatch: 'created',
+    confirme_au_bureau: 'in_transit',
     Delivered: 'delivered',
     livre: 'delivered',
     livree: 'delivered',
+    encaisse: 'delivered',
     Cancelled: 'cancelled',
     Canceled: 'cancelled',
     annule: 'cancelled',
     annulee: 'cancelled',
     deleted: 'cancelled',
     supprime: 'cancelled',
+    supprimee: 'cancelled',
   },
   prefixes: [
     ['returned', 'returned'],
@@ -131,6 +135,29 @@ interface ZRRate {
   deliveryPrices?: Array<{ deliveryType?: string | null; price?: number }> | null;
 }
 
+interface ZRHubAddress {
+  street?: string | null;
+  city?: string | null;
+  cityTerritoryId?: string | null;
+  district?: string | null;
+  districtTerritoryId?: string | null;
+  postalCode?: string | null;
+}
+
+interface ZRHub {
+  id: string;
+  name?: string | null;
+  type?: string | null;
+  isPickupPoint?: boolean | null;
+  IsPickupPoint?: boolean | null;
+  address?: ZRHubAddress | null;
+}
+
+interface ZRHubPage {
+  items?: ZRHub[];
+  hasNext?: boolean;
+}
+
 export class ZRExpressProvider implements ShippingProvider {
   readonly name = PROVIDER;
   private readonly http: HttpClient;
@@ -160,6 +187,19 @@ export class ZRExpressProvider implements ShippingProvider {
 
   async createParcel(input: ParcelInput): Promise<Parcel> {
     validateParcelInput(input, PROVIDER);
+    if (input.price > MAX_AMOUNT) {
+      throw new ShippingError('VALIDATION_ERROR', `price must be <= ${MAX_AMOUNT} DZD for ZRExpress`, {
+        provider: PROVIDER,
+        details: [{ field: 'price', message: `price must be <= ${MAX_AMOUNT} DZD for ZRExpress` }],
+      });
+    }
+    if (input.orderId !== undefined && input.orderId.length > 100) {
+      throw new ShippingError('VALIDATION_ERROR', 'orderId must be at most 100 characters', {
+        provider: PROVIDER,
+        details: [{ field: 'orderId', message: 'orderId must be at most 100 characters' }],
+      });
+    }
+
     const phone: Record<string, string> = {
       number1: normalizeAlgerianPhone(input.phone, 'international', PROVIDER, 'phone'),
     };
@@ -185,13 +225,21 @@ export class ZRExpressProvider implements ShippingProvider {
     if (input.width !== undefined) first.width = input.width;
     if (input.height !== undefined) first.height = input.height;
 
+    const description = this.parcelDescription(input);
+    if (description.trim().length < 2) {
+      throw new ShippingError('VALIDATION_ERROR', 'Product description must be at least 2 characters', {
+        provider: PROVIDER,
+        details: [{ field: 'productName', message: 'Product description must be at least 2 characters' }],
+      });
+    }
+
     const body: Record<string, unknown> = {
       customer: { customerId: randomUuid(), name: input.recipientName.trim(), phone },
       deliveryAddress: { street: input.address.trim(), cityTerritoryId: wilaya.id, districtTerritoryId: communeId },
       orderedProducts,
       deliveryType: input.isStopDesk ? 'pickup-point' : 'home',
       amount: input.price,
-      description: productDescription(input).slice(0, 250),
+      description,
     };
     if (input.isStopDesk) body.hubId = input.stopDeskId;
     if (input.weight !== undefined) body.weight = { weight: input.weight };
@@ -289,16 +337,22 @@ export class ZRExpressProvider implements ShippingProvider {
   }
 
   /**
-   * Official listing: `POST /api/v1/hubs/search`
-   * (https://docs.zrexpress.app/reference/searchhubsendpoint) — not wired in the SDK yet.
-   * Pass the hub UUID from the dashboard as `stopDeskId`.
+   * `POST /api/v1/hubs/search` filtered to pickup points of the wilaya
+   * (optional commune). Hub `id` is the `stopDeskId` / `hubId` for createParcel.
+   * @see https://docs.zrexpress.app/reference/searchhubsendpoint
    */
-  async getStopDesks(_query: StopDeskQuery): Promise<StopDesk[]> {
-    throw new ShippingError(
-      'NOT_SUPPORTED',
-      'ZRExpress hub listing is not supported yet; pass the hub UUID as stopDeskId',
-      { provider: PROVIDER },
-    );
+  async getStopDesks(query: StopDeskQuery): Promise<StopDesk[]> {
+    if (query?.wilayaId === undefined || query.wilayaId === '') {
+      throw new ShippingError('VALIDATION_ERROR', 'wilayaId is required', { provider: PROVIDER });
+    }
+    const wilaya = await this.resolveWilaya(query.wilayaId);
+    const communeTerritoryId =
+      query.communeId !== undefined && query.communeId !== ''
+        ? await this.resolveCommuneRef(wilaya.id, query.communeId)
+        : undefined;
+
+    const hubs = await this.searchHubs(wilaya.id, communeTerritoryId);
+    return hubs.map((hub) => this.toStopDesk(hub, wilaya.id));
   }
 
   async cancelParcel(trackingNumberOrId: string): Promise<void> {
@@ -320,6 +374,14 @@ export class ZRExpressProvider implements ShippingProvider {
   }
 
   // --- internals -------------------------------------------------------------
+
+  /** Product text (+ optional remark), capped at 250 chars for the API. */
+  private parcelDescription(input: ParcelInput): string {
+    const base = productDescription(input);
+    const remark = input.remark?.trim();
+    const full = remark ? `${base} - ${remark}` : base;
+    return full.slice(0, 250);
+  }
 
   /** `GET /parcels/{x}` accepts both the parcel UUID and the tracking number. */
   private async getParcel(idOrTracking: string): Promise<ZRParcel> {
@@ -396,6 +458,68 @@ export class ZRExpressProvider implements ShippingProvider {
     return withRaw(loc, t, this.includeRaw);
   }
 
+  /**
+   * Assumption: same `advancedFilter` shape as territories (`operator: "eq"`).
+   * Results are also filtered client-side so the method stays correct if the
+   * server ignores nested address filters.
+   */
+  private async searchHubs(wilayaTerritoryId: string, communeTerritoryId?: string): Promise<ZRHub[]> {
+    const filters: Array<Record<string, unknown>> = [
+      { field: 'isPickupPoint', operator: 'eq', value: true },
+      { field: 'address.cityTerritoryId', operator: 'eq', value: wilayaTerritoryId },
+    ];
+    if (communeTerritoryId) {
+      filters.push({ field: 'address.districtTerritoryId', operator: 'eq', value: communeTerritoryId });
+    }
+
+    const all: ZRHub[] = [];
+    for (let pageNumber = 1; ; pageNumber++) {
+      const res = await this.http.request<ZRHubPage>({
+        method: 'POST',
+        path: `${API}/hubs/search`,
+        body: {
+          pageNumber,
+          pageSize: PAGE_SIZE,
+          orderBy: ['name asc'],
+          advancedFilter: { logic: 'and', filters },
+        },
+      });
+      const items = res.body?.items;
+      if (!Array.isArray(items)) {
+        throw new ShippingError('PROVIDER_ERROR', 'Unexpected ZRExpress hubs response', {
+          provider: PROVIDER,
+          raw: res.body,
+        });
+      }
+      all.push(...items);
+      if (!res.body.hasNext || items.length === 0) break;
+    }
+
+    return all.filter((hub) => {
+      if (!str(hub.id)) return false;
+      const pickup = hub.isPickupPoint ?? hub.IsPickupPoint;
+      if (pickup === false) return false;
+      const cityId = str(hub.address?.cityTerritoryId);
+      if (cityId && cityId !== wilayaTerritoryId) return false;
+      const districtId = str(hub.address?.districtTerritoryId);
+      if (communeTerritoryId && districtId && districtId !== communeTerritoryId) return false;
+      return true;
+    });
+  }
+
+  private toStopDesk(hub: ZRHub, wilayaId: string): StopDesk {
+    const address = str(hub.address?.street);
+    const desk: StopDesk = {
+      id: String(hub.id),
+      name: str(hub.name) ?? '',
+      wilayaId: str(hub.address?.cityTerritoryId) ?? wilayaId,
+    };
+    if (address) desk.address = address;
+    const communeId = str(hub.address?.districtTerritoryId);
+    if (communeId) desk.communeId = communeId;
+    return withRaw(desk, hub, this.includeRaw);
+  }
+
   /** Accepts a territory UUID, an official code `1`–`58`, or a wilaya name. */
   private async resolveWilaya(ref: string | number): Promise<Location> {
     const value = String(ref).trim();
@@ -413,19 +537,23 @@ export class ZRExpressProvider implements ShippingProvider {
 
   private async resolveCommuneId(wilayaId: string, input: ParcelInput): Promise<string> {
     if (input.communeId !== undefined && input.communeId !== '') {
-      const value = String(input.communeId).trim();
-      if (isUuid(value)) return value;
-      // Non-UUID id: treat it as a commune code / postal code within the wilaya.
-      const communes = await this.getCommunes(wilayaId);
-      const found = communes.find((c) => c.code === value);
-      if (!found) throw new ShippingError('NOT_FOUND', `Unknown ZRExpress commune "${value}"`, { provider: PROVIDER });
-      return found.id;
+      return this.resolveCommuneRef(wilayaId, input.communeId);
     }
     const communes = await this.getCommunes(wilayaId);
     const found = findLocationByName(communes, input.communeName!);
     if (!found) {
       throw new ShippingError('NOT_FOUND', `Unknown ZRExpress commune "${input.communeName}"`, { provider: PROVIDER });
     }
+    return found.id;
+  }
+
+  /** Accepts a commune UUID, code/postal code, or name within the wilaya. */
+  private async resolveCommuneRef(wilayaId: string, ref: string | number): Promise<string> {
+    const value = String(ref).trim();
+    if (isUuid(value)) return value;
+    const communes = await this.getCommunes(wilayaId);
+    const found = communes.find((c) => c.code === value) ?? findLocationByName(communes, value);
+    if (!found) throw new ShippingError('NOT_FOUND', `Unknown ZRExpress commune "${value}"`, { provider: PROVIDER });
     return found.id;
   }
 }

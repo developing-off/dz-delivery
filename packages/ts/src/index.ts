@@ -6,11 +6,17 @@ export type { StatusMapper, StatusMapperOptions } from './status';
 export { normalizeAlgerianPhone } from './utils';
 export type { ShippingProvider } from './providers/types';
 export { ZRExpressProvider, mapZRExpressStatus, ZREXPRESS_DEFAULT_BASE_URL } from './providers/zrexpress';
-export { YalidineProvider, mapYalidineStatus, YALIDINE_DEFAULT_BASE_URL } from './providers/yalidine';
+export {
+  YalidineProvider,
+  mapYalidineStatus,
+  YALIDINE_DEFAULT_BASE_URL,
+  GUEPEX_DEFAULT_BASE_URL,
+} from './providers/yalidine';
 export {
   MaystroProvider,
   mapMaystroStatus,
   MAYSTRO_DEFAULT_BASE_URL,
+  MAYSTRO_BACKEND_BASE_URL,
   MAYSTRO_STATUS_CODES,
 } from './providers/maystro';
 export {

@@ -18,15 +18,18 @@ final class StatusMapper
         'orderreceived' => ParcelStatus::PENDING,
         'pretaexpedier' => ParcelStatus::CREATED,
         'readytodispatch' => ParcelStatus::CREATED,
+        'confirmeaubureau' => ParcelStatus::IN_TRANSIT,
         'delivered' => ParcelStatus::DELIVERED,
         'livre' => ParcelStatus::DELIVERED,
         'livree' => ParcelStatus::DELIVERED,
+        'encaisse' => ParcelStatus::DELIVERED,
         'cancelled' => ParcelStatus::CANCELLED,
         'canceled' => ParcelStatus::CANCELLED,
         'annule' => ParcelStatus::CANCELLED,
         'annulee' => ParcelStatus::CANCELLED,
         'deleted' => ParcelStatus::CANCELLED,
         'supprime' => ParcelStatus::CANCELLED,
+        'supprimee' => ParcelStatus::CANCELLED,
     ];
 
     private const ZREXPRESS_RETURNED_PREFIXES = ['returned', 'return', 'retour', 'retourne'];

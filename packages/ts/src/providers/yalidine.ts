@@ -45,6 +45,8 @@ import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 export const YALIDINE_DEFAULT_BASE_URL = 'https://api.yalidine.app/v1';
+/** Same Yalidine platform under the GuepEx brand — use as `baseUrl` with the Yalidine provider. */
+export const GUEPEX_DEFAULT_BASE_URL = 'https://api.guepex.app/v1';
 const PROVIDER = 'yalidine';
 const ALGERIA_OFFSET = '+01:00';
 /** Guard against an API that keeps answering `has_more: true`. */
@@ -120,7 +122,9 @@ interface YCenter {
   name?: string;
   address?: string | null;
   commune_id?: number | string;
+  commune_name?: string;
   wilaya_id?: number | string;
+  wilaya_name?: string;
 }
 
 interface YParcel {
@@ -235,6 +239,22 @@ export class YalidineProvider implements ShippingProvider {
     const commune = await this.resolveCommune(to, input.communeId ?? input.communeName!);
     const from = await this.originWilaya();
 
+    // Stop-desk: API rejects mismatch between stopdesk_id and to_commune_name /
+    // to_wilaya_name (seen on GuepEx = same platform). Prefer the center's names.
+    let toWilayaName = to.name;
+    let toCommuneName = commune.name;
+    if (input.isStopDesk) {
+      const desk = String(input.stopDeskId).trim();
+      const center = await this.findCenter(to.id, desk);
+      if (center) {
+        if (hasValue(center.wilaya_name)) toWilayaName = String(center.wilaya_name);
+        if (hasValue(center.commune_name)) toCommuneName = String(center.commune_name);
+        else if (hasValue(center.commune_id)) {
+          toCommuneName = (await this.resolveCommune(to, center.commune_id!)).name;
+        }
+      }
+    }
+
     const [firstname = '', ...rest] = input.recipientName.trim().split(/\s+/);
     const orderId = input.orderId?.trim() || `dzd-${randomUuid().replace(/-/g, '').slice(0, 12)}`;
 
@@ -246,8 +266,8 @@ export class YalidineProvider implements ShippingProvider {
       // Assumption: several numbers are accepted comma-separated.
       contact_phone: phones.join(','),
       address: input.address.trim(),
-      to_commune_name: commune.name,
-      to_wilaya_name: to.name,
+      to_commune_name: toCommuneName,
+      to_wilaya_name: toWilayaName,
       product_list: productDescription(input),
       price: input.price,
       do_insurance: false,
@@ -564,5 +584,12 @@ export class YalidineProvider implements ShippingProvider {
       throw new ShippingError('NOT_FOUND', `Unknown commune: ${value} in wilaya ${wilaya.name}`, { provider: PROVIDER });
     }
     return found;
+  }
+
+  /** `GET /centers/?wilaya_id=` then match `center_id` (Yalidine's `stopdesk_id`). */
+  private async findCenter(wilayaId: string, stopDeskId: string): Promise<YCenter | undefined> {
+    const wanted = stopDeskId.trim();
+    const centers = await this.list<YCenter>('/centers/', { wilaya_id: wilayaId });
+    return centers.find((c) => hasValue(c?.center_id) && String(c.center_id) === wanted);
   }
 }

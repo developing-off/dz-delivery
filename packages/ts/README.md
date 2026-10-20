@@ -6,7 +6,7 @@ One API for Algerian delivery carriers. Implements the shared contract in
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | ✅ all 6 methods |
+| ZRExpress | `zrexpress` | ✅ all 7 methods |
 | Yalidine | `yalidine` | ✅ all 7 methods (mapping checked against the developer docs, see PROVIDERS.md) |
 | Maystro Delivery | `maystro` | ✅ createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
 | Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
@@ -34,6 +34,7 @@ const yalidine = createClient('yalidine', {
   apiId: process.env.YALIDINE_API_ID!,
   apiToken: process.env.YALIDINE_API_TOKEN!,
   fromWilayaId: 16, // origin wilaya, required by Yalidine to create parcels / quote fees
+  // GuepEx (same API): import { GUEPEX_DEFAULT_BASE_URL } and set baseUrl: GUEPEX_DEFAULT_BASE_URL
 });
 
 const maystro = createClient('maystro', {
@@ -88,7 +89,7 @@ Every provider implements `ShippingProvider`:
 | `getFees(query: FeeQuery)` | `Promise<FeeQuote>` |
 | `getWilayas()` | `Promise<Location[]>` (cached per client) |
 | `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
-| `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (Yalidine centers, Maystro stop desks / pickup points with `communeId` required; ZRExpress: `NOT_SUPPORTED`) |
+| `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (ZRExpress hubs, Yalidine centers, Maystro stop desks / pickup points with `communeId` required, Ecotrack communes with a stop desk) |
 | `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
 | `healthCheck()` | `Promise<{ ok: true, provider, latencyMs }>` — authenticated connectivity probe (wilayas listing, cache bypassed) |
 
@@ -107,7 +108,7 @@ An unmapped native status never throws — it maps to `unknown` and the native l
 
 Provider credentials: `zrexpress` → `apiKey`, `tenant`; `yalidine` → `apiId`, `apiToken`
 (+ `fromWilayaId` or `fromWilayaName`); `maystro` → `apiToken`; `ecotrack` → `token` + exactly one of
-`courier` (`dhd`, `conexlog`, `andersondelivery`, `msmgo`, `packers`, `rocketdelivery`, `worldexpress`) or
+`courier` (`dhd`, `anderson`, `worldexpress`, `48hrexpress`, `ecorapid`, `conexlog`, `msmgo`, `packers`, `rocketdelivery`; alias `andersondelivery`) or
 `baseUrl` (any tenant, `https` only), optional `autoValidate`.
 
 ### Errors

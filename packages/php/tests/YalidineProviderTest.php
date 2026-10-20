@@ -108,6 +108,50 @@ final class YalidineProviderTest extends TestCase
         }
     }
 
+    public function testCreateParcelStopDeskUsesCenterCommuneAndWilayaNames(): void
+    {
+        $client = $this->client('yalidine', [
+            self::json(200, self::WILAYAS),
+            self::json(200, self::COMMUNES_16),
+            self::json(200, [
+                'has_more' => false,
+                'data' => [[
+                    'center_id' => 163001,
+                    'name' => 'Centre Bab Ezzouar',
+                    'commune_id' => 1630,
+                    'commune_name' => 'Bab Ezzouar',
+                    'wilaya_id' => 16,
+                    'wilaya_name' => 'Alger',
+                ]],
+            ]),
+            self::json(200, ['O1' => [
+                'success' => true, 'order_id' => 'O1', 'tracking' => 'yal-1',
+                'import_id' => 1, 'label' => '', 'message' => '',
+            ]]),
+        ]);
+
+        $client->createParcel([
+            'recipientName' => 'Client',
+            'phone' => '0550123456',
+            'address' => 'x',
+            'wilayaId' => 16,
+            'communeId' => 1631,
+            'productName' => 'Tee',
+            'price' => 100,
+            'isStopDesk' => true,
+            'stopDeskId' => '163001',
+            'orderId' => 'O1',
+        ]);
+
+        $body = json_decode((string) $this->history[3]['request']->getBody(), true);
+        self::assertSubset([[
+            'is_stopdesk' => true,
+            'stopdesk_id' => 163001,
+            'to_commune_name' => 'Bab Ezzouar',
+            'to_wilaya_name' => 'Alger',
+        ]], $body);
+    }
+
     public function testGetFeesUsesOriginAndCommune(): void
     {
         $client = $this->client('yalidine', [

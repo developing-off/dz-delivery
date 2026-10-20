@@ -40,13 +40,18 @@ final class EcotrackProvider implements ShippingProviderInterface
 
     /** Built-in tenant hosts for 'courier' => '<key>'. Same table as the TS provider. */
     public const COURIERS = [
+        // Hosts confirmed in Delivery/Ecotrack.php EntrepriseName (production tenants).
         'dhd' => 'https://platform.dhd-dz.com',
+        'anderson' => 'https://anderson-ecommerce.ecotrack.dz',
+        'andersondelivery' => 'https://anderson-ecommerce.ecotrack.dz', // alias
+        'worldexpress' => 'https://world-express.ecotrack.dz',
+        '48hrexpress' => 'https://48hr.ecotrack.dz',
+        'ecorapid' => 'https://ecorapide-express.ecotrack.dz',
+        // Hosts from Ecotrack integration notes (not in Delivery; use baseUrl if wrong).
         'conexlog' => 'https://app.conexlog-dz.com',
-        'andersondelivery' => 'https://andersondelivery.ecotrack.dz',
         'msmgo' => 'https://msmgo.ecotrack.dz',
         'packers' => 'https://packers.ecotrack.dz',
         'rocketdelivery' => 'https://rocketdelivery.ecotrack.dz',
-        'worldexpress' => 'https://worldexpress.ecotrack.dz',
     ];
 
     private const API_PREFIX = '/api/v1';
@@ -196,11 +201,14 @@ final class EcotrackProvider implements ShippingProviderInterface
         if (is_array($body) && ($body['success'] ?? null) === false) {
             throw $this->businessError($body, 200);
         }
-        if (!is_array($body) || !self::hasValue($body['tracking'] ?? null)) {
+        if (is_array($body) && ($body['status'] ?? null) === 'error') {
+            $msg = self::hasValue($body['message'] ?? null) ? (string) $body['message'] : 'Ecotrack rejected the request';
+            throw ShippingError::providerError($msg, self::NAME, $this->raw($body));
+        }
+        $tracking = self::extractCreateOrderTracking($body);
+        if ($tracking === null) {
             throw ShippingError::providerError('Ecotrack did not return a tracking number', self::NAME, $this->raw($body));
         }
-
-        $tracking = trim((string) $body['tracking']);
         $status = ParcelStatus::PENDING;
         if ($this->autoValidate) {
             $this->validateOrder($tracking);
@@ -474,6 +482,54 @@ final class EcotrackProvider implements ShippingProviderInterface
                 $e->retryAfter,
             );
         }
+    }
+
+    /**
+     * Tracking from create/order — some tenants nest it under data / data.order / order
+     * (see Delivery/Ecotrack.php extractEcotrackCreateOrderTracking).
+     */
+    private static function extractCreateOrderTracking(mixed $body): ?string
+    {
+        $keys = ['tracking', 'tracking_number', 'tracking_id', 'numero_tracking', 'n_tracking', 'track'];
+        $from = static function (mixed $node) use ($keys): ?string {
+            if (!is_array($node) || array_is_list($node)) {
+                return null;
+            }
+            foreach ($keys as $key) {
+                if (self::hasValue($node[$key] ?? null)) {
+                    return trim((string) $node[$key]);
+                }
+            }
+
+            return null;
+        };
+        if (!is_array($body) || array_is_list($body)) {
+            return null;
+        }
+        $t = $from($body);
+        if ($t !== null) {
+            return $t;
+        }
+        if (isset($body['data']) && is_array($body['data'])) {
+            $t = $from($body['data']);
+            if ($t !== null) {
+                return $t;
+            }
+            if (isset($body['data']['order'])) {
+                $t = $from($body['data']['order']);
+                if ($t !== null) {
+                    return $t;
+                }
+            }
+        }
+        if (isset($body['order'])) {
+            $t = $from($body['order']);
+            if ($t !== null) {
+                return $t;
+            }
+        }
+
+        return null;
     }
 
     /** `{ success: false, error, message }` (HTTP 200) → ShippingError. */

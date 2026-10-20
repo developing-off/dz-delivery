@@ -19,7 +19,22 @@ use Psr\Http\Message\RequestInterface;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
-    protected const FIXTURES = __DIR__ . '/../../../docs/fixtures';
+    /**
+     * Monorepo: packages/php/tests → ../../../docs/fixtures.
+     * Split repo (dz-delivery-php): tests → ../docs/fixtures (copied on sync).
+     */
+    protected static function fixturesDir(): string
+    {
+        static $dir;
+        if ($dir !== null) {
+            return $dir;
+        }
+        $monorepo = dirname(__DIR__, 3) . '/docs/fixtures';
+        $split = dirname(__DIR__) . '/docs/fixtures';
+        $dir = is_dir($monorepo) ? $monorepo : $split;
+
+        return $dir;
+    }
 
     protected const CREDENTIALS = [
         'zrexpress' => ['apiKey' => 'test-api-key', 'tenant' => 'test-tenant'],
@@ -58,7 +73,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     protected static function fixture(string $relativePath): mixed
     {
-        $path = self::FIXTURES . '/' . $relativePath;
+        $path = self::fixturesDir() . '/' . $relativePath;
         self::assertFileExists($path);
 
         return json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);

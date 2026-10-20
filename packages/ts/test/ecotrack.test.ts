@@ -27,6 +27,11 @@ describe('ecotrack', () => {
       await createClient('ecotrack', { token: 't', courier: 'DHD', fetch: mock.fetch }).getWilayas();
       expect(mock.calls[0]!.url.toString()).toBe('https://platform.dhd-dz.com/api/v1/get/wilayas');
       expect(resolveEcotrackBaseUrl({ courier: 'conexlog' })).toBe('https://app.conexlog-dz.com');
+      expect(resolveEcotrackBaseUrl({ courier: 'anderson' })).toBe('https://anderson-ecommerce.ecotrack.dz');
+      expect(resolveEcotrackBaseUrl({ courier: 'andersondelivery' })).toBe('https://anderson-ecommerce.ecotrack.dz');
+      expect(resolveEcotrackBaseUrl({ courier: 'worldexpress' })).toBe('https://world-express.ecotrack.dz');
+      expect(resolveEcotrackBaseUrl({ courier: '48hrexpress' })).toBe('https://48hr.ecotrack.dz');
+      expect(resolveEcotrackBaseUrl({ courier: 'ecorapid' })).toBe('https://ecorapide-express.ecotrack.dz');
     });
 
     it('appends /api/v1 to baseUrl and does not double it', async () => {

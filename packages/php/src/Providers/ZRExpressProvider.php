@@ -14,6 +14,7 @@ use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
+use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\StopDeskQuery;
 use DzDelivery\Models\TrackingEvent;
 use DzDelivery\Models\TrackResult;
@@ -84,7 +85,7 @@ final class ZRExpressProvider implements ShippingProviderInterface
         if ($input->orderId !== null && strlen($input->orderId) > 100) {
             throw ShippingError::validation('orderId must be at most 100 characters', self::NAME, 'orderId');
         }
-        $description = $input->productDescription();
+        $description = $this->parcelDescription($input);
         if (strlen(trim($description)) < 2) {
             throw ShippingError::validation('Product description must be at least 2 characters', self::NAME, 'productName');
         }
@@ -100,7 +101,8 @@ final class ZRExpressProvider implements ShippingProviderInterface
             $product = array_filter([
                 'productName' => $item->name,
                 'quantity' => $item->quantity,
-                'unitPrice' => $item->unitPrice,
+                // Assumption: ZRExpress requires a unit price; 0 when the merchant did not provide one.
+                'unitPrice' => $item->unitPrice ?? 0,
                 'productSku' => $item->sku,
                 'stockType' => 'none',
             ], static fn ($v) => $v !== null);
@@ -126,7 +128,7 @@ final class ZRExpressProvider implements ShippingProviderInterface
                 'districtTerritoryId' => $communeId,
             ],
             'orderedProducts' => $products,
-            'description' => substr($description, 0, 250),
+            'description' => $description,
             'amount' => $input->price,
             'deliveryType' => $input->isStopDesk ? 'pickup-point' : 'home',
         ];
@@ -247,13 +249,32 @@ final class ZRExpressProvider implements ShippingProviderInterface
     }
 
     /**
-     * Official listing: POST /api/v1/hubs/search
-     * (https://docs.zrexpress.app/reference/searchhubsendpoint) — not wired in the SDK yet.
-     * Pass the hub UUID from the dashboard as `stopDeskId`.
+     * POST /api/v1/hubs/search filtered to pickup points of the wilaya (optional commune).
+     * Hub id → StopDesk.id / ParcelInput.stopDeskId (hubId on create).
+     *
+     * @see https://docs.zrexpress.app/reference/searchhubsendpoint
+     *
+     * @return list<\DzDelivery\Models\StopDesk>
      */
     public function getStopDesks(StopDeskQuery|array $query): array
     {
-        throw ShippingError::notSupported('ZRExpress hub listing is not supported yet; pass the hub UUID as stopDeskId', self::NAME);
+        $query = StopDeskQuery::from($query, self::NAME);
+        $wilayaId = $this->resolveWilayaId($query->wilayaId, $this->looksLikeName($query->wilayaId));
+        $communeId = null;
+        if ($query->communeId !== null) {
+            $communeId = $this->resolveCommuneId(
+                $wilayaId,
+                $query->communeId,
+                $this->looksLikeName($query->communeId),
+            );
+        }
+
+        $desks = [];
+        foreach ($this->searchHubs($wilayaId, $communeId) as $hub) {
+            $desks[] = $this->toStopDesk($hub, $wilayaId);
+        }
+
+        return $desks;
     }
 
     public function cancelParcel(string $trackingNumberOrId): void
@@ -370,6 +391,112 @@ final class ZRExpressProvider implements ShippingProviderInterface
         );
     }
 
+    /**
+     * @param array<string, mixed> $hub
+     */
+    private function toStopDesk(array $hub, string $wilayaId): StopDesk
+    {
+        $address = is_array($hub['address'] ?? null) ? $hub['address'] : [];
+        $street = trim((string) ($address['street'] ?? ''));
+
+        return new StopDesk(
+            id: (string) ($hub['id'] ?? ''),
+            name: (string) ($hub['name'] ?? ''),
+            address: $street !== '' ? $street : null,
+            communeId: isset($address['districtTerritoryId']) && $address['districtTerritoryId'] !== ''
+                ? (string) $address['districtTerritoryId']
+                : null,
+            wilayaId: isset($address['cityTerritoryId']) && $address['cityTerritoryId'] !== ''
+                ? (string) $address['cityTerritoryId']
+                : $wilayaId,
+            raw: $this->raw($hub),
+        );
+    }
+
+    /**
+     * Assumption: same advancedFilter shape as territories (operator "eq").
+     * Client-side filter keeps the method correct if the server ignores nested fields.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function searchHubs(string $wilayaTerritoryId, ?string $communeTerritoryId): array
+    {
+        $filters = [
+            ['field' => 'isPickupPoint', 'operator' => 'eq', 'value' => true],
+            ['field' => 'address.cityTerritoryId', 'operator' => 'eq', 'value' => $wilayaTerritoryId],
+        ];
+        if ($communeTerritoryId !== null) {
+            $filters[] = [
+                'field' => 'address.districtTerritoryId',
+                'operator' => 'eq',
+                'value' => $communeTerritoryId,
+            ];
+        }
+
+        $all = [];
+        $page = 1;
+        do {
+            $response = $this->http->request('POST', self::API . '/hubs/search', [], [
+                'pageNumber' => $page,
+                'pageSize' => self::PAGE_SIZE,
+                'orderBy' => ['name asc'],
+                'advancedFilter' => ['logic' => 'and', 'filters' => $filters],
+            ]);
+            if (!is_array($response)) {
+                throw ShippingError::providerError('Unexpected ZRExpress hubs response', self::NAME, $this->raw($response));
+            }
+            foreach (self::listItems($response) as $item) {
+                if (is_array($item) && self::isPickupHub($item, $wilayaTerritoryId, $communeTerritoryId)) {
+                    $all[] = $item;
+                }
+            }
+            $hasNext = (bool) ($response['hasNext'] ?? false);
+            $page++;
+        } while ($hasNext && $page <= 100);
+
+        return $all;
+    }
+
+    /** @param array<string, mixed> $hub */
+    private static function isPickupHub(array $hub, string $wilayaTerritoryId, ?string $communeTerritoryId): bool
+    {
+        $id = $hub['id'] ?? null;
+        if (!is_string($id) && !is_int($id)) {
+            return false;
+        }
+        if ((string) $id === '') {
+            return false;
+        }
+
+        $pickup = $hub['isPickupPoint'] ?? $hub['IsPickupPoint'] ?? null;
+        if ($pickup === false) {
+            return false;
+        }
+
+        $address = is_array($hub['address'] ?? null) ? $hub['address'] : [];
+        $cityId = isset($address['cityTerritoryId']) ? (string) $address['cityTerritoryId'] : '';
+        if ($cityId !== '' && $cityId !== $wilayaTerritoryId) {
+            return false;
+        }
+        $districtId = isset($address['districtTerritoryId']) ? (string) $address['districtTerritoryId'] : '';
+        if ($communeTerritoryId !== null && $districtId !== '' && $districtId !== $communeTerritoryId) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /** UUID or digits → id/code; otherwise treat as a display name. */
+    private function looksLikeName(string|int $value): bool
+    {
+        $value = trim((string) $value);
+        if ($value === '' || preg_match(self::UUID_RE, $value) === 1 || ctype_digit($value)) {
+            return false;
+        }
+
+        return true;
+    }
+
     /** @return Location[] */
     private function communesOf(string $wilayaUuid): array
     {
@@ -392,6 +519,17 @@ final class ZRExpressProvider implements ShippingProviderInterface
      */
     private function searchTerritories(array $filters): array
     {
+        $level = null;
+        $parentId = null;
+        foreach ($filters as $filter) {
+            if (($filter['field'] ?? null) === 'level') {
+                $level = is_string($filter['value'] ?? null) ? strtolower((string) $filter['value']) : null;
+            }
+            if (($filter['field'] ?? null) === 'parentId') {
+                $parentId = isset($filter['value']) ? (string) $filter['value'] : null;
+            }
+        }
+
         $all = [];
         $page = 1;
         do {
@@ -405,15 +543,35 @@ final class ZRExpressProvider implements ShippingProviderInterface
                 throw ShippingError::providerError('Unexpected ZRExpress territories response', self::NAME, $this->raw($response));
             }
             foreach (self::listItems($response) as $item) {
-                if (is_array($item) && self::isDeliverable($item)) {
-                    $all[] = $item;
+                if (!is_array($item) || !self::isDeliverable($item)) {
+                    continue;
                 }
+                // Client-side filter keeps the method correct if the server ignores advancedFilter.
+                $itemLevel = isset($item['level']) ? strtolower((string) $item['level']) : '';
+                if ($level !== null && $itemLevel !== '' && $itemLevel !== $level) {
+                    continue;
+                }
+                $itemParent = isset($item['parentId']) ? (string) $item['parentId'] : '';
+                if ($parentId !== null && $itemParent !== '' && $itemParent !== $parentId) {
+                    continue;
+                }
+                $all[] = $item;
             }
             $hasNext = (bool) ($response['hasNext'] ?? false);
             $page++;
         } while ($hasNext && $page <= 100);
 
         return $all;
+    }
+
+    /** Product text (+ optional remark), capped at 250 chars for the API. */
+    private function parcelDescription(ParcelInput $input): string
+    {
+        $base = $input->productDescription();
+        $remark = $input->remark !== null ? trim($input->remark) : '';
+        $full = $remark !== '' ? $base . ' - ' . $remark : $base;
+
+        return substr($full, 0, 250);
     }
 
     /** @param array<string, mixed> $territory */

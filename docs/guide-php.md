@@ -90,9 +90,9 @@ $dhd = ClientFactory::create('ecotrack', [
 | Carrier | Required keys | Notes |
 |---------|---------------|-------|
 | `zrexpress` | `apiKey`, `tenant` | |
-| `yalidine` | `apiId`, `apiToken` | Plus `fromWilayaId` (code `1`–`58`) **or** `fromWilayaName`: your origin wilaya, needed by `createParcel` and `getFees`. |
+| `yalidine` | `apiId`, `apiToken` | Plus `fromWilayaId` (code `1`–`58`) **or** `fromWilayaName`: your origin wilaya, needed by `createParcel` and `getFees`. GuepEx (same API): set `'baseUrl' => YalidineProvider::GUEPEX_DEFAULT_BASE_URL`. |
 | `maystro` | `apiToken` | Store token. A value already starting with `Token ` is sent unchanged. |
-| `ecotrack` | `token` + exactly one of `courier` / `baseUrl` | One provider for every courier on the Ecotrack platform. `courier`: `dhd`, `conexlog`, `andersondelivery`, `msmgo`, `packers`, `rocketdelivery`, `worldexpress`. Any other tenant: `baseUrl` (`https` only). `autoValidate` (default `false`): without it, orders stay `pending` until you validate them in the courier's dashboard. |
+| `ecotrack` | `token` + exactly one of `courier` / `baseUrl` | One provider for every courier on the Ecotrack platform. `courier`: `dhd`, `anderson`, `worldexpress`, `48hrexpress`, `ecorapid`, `conexlog`, `msmgo`, `packers`, `rocketdelivery` (plus alias `andersondelivery`). Any other tenant: `baseUrl` (`https` only). `autoValidate` (default `false`): without it, orders stay `pending` until you validate them in the courier's dashboard. |
 
 Missing credentials throw `ShippingError` with code `AUTH_FAILED` when the client is created.
 
@@ -123,7 +123,7 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 | `track` | yes | yes | `NOT_SUPPORTED` (use [webhooks](#7-maystro-webhooks)) | yes |
 | `getFees` | yes | yes | yes | yes (per wilaya) |
 | `getWilayas` / `getCommunes` | yes | yes | yes | yes |
-| `getStopDesks` | `NOT_SUPPORTED` | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) |
+| `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) |
 | `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) |
 | `healthCheck` | yes | yes | yes | yes |
 
@@ -319,7 +319,7 @@ Input (`StopDeskQuery`):
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | `wilayaId` | `int\|string` | **yes** | Code `1`–`58`, carrier id or name. |
-| `communeId` | `int\|string` | Maystro: **yes**; Yalidine: no | Carrier id or name. Yalidine: optional filter. |
+| `communeId` | `int\|string` | Maystro: **yes**; others: no | Carrier id or name. Optional filter for Yalidine / ZRExpress / Ecotrack. |
 
 Output (`StopDesk[]`):
 
@@ -336,7 +336,7 @@ Carrier differences:
 
 - **Yalidine**: Yalidine "centers". `communeId` is an optional filter.
 - **Maystro**: `communeId` is required. The commune's own Maystro stop desk has the **commune id** as its `id`; partner pickup points have their pickup-point id.
-- **ZRExpress**: `NOT_SUPPORTED` in the SDK for now. The native API documents [`POST /api/v1/hubs/search`](https://docs.zrexpress.app/reference/searchhubsendpoint) — not wired yet. Pass the hub UUID from the dashboard as `stopDeskId` (see [ZRExpress mapping](./PROVIDERS.md#zrexpress)).
+- **ZRExpress**: [`POST /api/v1/hubs/search`](https://docs.zrexpress.app/reference/searchhubsendpoint) with `isPickupPoint = true`. `communeId` is optional. Use the returned hub UUID as `stopDeskId`.
 
 ### 3.7 `cancelParcel(string $trackingNumberOrId): void`
 

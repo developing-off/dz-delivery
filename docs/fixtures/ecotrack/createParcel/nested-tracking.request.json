@@ -1,0 +1,19 @@
+[
+  { "method": "GET", "path": "/api/v1/get/communes", "query": { "wilaya_id": 16 } },
+  {
+    "method": "POST",
+    "path": "/api/v1/create/order",
+    "headers": { "Authorization": "Bearer test-api-token" },
+    "query": {
+      "nom_client": "Test Client",
+      "telephone": "0550123456",
+      "adresse": "12 rue des Tests",
+      "code_wilaya": 16,
+      "commune": "Bab Ezzouar",
+      "montant": 1500,
+      "produit": "Mug",
+      "type": 1,
+      "stop_desk": 0
+    }
+  }
+]

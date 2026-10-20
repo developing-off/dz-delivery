@@ -2,6 +2,43 @@
   {
     "status": 200,
     "headers": {},
-    "body": [[1, "Adrar"], [16, "Alger"], [31, "Oran"], [58, "El Meniaa"]]
+    "body": [
+      {
+        "display_id": 1,
+        "code": 1,
+        "name_lt": "Adrar",
+        "name_ar": "أدرار",
+        "country": 1,
+        "center_commune": 1,
+        "barcode": "ADR"
+      },
+      {
+        "display_id": 16,
+        "code": 16,
+        "name_lt": "Alger",
+        "name_ar": "الجزائر",
+        "country": 1,
+        "center_commune": 554,
+        "barcode": "ALG"
+      },
+      {
+        "display_id": 31,
+        "code": 31,
+        "name_lt": "Oran",
+        "name_ar": "وهران",
+        "country": 1,
+        "center_commune": 1101,
+        "barcode": "ORN"
+      },
+      {
+        "display_id": 58,
+        "code": 58,
+        "name_lt": "El Meniaa",
+        "name_ar": "المنيعة",
+        "country": 1,
+        "center_commune": 1,
+        "barcode": "MNA"
+      }
+    ]
   }
 ]

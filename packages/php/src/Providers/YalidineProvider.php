@@ -35,6 +35,8 @@ final class YalidineProvider implements ShippingProviderInterface
 {
     public const NAME = 'yalidine';
     public const DEFAULT_BASE_URL = 'https://api.yalidine.app/v1/';
+    /** Same Yalidine platform under the GuepEx brand — pass as `baseUrl` with this provider. */
+    public const GUEPEX_DEFAULT_BASE_URL = 'https://api.guepex.app/v1/';
 
     private const TIMEZONE = 'Africa/Algiers';
     private const MAX_PAGES = 50;
@@ -93,6 +95,24 @@ final class YalidineProvider implements ShippingProviderInterface
         $commune = $this->findCommune($wilaya, $input->communeId ?? $input->communeName, $input->communeId === null);
         $fromWilayaName = $this->originWilayaName();
 
+        // Stop-desk: API rejects mismatch between stopdesk_id and to_commune_name /
+        // to_wilaya_name (seen on GuepEx = same platform). Prefer the center's names.
+        $toWilayaName = $wilaya->name;
+        $toCommuneName = $commune->name;
+        if ($input->isStopDesk && $input->stopDeskId !== null && $input->stopDeskId !== '') {
+            $center = $this->findCenter($wilaya->id, (string) $input->stopDeskId);
+            if ($center !== null) {
+                if (($center['wilaya_name'] ?? '') !== '') {
+                    $toWilayaName = (string) $center['wilaya_name'];
+                }
+                if (($center['commune_name'] ?? '') !== '') {
+                    $toCommuneName = (string) $center['commune_name'];
+                } elseif (isset($center['commune_id']) && $center['commune_id'] !== '') {
+                    $toCommuneName = $this->findCommune($wilaya, $center['commune_id'], false)->name;
+                }
+            }
+        }
+
         $phones = [Phone::toLocal($input->phone, self::NAME, 'phone')];
         if ($input->phone2 !== null) {
             $phones[] = Phone::toLocal($input->phone2, self::NAME, 'phone2');
@@ -108,8 +128,8 @@ final class YalidineProvider implements ShippingProviderInterface
             'familyname' => $nameParts[1] ?? $nameParts[0],
             'contact_phone' => implode(',', $phones),
             'address' => $input->address,
-            'to_commune_name' => $commune->name,
-            'to_wilaya_name' => $wilaya->name,
+            'to_commune_name' => $toCommuneName,
+            'to_wilaya_name' => $toWilayaName,
             'product_list' => $input->productDescription(),
             'price' => $input->price,
             'do_insurance' => false,
@@ -155,12 +175,8 @@ final class YalidineProvider implements ShippingProviderInterface
         $native = $this->fetchParcel($trackingNumber);
         $parcel = $this->toParcel($native);
 
-        $history = $this->http->request('GET', 'histories/' . rawurlencode($parcel->trackingNumber), ['page_size' => self::PAGE_SIZE]);
         $events = [];
-        foreach (self::dataItems($history) as $item) {
-            if (!is_array($item)) {
-                continue;
-            }
+        foreach ($this->paginate('histories/' . rawurlencode($parcel->trackingNumber), [], 'date_status') as $item) {
             $label = (string) ($item['status'] ?? '');
             if (!empty($item['reason'])) {
                 $label .= ' (' . $item['reason'] . ')';
@@ -419,6 +435,23 @@ final class YalidineProvider implements ShippingProviderInterface
             ($byName ? 'Unknown commune name: ' : 'Unknown commune: ') . $value . ' in wilaya ' . $wilaya->name,
             self::NAME,
         );
+    }
+
+    /**
+     * `GET centers/?wilaya_id=` then match `center_id` (Yalidine's `stopdesk_id`).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function findCenter(string $wilayaId, string $stopDeskId): ?array
+    {
+        $wanted = trim($stopDeskId);
+        foreach ($this->paginate('centers/', ['wilaya_id' => $wilayaId], 'center_id') as $c) {
+            if ((string) ($c['center_id'] ?? '') === $wanted) {
+                return $c;
+            }
+        }
+
+        return null;
     }
 
     private function originWilaya(): Location

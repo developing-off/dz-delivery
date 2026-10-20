@@ -23,7 +23,8 @@ use DzDelivery\Support\Phone;
 use DzDelivery\Support\Text;
 
 /**
- * Maystro Delivery (https://orders-management.maystro-delivery.com).
+ * Maystro Delivery — orders: https://orders-management.maystro-delivery.com ;
+ * live fees: https://backend.maystro-delivery.com (BACKEND_BASE_URL).
  * Mapping: docs/PROVIDERS.md#maystro-delivery.
  *
  * Maystro documents no endpoint to read, track or cancel an order (status updates
@@ -34,6 +35,8 @@ final class MaystroProvider implements ShippingProviderInterface
 {
     public const NAME = 'maystro';
     public const DEFAULT_BASE_URL = 'https://orders-management.maystro-delivery.com';
+    /** Live tariffs host used by Confirmation-api (`getDeliveryPrice`). Orders stay on `DEFAULT_BASE_URL`. */
+    public const BACKEND_BASE_URL = 'https://backend.maystro-delivery.com';
 
     private const DELIVERY_HOME = 1;
     private const DELIVERY_STOP_DESK = 2;
@@ -57,6 +60,8 @@ final class MaystroProvider implements ShippingProviderInterface
     ];
 
     private HttpClient $http;
+    /** Same token as `$http`, pointed at `BACKEND_BASE_URL` for live `delivery_price`. */
+    private HttpClient $backendHttp;
     private bool $includeRaw;
 
     /** @var Location[]|null */
@@ -73,16 +78,27 @@ final class MaystroProvider implements ShippingProviderInterface
         }
 
         $this->includeRaw = $options->includeRaw;
+        $headers = [
+            'Authorization' => preg_match('/^token\s/i', $token) === 1 ? $token : 'Token ' . $token,
+            'Content-Type' => 'application/json',
+        ];
+        $handler = is_callable($options->handler) ? $options->handler : null;
         $this->http = $http ?? new HttpClient(
             baseUrl: $options->baseUrl ?? self::DEFAULT_BASE_URL,
             provider: self::NAME,
-            headers: [
-                'Authorization' => preg_match('/^token\s/i', $token) === 1 ? $token : 'Token ' . $token,
-                'Content-Type' => 'application/json',
-            ],
+            headers: $headers,
             timeoutMs: $options->timeoutMs,
             includeRaw: $options->includeRaw,
-            handler: is_callable($options->handler) ? $options->handler : null,
+            handler: $handler,
+            errorParser: [self::class, 'parseError'],
+        );
+        $this->backendHttp = new HttpClient(
+            baseUrl: self::BACKEND_BASE_URL,
+            provider: self::NAME,
+            headers: $headers,
+            timeoutMs: $options->timeoutMs,
+            includeRaw: $options->includeRaw,
+            handler: $handler,
             errorParser: [self::class, 'parseError'],
         );
     }
@@ -141,7 +157,8 @@ final class MaystroProvider implements ShippingProviderInterface
             }
         }
 
-        $response = $this->http->request('POST', 'api/orders', [], [$order]);
+        // Trailing slash matches the live orders-management URL used by Delivery/MaystroController.
+        $response = $this->http->request('POST', 'api/orders/', [], [$order]);
 
         $row = is_array($response) && array_is_list($response) ? ($response[0] ?? null) : $response;
         if (!self::isOrderRow($row)) {
@@ -190,11 +207,88 @@ final class MaystroProvider implements ShippingProviderInterface
             $communeId = $first->id;
         }
 
-        $native = $this->http->request('GET', 'api/base/delivery-options/', ['commune' => $communeId]);
-        if (!is_array($native) || !array_is_list($native)) {
-            throw ShippingError::providerError('Unexpected Maystro delivery-options response', self::NAME, $this->raw($native));
+        // Prefer Confirmation's live backend delivery_price; on NOT_FOUND / NETWORK_ERROR
+        // fall back to orders-management delivery-options then delivery-prices.
+        try {
+            return $this->feeQuoteFromStoresPrice($communeId, $query->isStopDesk);
+        } catch (ShippingError $e) {
+            if ($e->code !== ShippingError::NOT_FOUND && $e->code !== ShippingError::NETWORK_ERROR) {
+                throw $e;
+            }
         }
 
+        try {
+            $native = $this->http->request('GET', 'api/base/delivery-options/', ['commune' => $communeId]);
+            if (is_array($native) && array_is_list($native)) {
+                return $this->feeQuoteFromOptions($native, $query->isStopDesk);
+            }
+        } catch (ShippingError $e) {
+            if ($e->code !== ShippingError::NOT_FOUND) {
+                throw $e;
+            }
+        }
+
+        return $this->feeQuoteFromPrices($communeId, $query->isStopDesk);
+    }
+
+    /** Confirmation-api live tariffs: `backend.maystro-delivery.com/api/stores/delivery_price/`. */
+    private function feeQuoteFromStoresPrice(string $communeId, bool $isStopDesk): FeeQuote
+    {
+        $homeBody = $this->storesDeliveryPrice($communeId, self::DELIVERY_HOME);
+        $deskBody = $this->storesDeliveryPriceOrNull($communeId, self::DELIVERY_STOP_DESK);
+
+        $home = self::number($homeBody['delivery_price'] ?? null);
+        $desk = $deskBody !== null ? self::number($deskBody['delivery_price'] ?? null) : null;
+        $fee = $isStopDesk ? $desk : $home;
+        if ($fee === null) {
+            throw new ShippingError(
+                ShippingError::NOT_FOUND,
+                'No Maystro rate for this delivery type',
+                null,
+                null,
+                $this->raw(['home' => $homeBody, 'stopdesk' => $deskBody]),
+                self::NAME,
+            );
+        }
+
+        return new FeeQuote(
+            deliveryFee: $fee,
+            stopDeskFee: $desk,
+            raw: $this->raw(['home' => $homeBody, 'stopdesk' => $deskBody]),
+        );
+    }
+
+    /** @return array<string, mixed> */
+    private function storesDeliveryPrice(string $communeId, int $deliveryType): array
+    {
+        $native = $this->backendHttp->request('GET', 'api/stores/delivery_price/', [
+            'commune' => $communeId,
+            'delivery_type' => $deliveryType,
+            'express' => 'false',
+        ]);
+        if (!is_array($native) || array_is_list($native) || !array_key_exists('delivery_price', $native)) {
+            throw ShippingError::providerError('Unexpected Maystro stores/delivery_price response', self::NAME, $this->raw($native));
+        }
+
+        return $native;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function storesDeliveryPriceOrNull(string $communeId, int $deliveryType): ?array
+    {
+        try {
+            return $this->storesDeliveryPrice($communeId, $deliveryType);
+        } catch (ShippingError $e) {
+            if ($e->code === ShippingError::NOT_FOUND) {
+                return null;
+            }
+            throw $e;
+        }
+    }
+
+    /** @param list<mixed> $native */
+    private function feeQuoteFromOptions(array $native, bool $isStopDesk): FeeQuote
+    {
         $priceOf = static function (string $type) use ($native): int|float|null {
             foreach ($native as $option) {
                 if (is_array($option) && Text::key((string) ($option['type'] ?? '')) === $type) {
@@ -206,7 +300,7 @@ final class MaystroProvider implements ShippingProviderInterface
         };
         $home = $priceOf('home');
         $desk = $priceOf('stopdesk') ?? $priceOf('pickup');
-        $fee = $query->isStopDesk ? $desk : $home;
+        $fee = $isStopDesk ? $desk : $home;
         if ($fee === null) {
             throw new ShippingError(ShippingError::NOT_FOUND, 'No Maystro rate for this delivery type', null, null, $this->raw($native), self::NAME);
         }
@@ -214,12 +308,66 @@ final class MaystroProvider implements ShippingProviderInterface
         return new FeeQuote(deliveryFee: $fee, stopDeskFee: $desk, raw: $this->raw($native));
     }
 
+    private function feeQuoteFromPrices(string $communeId, bool $isStopDesk): FeeQuote
+    {
+        $homeBody = $this->deliveryPrice($communeId, self::DELIVERY_HOME);
+        $deskBody = $this->deliveryPriceOrNull($communeId, self::DELIVERY_STOP_DESK)
+            ?? $this->deliveryPriceOrNull($communeId, self::DELIVERY_PICKUP_POINT);
+
+        $home = self::number($homeBody['delivery_price'] ?? null);
+        $desk = $deskBody !== null ? self::number($deskBody['delivery_price'] ?? null) : null;
+        $fee = $isStopDesk ? $desk : $home;
+        if ($fee === null) {
+            throw new ShippingError(
+                ShippingError::NOT_FOUND,
+                'No Maystro rate for this delivery type',
+                null,
+                null,
+                $this->raw(['home' => $homeBody, 'stopdesk' => $deskBody]),
+                self::NAME,
+            );
+        }
+
+        return new FeeQuote(
+            deliveryFee: $fee,
+            stopDeskFee: $desk,
+            raw: $this->raw(['home' => $homeBody, 'stopdesk' => $deskBody]),
+        );
+    }
+
+    /** @return array<string, mixed> */
+    private function deliveryPrice(string $communeId, int $deliveryType): array
+    {
+        $native = $this->http->request('GET', 'api/base/delivery-prices/', [
+            'commune' => $communeId,
+            'delivery_type' => $deliveryType,
+        ]);
+        if (!is_array($native) || array_is_list($native) || !array_key_exists('delivery_price', $native)) {
+            throw ShippingError::providerError('Unexpected Maystro delivery-prices response', self::NAME, $this->raw($native));
+        }
+
+        return $native;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function deliveryPriceOrNull(string $communeId, int $deliveryType): ?array
+    {
+        try {
+            return $this->deliveryPrice($communeId, $deliveryType);
+        } catch (ShippingError $e) {
+            if ($e->code === ShippingError::NOT_FOUND) {
+                return null;
+            }
+            throw $e;
+        }
+    }
+
     public function getWilayas(): array
     {
         if ($this->wilayas === null) {
             $wilayas = [];
             foreach ($this->list('api/base/wilayas/', ['language' => 'fr', 'country' => 1]) as $w) {
-                [$id, $name] = array_is_list((array) $w) ? [$w[0] ?? null, $w[1] ?? null] : [$w['id'] ?? null, $w['name'] ?? null];
+                [$id, $name] = self::parseWilayaRow($w);
                 if (!self::hasValue($id)) {
                     continue;
                 }
@@ -229,6 +377,27 @@ final class MaystroProvider implements ShippingProviderInterface
         }
 
         return $this->wilayas;
+    }
+
+    /**
+     * Maystro historically returned `[id, name]` tuples; current API returns
+     * `{ code|display_id|id, name_lt|name, … }`. Both shapes are accepted.
+     *
+     * @return array{0: mixed, 1: mixed}
+     */
+    private static function parseWilayaRow(mixed $w): array
+    {
+        if (is_array($w) && array_is_list($w)) {
+            return [$w[0] ?? null, $w[1] ?? null];
+        }
+        if (!is_array($w)) {
+            return [null, null];
+        }
+
+        $id = $w['code'] ?? $w['display_id'] ?? $w['id'] ?? null;
+        $name = $w['name_lt'] ?? $w['name'] ?? $w['name_ar'] ?? null;
+
+        return [$id, $name];
     }
 
     public function getCommunes(string|int $wilayaId): array

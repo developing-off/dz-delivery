@@ -1,5 +1,5 @@
 [
   { "method": "GET", "path": "/api/base/wilayas/" },
   { "method": "GET", "path": "/api/base/communes/" },
-  { "method": "POST", "path": "/api/orders" }
+  { "method": "POST", "path": "/api/orders/" }
 ]

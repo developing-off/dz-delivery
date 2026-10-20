@@ -15,9 +15,11 @@
   {
     "status": 200,
     "headers": {},
-    "body": [
-      { "type": "home", "name": "Home", "price": 450, "min_total_price": 450, "required_points": 45.0, "current_points": 0.0 },
-      { "type": "stopdesk", "name": "Stop-Desk", "price": 350, "min_total_price": 350, "required_points": 35.0, "current_points": 0.0 }
-    ]
+    "body": { "delivery_price": 450 }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": { "delivery_price": 350 }
   }
 ]

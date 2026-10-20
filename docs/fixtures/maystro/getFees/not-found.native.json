@@ -3,5 +3,15 @@
     "status": 404,
     "headers": {},
     "body": { "detail": "PRICING NOT FOUND" }
+  },
+  {
+    "status": 404,
+    "headers": {},
+    "body": { "detail": "PRICING NOT FOUND" }
+  },
+  {
+    "status": 404,
+    "headers": {},
+    "body": { "detail": "PRICING NOT FOUND" }
   }
 ]

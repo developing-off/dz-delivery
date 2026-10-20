@@ -4,9 +4,10 @@
  * Built from the public API docs (docs/vendor/maystro/maystro-api-full.md; mapping in
  * docs/PROVIDERS.md#maystro-delivery):
  *
- * - Base URL `https://orders-management.maystro-delivery.com`, auth header
+ * - Orders / locations: `https://orders-management.maystro-delivery.com`; live fees:
+ *   `https://backend.maystro-delivery.com` (`MAYSTRO_BACKEND_BASE_URL`). Auth header
  *   `Authorization: Token <token>` (assumed Django REST convention, see PROVIDERS.md).
- * - Orders are created in bulk (`POST /api/orders` takes a list); each result row carries
+ * - Orders are created in bulk (`POST /api/orders/` takes a list); each result row carries
  *   `success` and numeric `errors` codes.
  * - Wilaya ids are the official codes `1`–`58`; wilayas come back as `[id, name]` pairs.
  * - There is no documented endpoint to read, track or cancel an order (status updates are
@@ -35,6 +36,8 @@ import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 export const MAYSTRO_DEFAULT_BASE_URL = 'https://orders-management.maystro-delivery.com';
+/** Live tariffs host used by Confirmation-api (`getDeliveryPrice`). Orders stay on `MAYSTRO_DEFAULT_BASE_URL`. */
+export const MAYSTRO_BACKEND_BASE_URL = 'https://backend.maystro-delivery.com';
 const PROVIDER = 'maystro';
 
 const DELIVERY_HOME = 1;
@@ -197,6 +200,8 @@ function idValue(value: string): string | number {
 export class MaystroProvider implements ShippingProvider {
   readonly name = PROVIDER;
   private readonly http: HttpClient;
+  /** Same token as `http`, pointed at `MAYSTRO_BACKEND_BASE_URL` for live `delivery_price`. */
+  private readonly backendHttp: HttpClient;
   private readonly includeRaw: boolean;
   private wilayasCache?: Promise<Location[]>;
   private readonly communesCache = new Map<string, Promise<Location[]>>();
@@ -207,22 +212,30 @@ export class MaystroProvider implements ShippingProvider {
       throw new ShippingError('AUTH_FAILED', 'Maystro requires `apiToken`', { provider: PROVIDER });
     }
     this.includeRaw = config.includeRaw ?? true;
-    this.http = new HttpClient({
+    const headers = {
+      Authorization: /^token\s/i.test(token) ? token : `Token ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+    const shared = {
       provider: PROVIDER,
-      baseUrl: config.baseUrl ?? MAYSTRO_DEFAULT_BASE_URL,
       timeoutMs: config.timeoutMs,
       fetch: config.fetch,
       parseError: parseMaystroError,
-      headers: {
-        Authorization: /^token\s/i.test(token) ? token : `Token ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers,
+    };
+    this.http = new HttpClient({
+      ...shared,
+      baseUrl: config.baseUrl ?? MAYSTRO_DEFAULT_BASE_URL,
+    });
+    this.backendHttp = new HttpClient({
+      ...shared,
+      baseUrl: MAYSTRO_BACKEND_BASE_URL,
     });
   }
 
   /**
-   * `POST /api/orders` with a one-element list. The wilaya is sent by name and the
+   * `POST /api/orders/` with a one-element list. The wilaya is sent by name and the
    * commune by id, both resolved (and checked) through the cached location lists.
    */
   async createParcel(input: ParcelInput): Promise<Parcel> {
@@ -262,7 +275,8 @@ export class MaystroProvider implements ShippingProvider {
       }
     }
 
-    const res = await this.http.request<unknown>({ method: 'POST', path: '/api/orders', body: [order] });
+    // Trailing slash matches the live orders-management URL used by Delivery/MaystroController.
+    const res = await this.http.request<unknown>({ method: 'POST', path: '/api/orders/', body: [order] });
     const row = Array.isArray(res.body) ? res.body[0] : res.body;
     if (!isOrderRow(row)) {
       throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro create response', { provider: PROVIDER, raw: res.body });
@@ -294,8 +308,10 @@ export class MaystroProvider implements ShippingProvider {
   }
 
   /**
-   * `GET /api/base/delivery-options/?commune=` (home, stop-desk and pickup prices in one
-   * call). Prices are per commune: without `toCommuneId`, the first commune of the wilaya is used.
+   * Prices are per commune: without `toCommuneId`, the first commune of the wilaya is used.
+   * Prefers Confirmation's live host: `GET {backend}/api/stores/delivery_price/?commune=&delivery_type=&express=false`
+   * (`delivery_type` 1 = home, 2 = stop desk). On `NOT_FOUND` / `NETWORK_ERROR` (wrong host or
+   * unavailable), falls back to orders-management `delivery-options` then `delivery-prices`.
    */
   async getFees(query: FeeQuery): Promise<FeeQuote> {
     if (!hasValue(query?.toWilayaId)) {
@@ -312,38 +328,137 @@ export class MaystroProvider implements ShippingProvider {
       communeId = first.id;
     }
 
-    const res = await this.http.request<unknown>({
+    const isStopDesk = query.isStopDesk === true;
+
+    try {
+      return await this.feeQuoteFromStoresPrice(communeId, isStopDesk);
+    } catch (err) {
+      if (!(err instanceof ShippingError) || (err.code !== 'NOT_FOUND' && err.code !== 'NETWORK_ERROR')) throw err;
+    }
+
+    try {
+      const res = await this.http.request<unknown>({
+        method: 'GET',
+        path: '/api/base/delivery-options/',
+        query: { commune: communeId },
+      });
+      if (Array.isArray(res.body)) {
+        return this.feeQuoteFromOptions(res.body, isStopDesk, res.body);
+      }
+    } catch (err) {
+      if (!(err instanceof ShippingError) || err.code !== 'NOT_FOUND') throw err;
+    }
+
+    return this.feeQuoteFromPrices(communeId, isStopDesk);
+  }
+
+  /** Confirmation-api live tariffs: `backend.maystro-delivery.com/api/stores/delivery_price/`. */
+  private async feeQuoteFromStoresPrice(communeId: string, isStopDesk: boolean): Promise<FeeQuote> {
+    const homeBody = await this.storesDeliveryPrice(communeId, DELIVERY_HOME);
+    const deskBody = await this.storesDeliveryPriceOrNull(communeId, DELIVERY_STOP_DESK);
+    const home = num(homeBody.delivery_price);
+    const desk = deskBody ? num(deskBody.delivery_price) : undefined;
+    const deliveryFee = isStopDesk ? desk : home;
+    const raw = { home: homeBody, stopdesk: deskBody };
+    if (deliveryFee === undefined) {
+      throw new ShippingError('NOT_FOUND', 'No Maystro rate for this delivery type', { provider: PROVIDER, raw });
+    }
+    const quote: FeeQuote = { deliveryFee, currency: 'DZD' };
+    if (desk !== undefined) quote.stopDeskFee = desk;
+    return withRaw(quote, raw, this.includeRaw);
+  }
+
+  private async storesDeliveryPrice(communeId: string, deliveryType: number): Promise<Record<string, unknown>> {
+    const res = await this.backendHttp.request<unknown>({
       method: 'GET',
-      path: '/api/base/delivery-options/',
-      query: { commune: communeId },
+      path: '/api/stores/delivery_price/',
+      query: { commune: communeId, delivery_type: deliveryType, express: false },
     });
-    if (!Array.isArray(res.body)) {
-      throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro delivery-options response', {
+    if (!isRecord(res.body) || !('delivery_price' in res.body)) {
+      throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro stores/delivery_price response', {
         provider: PROVIDER,
         raw: res.body,
       });
     }
+    return res.body;
+  }
+
+  private async storesDeliveryPriceOrNull(communeId: string, deliveryType: number): Promise<Record<string, unknown> | null> {
+    try {
+      return await this.storesDeliveryPrice(communeId, deliveryType);
+    } catch (err) {
+      if (err instanceof ShippingError && err.code === 'NOT_FOUND') return null;
+      throw err;
+    }
+  }
+
+  private feeQuoteFromOptions(native: unknown[], isStopDesk: boolean, raw: unknown): FeeQuote {
     const priceOf = (type: string) => {
-      const option = (res.body as unknown[]).find((o) => isRecord(o) && normalizeStatusKey(String(o.type ?? '')) === type);
+      const option = native.find((o) => isRecord(o) && normalizeStatusKey(String(o.type ?? '')) === type);
       return isRecord(option) ? num(option.price ?? option.delivery_price) : undefined;
     };
     const home = priceOf('home');
     const desk = priceOf('stopdesk') ?? priceOf('pickup');
-    const deliveryFee = query.isStopDesk ? desk : home;
+    const deliveryFee = isStopDesk ? desk : home;
     if (deliveryFee === undefined) {
-      throw new ShippingError('NOT_FOUND', 'No Maystro rate for this delivery type', { provider: PROVIDER, raw: res.body });
+      throw new ShippingError('NOT_FOUND', 'No Maystro rate for this delivery type', { provider: PROVIDER, raw });
     }
-
     const quote: FeeQuote = { deliveryFee, currency: 'DZD' };
     if (desk !== undefined) quote.stopDeskFee = desk;
-    return withRaw(quote, res.body, this.includeRaw);
+    return withRaw(quote, raw, this.includeRaw);
+  }
+
+  private async feeQuoteFromPrices(communeId: string, isStopDesk: boolean): Promise<FeeQuote> {
+    const homeBody = await this.deliveryPrice(communeId, DELIVERY_HOME);
+    const deskBody =
+      (await this.deliveryPriceOrNull(communeId, DELIVERY_STOP_DESK)) ??
+      (await this.deliveryPriceOrNull(communeId, DELIVERY_PICKUP_POINT));
+    const home = num(homeBody.delivery_price);
+    const desk = deskBody ? num(deskBody.delivery_price) : undefined;
+    const deliveryFee = isStopDesk ? desk : home;
+    const raw = { home: homeBody, stopdesk: deskBody };
+    if (deliveryFee === undefined) {
+      throw new ShippingError('NOT_FOUND', 'No Maystro rate for this delivery type', { provider: PROVIDER, raw });
+    }
+    const quote: FeeQuote = { deliveryFee, currency: 'DZD' };
+    if (desk !== undefined) quote.stopDeskFee = desk;
+    return withRaw(quote, raw, this.includeRaw);
+  }
+
+  private async deliveryPrice(communeId: string, deliveryType: number): Promise<Record<string, unknown>> {
+    const res = await this.http.request<unknown>({
+      method: 'GET',
+      path: '/api/base/delivery-prices/',
+      query: { commune: communeId, delivery_type: deliveryType },
+    });
+    if (!isRecord(res.body) || !('delivery_price' in res.body)) {
+      throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro delivery-prices response', {
+        provider: PROVIDER,
+        raw: res.body,
+      });
+    }
+    return res.body;
+  }
+
+  private async deliveryPriceOrNull(communeId: string, deliveryType: number): Promise<Record<string, unknown> | null> {
+    try {
+      return await this.deliveryPrice(communeId, deliveryType);
+    } catch (err) {
+      if (err instanceof ShippingError && err.code === 'NOT_FOUND') return null;
+      throw err;
+    }
   }
 
   getWilayas(): Promise<Location[]> {
     this.wilayasCache ??= this.list('/api/base/wilayas/', { language: 'fr', country: 1 })
       .then((items) =>
         items.flatMap((w) => {
-          const [id, name] = Array.isArray(w) ? [w[0], w[1]] : isRecord(w) ? [w.id, w.name] : [];
+          // Legacy: [id, name]. Current API: { code|display_id|id, name_lt|name, … }.
+          const [id, name] = Array.isArray(w)
+            ? [w[0], w[1]]
+            : isRecord(w)
+              ? [w.code ?? w.display_id ?? w.id, w.name_lt ?? w.name ?? w.name_ar]
+              : [];
           if (!hasValue(id)) return [];
           return [withRaw({ id: String(id), name: String(name ?? ''), code: String(id) }, w, this.includeRaw)];
         }),

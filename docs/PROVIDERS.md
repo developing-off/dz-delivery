@@ -8,7 +8,8 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 | ZRExpress | `zrexpress` | mapping drafted, implemented in PHP and TS |
 | Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
 | Maystro Delivery | `maystro` | built from the public API docs (2026-10-20), implemented in PHP and TS; `track` / `cancelParcel` not supported |
-| Ecotrack (DHD, Conexlog, …) | `ecotrack` | built from third-party notes on the official Postman collection (2026-10-20), implemented in PHP and TS |
+| Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
+| Ecom (ecom-dz.net) | `ecom` | **out of MVP / backlog** — see [below](#ecom-out-of-mvp--backlog); legacy app company-id `19` (`Delivery/EcomDelivery.php`) |
 
 ---
 
@@ -40,11 +41,11 @@ Every request sends ([Authentication guide](https://docs.zrexpress.app/docs/auth
 | Unified method | Native endpoint | Official doc | Notes |
 |----------------|-----------------|--------------|-------|
 | `createParcel` | `POST /api/v1/parcels` | [Creates a parcel](https://docs.zrexpress.app/reference/createparcelendpoint) | Returns `201 { id }` only → follow up with [get by id](https://docs.zrexpress.app/reference/getparcelbyidsupplierendpoint) to fill `trackingNumber` and `status`. `StockType`: `local` \| `warehouse` \| `none` (we use `none` in MVP). `DeliveryType`: `home` \| `pickup-point`. |
-| `track` | `GET …/parcels/by-tracking-number/{trackingNumber}` + state-history | [Get by trackingNumber](https://docs.zrexpress.app/reference/getparcelbytrackingnumbersupplierendpoint) · [State history](https://docs.zrexpress.app/reference/getparcelstatehistorysupplierendpoint) | First call gives the current parcel and its UUID `id`; second gives the event list. Prefer webhooks over polling when possible ([Webhooks vs Polling](https://docs.zrexpress.app/docs/webhooks-vs-polling-a-comparison)). |
+| `track` | `GET /api/v1/parcels/{idOrTracking}` + `…/state-history` | [Get by id](https://docs.zrexpress.app/reference/getparcelbyidsupplierendpoint) · [Get by trackingNumber](https://docs.zrexpress.app/reference/getparcelbytrackingnumbersupplierendpoint) · [State history](https://docs.zrexpress.app/reference/getparcelstatehistorysupplierendpoint) | Native path is the same for UUID and tracking number (`/parcels/{x}`). First call fills `Parcel`; second builds the event list. Prefer webhooks over polling when possible ([Webhooks vs Polling](https://docs.zrexpress.app/docs/webhooks-vs-polling-a-comparison)). |
 | `getFees` | `GET /api/v1/delivery-pricing/rates/{toTerritoryId}` | [Rate for a territory](https://docs.zrexpress.app/reference/getrateendpoint) · [All rates](https://docs.zrexpress.app/reference/getallratesendpoint) | Pick the `deliveryPrices[]` entry matching `deliveryType` (`home` / `pickup-point`). Supplier-specific prices override price-list prices. |
 | `getWilayas` | `POST /api/v1/territories/search` | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Filter `level = "wilaya"`. Paginated (`pageSize` ≤ 1000); loop while `hasNext`. Body shape: see [search endpoints guide](https://docs.zrexpress.app/docs). Territories with both `delivery.hasHomeDelivery` and `delivery.hasPickupPoint` false are skipped. |
 | `getCommunes` | `POST /api/v1/territories/search` | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Filter `level = "commune"` and `parentId = <wilaya id>`. |
-| `getStopDesks` | `POST /api/v1/hubs/search` | [Search hubs](https://docs.zrexpress.app/reference/searchhubsendpoint) · [Get hub by id](https://docs.zrexpress.app/reference/gethubendpoint) | **SDK status: `NOT_SUPPORTED` (not wired yet).** Native API exists: filter e.g. `isPickupPoint = true` and `address.cityTerritoryId` / `address.districtTerritoryId`. Hub `id` → `StopDesk.id` / `ParcelInput.stopDeskId` (`hubId` on create). Until implemented, pass the hub UUID from the ZRExpress dashboard. |
+| `getStopDesks` | `POST /api/v1/hubs/search` | [Search hubs](https://docs.zrexpress.app/reference/searchhubsendpoint) · [Get hub by id](https://docs.zrexpress.app/reference/gethubendpoint) | Filter `isPickupPoint = true` and `address.cityTerritoryId` (wilaya UUID); optional `address.districtTerritoryId` when `communeId` is set. Paginated (`pageSize` ≤ 1000). Hub `id` → `StopDesk.id` / `ParcelInput.stopDeskId` (`hubId` on create); `address.street` → `address`; `districtTerritoryId` → `communeId`; `cityTerritoryId` → `wilayaId`. Hubs with `isPickupPoint: false` are skipped client-side. |
 | `cancelParcel` | `DELETE /api/v1/parcels/{id}` | [Delete a parcel](https://docs.zrexpress.app/reference/deleteparcelendpoint) | Requires the parcel **UUID**. If given a tracking number, resolve it first. |
 | `healthCheck` | `POST /api/v1/territories/search` (wilayas) | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
@@ -62,13 +63,13 @@ Every request sends ([Authentication guide](https://docs.zrexpress.app/docs/auth
 | `wilayaId` / `wilayaName` | `deliveryAddress.cityTerritoryId` | UUID. Resolve code `1`–`58` or name via territories search. A UUID is passed through without lookup. |
 | `communeId` / `communeName` | `deliveryAddress.districtTerritoryId` | UUID. Resolve name (or postal code) via territories search within the wilaya. A UUID is passed through without lookup. |
 | `productName` / `productList` | `orderedProducts[]` (`productName`, `quantity`, `unitPrice`, `productSku`) | Use `stockType: "none"` in MVP (no catalog). `productName` → one item, `quantity: 1`, `unitPrice: price`. |
-| `productName` / joined names | `description` | Required, 2–250 chars. |
+| `productName` / joined names (+ `remark`) | `description` | Required, 2–250 chars. When `remark` is set, appended as `" - {remark}"` (then truncated to 250). |
 | `price` | `amount` | ≤ 150 000 DZD, **includes delivery fee**. |
 | `weight` | `weight.weight` | kg. |
 | `length` / `width` / `height` | `orderedProducts[0].length/width/height` | No parcel-level dimensions; applied to the first item. |
 | `isStopDesk` | `deliveryType` | `false` → `"home"`, `true` → `"pickup-point"`. |
 | `stopDeskId` | `hubId` | Required when `deliveryType = "pickup-point"`. |
-| `remark` | — | No dedicated field found yet; **not sent** for now. TODO (maybe append to `description`). |
+| `remark` | → `description` suffix | No dedicated native field; appended to `description` as `" - {remark}"`. |
 | `orderId` | `externalId` | Max 100 chars, must be unique. |
 
 > ⚠️ Without `stateId`, parcels are created in state `OrderReceived` / `commande_recue` and must later be moved to `ReadyToDispatch` before the hub accepts them. MVP: leave default (unified status `pending`). TODO: decide whether to expose a `readyToDispatch` option.
@@ -116,15 +117,13 @@ The docs show both slug-style (`commande_recue`) and PascalCase (`OutForDelivery
 |-------------------------|---------|
 | `commande_recue`, `OrderReceived` | `pending` |
 | `pret_a_expedier`, `ReadyToDispatch` | `created` |
-| `OutForDelivery`, other hub / transfer states | `in_transit` |
-| `Delivered` / `livre` (TODO: confirm) | `delivered` |
-| `Returned` / `retour*` (TODO: confirm) | `returned` |
-| `Cancelled` / `annule` (TODO: confirm) | `cancelled` |
+| `confirme_au_bureau`, `OutForDelivery`, other hub / transfer states | `in_transit` |
+| `Delivered` / `livre` / `encaisse` | `delivered` |
+| `Returned` / `retour*` | `returned` |
+| `Cancelled` / `annule` / `supprimee` | `cancelled` |
 | anything else | `unknown` |
 
-Implementation detail (until real fixtures exist): names are compared after lowercasing, stripping accents and removing `_`, `-`, spaces. Order: exact pending/created/delivered/cancelled names → `returned` if it starts with `return`/`retour` → `in_transit` if it contains a transit keyword (`outfordelivery`, `transit`, `hub`, `transfer`, `dispatched`, `expedie`, `pickedup`, `attempt`, `echec`, `failed`, …) → `unknown`. Reference cases: [`fixtures/zrexpress/statuses.json`](./fixtures/zrexpress/statuses.json).
-
-> TODO (both packages): the state-history example in the ZRExpress docs also shows `confirme_au_bureau` (parcel confirmed at the office → `in_transit`) and `encaisse` (COD collected → `delivered`). Neither matches the rules above, so both currently map to `unknown`. Add them to the exact table in TS **and** PHP, plus `statuses.json`, in the same PR.
+Implementation detail: names are compared after lowercasing, stripping accents and removing `_`, `-`, spaces. Order: exact pending/created/delivered/cancelled names → `returned` if it starts with `return`/`retour` → `in_transit` if it contains a transit keyword (`outfordelivery`, `transit`, `hub`, `transfer`, `dispatched`, `expedie`, `pickedup`, `attempt`, `echec`, `failed`, …) → `unknown`. Reference cases: [`fixtures/zrexpress/statuses.json`](./fixtures/zrexpress/statuses.json).
 
 `TrackingEvent.at` is normalized to ISO 8601 with second precision and an explicit offset (`2025-12-23T15:23:54.2173951+00:00` → `2025-12-23T15:23:54+00:00`, `…Z` → `…+00:00`).
 
@@ -145,10 +144,21 @@ ZRExpress returns RFC 7807 problem details:
 
 ## Yalidine
 
-> Checked against the official developer docs (login required) on 2026-10-20. Error bodies are not documented and remain best-effort; contributions with anonymized real responses welcome.
+> Checked against the official developer docs (login required) on 2026-10-20, and against the in-repo `Delivery/YalidineController.php` + `Delivery/GuepExController.php` reference (same API platform). Error bodies are not documented and remain best-effort; contributions with anonymized real responses welcome.
 
 - Docs: <https://yalidine.app/app/dev/docs/api/> (account required)
 - Base URL: `https://api.yalidine.app/v1/` (paths below are relative to it; keep the trailing `/` on collection endpoints)
+
+### GuepEx (same platform)
+
+GuepEx runs the same Yalidine API under a different host. Use the **`yalidine`** provider with credentials from the GuepEx dashboard and:
+
+| | |
+|--|--|
+| TS | `baseUrl: GUEPEX_DEFAULT_BASE_URL` (`https://api.guepex.app/v1`) |
+| PHP | `'baseUrl' => YalidineProvider::GUEPEX_DEFAULT_BASE_URL` (`https://api.guepex.app/v1/`) |
+
+Auth headers, endpoints, status mapping, and parcel fields are identical. GuepEx-only extras in the Delivery app (`economic` tier on create, client fee adjustment) are **not** in the shared `ParcelInput` contract — leave them as remaining / app-level.
 
 ### Auth
 
@@ -186,7 +196,7 @@ Extra client option: **`fromWilayaId`** (code `1`–`58`) or **`fromWilayaName`*
 | `price` | `price` | Amount collected. We always send **`freeshipping: true`** so Yalidine does *not* add its fee on top — `price` is exactly what the recipient pays (fees are deducted from the COD). |
 | — | `declared_value` | `price`; `do_insurance: false`. |
 | `weight`, `length`, `width`, `height` | same names | kg / cm. **Required integers**: always sent, `0` when missing, decimals rounded up. |
-| `isStopDesk` / `stopDeskId` | `is_stopdesk` / `stopdesk_id` | |
+| `isStopDesk` / `stopDeskId` | `is_stopdesk` / `stopdesk_id` | When stop-desk, the SDK loads `centers/?wilaya_id=` and, if the `center_id` matches, sends that center's `commune_name` / `wilaya_name` as `to_*` (avoids API rejection on stopdesk/commune mismatch — same fix as Delivery GuepEx). Unknown `stopDeskId` still posts; the API returns `success: false`. |
 | `orderId` | `order_id` | Required by Yalidine; generated (`dzd-<random>`) when absent. |
 | `remark` | — | Not sent (no known field). |
 | — | `has_exchange` | Always `false` in MVP. |
@@ -233,14 +243,15 @@ Compared case/accent-insensitively. Reference cases: [`fixtures/yalidine/statuse
 - Error bodies (not documented by Yalidine; assumed) look like `{ "error": { "code": 400, "message": "..." } }` → `ShippingError.message` ← `error.message`. HTTP status → `code` per `CONTRACT.md` §3.
 - Yalidine enforces per-second / minute / hour / day quotas (reported in `x-second-quota-left`, `x-minute-quota-left`, `x-hour-quota-left`, `x-day-quota-left` response headers). Defaults: 5/s, 50/min, 1 000/h, 10 000/day. `429` → `RATE_LIMITED`, with `ShippingError.retryAfter` set from the `Retry-After` header. The SDK does not retry automatically.
 
-### Implementation notes (TS `packages/ts/src/providers/yalidine.ts`)
+### Implementation notes (TS + PHP)
 
 Same mapping as above, plus:
 
 - Wilaya ids/codes/names are always resolved through the cached `wilayas/` list (so `getFees` / `getCommunes` / `createParcel` make one extra call on a fresh client). Unknown wilaya or commune → `NOT_FOUND` before the parcel is posted.
 - Phone numbers that are not valid Algerian numbers → `VALIDATION_ERROR` before any HTTP call. Missing `fromWilayaId` / `fromWilayaName` is also checked before any HTTP call.
-- `histories/` pagination is followed when `has_more` is `true` (PHP reads the first page only, with `page_size=1000`).
+- `histories/` pagination is followed when `has_more` is `true` (`page_size=1000`) in both TS and PHP.
 - A parcel lookup that returns empty `data` throws `NOT_FOUND` without `httpStatus` (the HTTP call itself returned `200`).
+- The Delivery sync layer uses client-side quota throttling (5/s, 50/min, 1 000/h, 10 000/day) and `GET parcels/?tracking=`; the SDK maps `429` → `RATE_LIMITED` (with `retryAfter` from `Retry-After`) and tracks via `GET parcels/{tracking}` per the official docs. No automatic retry / client throttle in the SDK.
 - Confirmed by the docs: list endpoints accept `page` / `page_size`; `contact_phone` accepts comma-separated numbers; `freeshipping: true` = the sender pays the delivery fee; `stopdesk_id` is a `center_id` from `centers/`.
 - Still to confirm with real responses: error body format; whether Yalidine rounds the overweight kg.
 
@@ -248,10 +259,11 @@ Same mapping as above, plus:
 
 ## Maystro Delivery
 
-> Built from the public API docs (saved in [`vendor/maystro/maystro-api-full.md`](./vendor/maystro/maystro-api-full.md)) on 2026-10-20. No sandbox response has been captured yet: fixtures are derived from the doc examples.
+> Built from the public API docs (saved in [`vendor/maystro/maystro-api-full.md`](./vendor/maystro/maystro-api-full.md)) on 2026-10-20, then aligned with Confirmation-api live fees (`MaystroController::getDeliveryPrice`) on 2026-10-20. No sandbox response has been captured yet: fixtures are derived from the doc examples + Confirmation production paths.
 
 - Docs: <https://maystro.gitbook.io/maystro-delivery-documentation/reference/maystro-delivery-api-reference>
-- Base URL: `https://orders-management.maystro-delivery.com` (paths below are absolute; keep the trailing `/` on `api/base/...` endpoints)
+- Orders / locations base URL: `https://orders-management.maystro-delivery.com` (`MAYSTRO_DEFAULT_BASE_URL` / `MaystroProvider::DEFAULT_BASE_URL`; keep the trailing `/` on `api/base/...` and `api/orders/`)
+- Live fees base URL: `https://backend.maystro-delivery.com` (`MAYSTRO_BACKEND_BASE_URL` / `MaystroProvider::BACKEND_BASE_URL`) — Confirmation-api production host for tariffs (and geo sync uses `api/shared/wilayas/` on this host / communes on backend2; SDK locations still use orders-management `api/base/...`)
 
 ### Auth
 
@@ -266,16 +278,16 @@ Same mapping as above, plus:
 
 | Unified method | Native endpoint | Notes |
 |----------------|-----------------|-------|
-| `createParcel` | `POST /api/orders` | Body is a **list** of orders (bulk, we send one). Response: `[{ id, external_id, tracking, success, delivery_price, errors: [] }]`. `success: false` or non-empty `errors` → `ShippingError` (see Errors). No follow-up read (no read endpoint): status is always `pending`. |
+| `createParcel` | `POST /api/orders/` | Body is a **list** of orders (bulk, we send one). Trailing `/` matches the live orders-management URL. Response: `[{ id, external_id, tracking, success, delivery_price, errors: [] }]`. `success: false` or non-empty `errors` → `ShippingError` (see Errors). No follow-up read (no read endpoint): status is always `pending`. |
 | `track` | — | **Not supported** (`NOT_SUPPORTED`, no HTTP call). Maystro documents no order read/tracking endpoint; status changes are pushed by webhooks (`OrderStatusChanged`, `payload.status` = numeric code). Map them with `mapMaystroStatus` (TS) / `StatusMapper::maystro()` (PHP). |
-| `getFees` | `GET /api/base/delivery-options/?commune=` | One call returns home, stop-desk and pickup-point prices (see Fees). `GET /api/base/delivery-prices/?commune=&delivery_type=` returns one mode only and is not used. |
-| `getWilayas` | `GET /api/base/wilayas/?language=fr&country=1` | Response is a list of `[id, name]` pairs (objects `{ id, name }` are also accepted). Wilaya `id` **is** the official code. Not paginated. |
+| `getFees` | **Primary:** `GET {backend}/api/stores/delivery_price/?commune=&delivery_type=&express=false` (home=`1`, stop desk=`2`). **Fallback:** orders-management `GET /api/base/delivery-options/?commune=` then `GET /api/base/delivery-prices/?commune=&delivery_type=` | Matches Confirmation-api live tariffs. Response shape `{ delivery_price: number }`. SDK calls type `1` and `2` to fill `deliveryFee` + `stopDeskFee`. On `NOT_FOUND` / `NETWORK_ERROR` from the backend host, falls back to legacy `delivery-options` (all modes in one call) then `delivery-prices` (`1` home, `2` stop desk, `3` pickup). `createParcel` stays on orders-management. |
+| `getWilayas` | `GET /api/base/wilayas/?language=fr&country=1` | Current response: objects `{ code, display_id, name_lt, name_ar, … }` (`code` → `Location.id`). Legacy `[id, name]` tuples and `{ id, name }` are still accepted. Wilaya id **is** the official code. Not paginated. |
 | `getCommunes` | `GET /api/base/communes/?wilaya=<id>` | Response: `[{ id, wilaya, name, postcode, zone }]`. A DRF page `{ results: [...] }` is also accepted (first page only). |
 | `getStopDesks` | `GET /api/base/pickup-points?commune=<id>` | **`communeId` required** (`VALIDATION_ERROR` otherwise). Response `[{ name_lt, name_ar, commune, pickup_point, delivery_type, active }]`. Stop desk (`delivery_type: 2`, `pickup_point: null`) → `id` = commune id; pickup point (`delivery_type: 3`) → `id` = `pickup_point`. `active: false` skipped. |
 | `cancelParcel` | — | **Not supported** (`NOT_SUPPORTED`, no HTTP call): no documented cancellation endpoint. |
 | `healthCheck` | `GET /api/base/wilayas/` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
-### `ParcelInput` → `POST /api/orders` body
+### `ParcelInput` → `POST /api/orders/` body
 
 | Unified field | Maystro field | Notes |
 |---------------|---------------|-------|
@@ -302,21 +314,23 @@ Same mapping as above, plus:
 |---------|---------|
 | `id` | `id` (UUID; falls back to `tracking`) |
 | `trackingNumber` | `tracking` (e.g. `172316976800001`) |
-| `status` | always `pending` (the response has no status; new orders start as `4` / `created`) |
+| `status` | always `pending` (the response has no status; new orders start as `4` / `CREATED` → `pending`) |
 | `provider` | `"maystro"` |
 
 ### Locations → `Location`
 
-| Unified | Wilaya (`[id, name]`) | Commune |
+| Unified | Wilaya (`code` / legacy `[id, name]`) | Commune |
 |---------|------------------------|---------|
-| `id` | `id` | `id` |
-| `name` | `name` (French, `language=fr`) | `name` |
+| `id` | `code` (fallback `display_id` / `id`) | `id` |
+| `name` | `name_lt` (fallback `name` / `name_ar`) | `name` |
 | `parentId` | — | `wilaya` |
 | `code` | `id` (official code) | `postcode` |
 
 ### Fees → `FeeQuote`
 
-`GET /api/base/delivery-options/?commune=` response: `[{ type: "home" | "stopdesk" | "pickup", name, price, min_total_price, required_points, current_points, pickup_point_id? }]`.
+`GET /api/base/delivery-options/?commune=` response (legacy / some stores): `[{ type: "home" | "stopdesk" | "pickup", name, price, min_total_price, required_points, current_points, pickup_point_id? }]`.
+
+`GET /api/base/delivery-prices/?commune=&delivery_type=` response (fallback): `{ delivery_price, min_total_price, required_points, current_points }`.
 
 | Unified | Maystro |
 |---------|---------|
@@ -382,17 +396,33 @@ Other error bodies are assumed to follow DRF: `{ "detail": "..." }` → `message
 
 - **No `track` / `cancelParcel`** (`NOT_SUPPORTED`): use Maystro webhooks + the exported status mapper.
 - `createParcel` always returns `pending`; Premium stores may actually start at `15` (`READY_TO_SHIP`, as in the `orderCreated` webhook example).
-- Auth header format `Token <token>` (see Auth).
+- Auth header format `Token <token>` (see Auth). Same token is sent to both hosts.
 - Wilaya ids are assumed to equal the official codes `1`–`58` (true for every id in the docs example), so `code = id`.
 - Error entry shape (`40` vs `{ code, message }`) and non-order error bodies are not documented (see Errors).
 - Bulk create, exchanges, refunds, products/stock, pickup points listing, order slips and webhook management are out of MVP scope.
 
 ---
 
+## Confirmation-api fees audit (2026-10-20)
+
+Cross-check of live tariff sources in Confirmation-api vs this SDK (orders / create stay on each carrier’s documented host):
+
+| Carrier | Confirmation live fees | SDK |
+|---------|------------------------|-----|
+| **GuepEx** | `GET https://api.guepex.app/v1/fees/` | Same API as Yalidine — use `YalidineProvider` with `GUEPEX_DEFAULT_BASE_URL` ✓ |
+| **ZRExpress** | Tariffs from **DB only** in Confirmation; the guide has **no** fees HTTP endpoint | SDK uses live `GET /api/v1/delivery-pricing/rates/{toTerritoryId}` ✓ |
+| **Ecotrack** (DHD, Anderson, …) | `GET /api/v1/get/fees` | Already in SDK ✓ |
+| **Maystro** | `GET https://backend.maystro-delivery.com/api/stores/delivery_price/?commune=&delivery_type=&express=` | SDK primary path (this change); orders-management options/prices kept as fallback ✓ |
+| **NoEST / MDM / Ecom** | — | Still backlog (see below) |
+
+---
+
 ## Ecotrack
 
-> Ecotrack is not a courier but a white-label platform: DHD, Conexlog, Anderson, MSM Go, Packers, World Express and ~80 other couriers expose the **same API** on their own domain. One provider (`ecotrack`) serves all of them; the tenant is chosen with `courier` or `baseUrl`.
-> Built from third-party integration notes on the official Postman collection (`docs/vendor/ecotrack/`, private). Needs confirmation with real responses per tenant.
+> Ecotrack is not a courier but a white-label platform: DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers and ~80 other couriers expose the **same API** on their own domain. One provider (`ecotrack`) serves all of them; the tenant is chosen with `courier` or `baseUrl`.
+> Built from third-party integration notes on the official Postman collection (`docs/vendor/ecotrack/`, private) and cross-checked against `Delivery/Ecotrack.php` tenant hosts. Needs confirmation with real responses per tenant.
+>
+> **Same API, not separate providers:** Anderson, DHD, World Express, 48Hr Express and EcoRapid in the legacy app are Ecotrack tenants (Bearer + `/api/v1`). Do **not** add `anderson` / `mdm` / `elogistia` as separate SDK providers for that reason — MDM and Elogistia use different APIs (see remaining / out of scope below).
 
 - Base URL: `https://<tenant>/api/v1` (paths below are relative to it). Single-order endpoints take **query parameters**, never a JSON body.
 
@@ -405,23 +435,25 @@ Other error bodies are assumed to follow DRF: `{ "detail": "..." }` → `message
 | `baseUrl` | tenant URL, e.g. `https://xyz.ecotrack.dz` | Must be `https`; a trailing `/api/v1` is stripped. |
 | `autoValidate` | `false` (default) | `true` → `POST valid/order` right after creation, so the courier picks the order up. |
 
-Built-in `courier` keys (hosts from the integration notes, not all confirmed by the couriers — use `baseUrl` if yours differs):
+Built-in `courier` keys. Hosts marked **Delivery** match `Delivery/Ecotrack.php` `EntrepriseName` (production). Others are from integration notes — use `baseUrl` if yours differs:
 
-| Key | Host |
-|-----|------|
-| `dhd` | `https://platform.dhd-dz.com` |
-| `conexlog` | `https://app.conexlog-dz.com` |
-| `andersondelivery` | `https://andersondelivery.ecotrack.dz` |
-| `msmgo` | `https://msmgo.ecotrack.dz` |
-| `packers` | `https://packers.ecotrack.dz` |
-| `rocketdelivery` | `https://rocketdelivery.ecotrack.dz` |
-| `worldexpress` | `https://worldexpress.ecotrack.dz` |
+| Key | Host | Source |
+|-----|------|--------|
+| `dhd` | `https://platform.dhd-dz.com` | Delivery |
+| `anderson` | `https://anderson-ecommerce.ecotrack.dz` | Delivery (`andersondelivery` is an alias of the same host) |
+| `worldexpress` | `https://world-express.ecotrack.dz` | Delivery |
+| `48hrexpress` | `https://48hr.ecotrack.dz` | Delivery |
+| `ecorapid` | `https://ecorapide-express.ecotrack.dz` | Delivery |
+| `conexlog` | `https://app.conexlog-dz.com` | notes |
+| `msmgo` | `https://msmgo.ecotrack.dz` | notes |
+| `packers` | `https://packers.ecotrack.dz` | notes |
+| `rocketdelivery` | `https://rocketdelivery.ecotrack.dz` | notes |
 
 ### Method mapping
 
 | Unified method | Native endpoint | Notes |
 |----------------|-----------------|-------|
-| `createParcel` | `POST create/order?…` | Query parameters (below). Returns `{ success, tracking }`. With `autoValidate`, followed by `POST valid/order?tracking=`; a validation failure says the order *was created*. |
+| `createParcel` | `POST create/order?…` | Query parameters (below). Tracking is read from `tracking` (or `tracking_number` / …) at the root, under `data`, `data.order`, or `order` — some tenants nest it. With `autoValidate`, followed by `POST valid/order?tracking=`; a validation failure says the order *was created*. |
 | `track` | `GET get/tracking/info?tracking=` | Only the entry for this exact tracking number is used (never "the first row"). |
 | `getFees` | `GET get/fees` | All wilayas in one call; the row whose `wilaya_id` matches is used. |
 | `getWilayas` | `GET get/wilayas` | Only the wilayas the tenant delivers to. `wilaya_id` is the official code. |
@@ -497,9 +529,61 @@ Only the stable **keys** are mapped (activity keys and order status enum keys); 
 - Updating an order, requesting returns (`ask/for/order/return`) and validating returns are out of MVP scope. Ecotrack silently ignores updates after validation.
 - Tenant hosts other than the built-in keys must be passed as `baseUrl`.
 - Response shapes vary slightly between tenants (lists vs index-keyed objects, `data` wrappers); the provider accepts both.
+- Legacy app price tables (`AndersonPriceController`, `DhdPriceController`) are DB-backed, not Ecotrack `get/fees` — the SDK uses the live API.
+- **Not Ecotrack (do not use this provider):** NoEST (`app.noest-dz.com`, different auth/paths), MDM (JWT / `x-api-key`), Elogistia (`api.elogistia.com`).
+
+---
+
+## Out of MVP / backlog
+
+Carriers present in the legacy `Delivery/` monolith but **not** implemented in the SDK yet. Do not add code until fixtures + a full method table exist (same bar as ZRExpress / Yalidine).
+
+### Ecom (out of MVP / backlog)
+
+> Audited against `Delivery/EcomDelivery.php` + `Delivery/DeliveryController.php` (2026-10-20). Legacy `delivery_companies.id = 19`, name `Ecom`. **Not trivial**: create/track hit the public API; fees / wilayas / communes / stop desks are served from local delivery DB tables (`ecom_delivery_prices`, `ecom_delivery_communes`, `ecom_delivery_stopdesks`) — no live location/fee HTTP endpoints in the adapter. No `sync_status_ecom_*.log` samples in-repo at audit time.
+
+- Base URL: `https://ecom-dz.net` (override env `ECOM_DELIVERY_BASE_URL`)
+- API prefix: prefer `/Api_v1/…` (create colis); tracking/list may need fallback `/API_v1/…` when the server returns 404/500 “aucun point d'entrée”
+
+#### Auth (proposed SDK config)
+
+| Header | Value | Config key |
+|--------|-------|------------|
+| `Key` | API key | `apiKey` (`ECOM_API_KEY`) |
+| `Token` | API token | `apiToken` (`ECOM_API_TOKEN`) |
+| `Page` | pagination (default `1`) | — |
+| `Accept` / `Content-Type` | `application/json` | — |
+
+#### Proposed method mapping
+
+| Unified method | Native / source in legacy | Notes for a future SDK provider |
+|----------------|---------------------------|----------------------------------|
+| `createParcel` | `POST /Api_v1/Colis` body `{ Colis: [ {…} ] }` | Response `Colis[0].Tracking` → `trackingNumber`. Map `ParcelInput` → `NomComplet`, `Mobile_1`/`Mobile_2`, `Adresse`, `Wilaya` (code), `Commune` (**exact name**), `Article`, `Ref_Article`, `Total`, `ID_Externe`, `Stopdesk`/`CodeStopdesk`, `Echange`, `NoteFournisseur`, `Source`. |
+| `track` | `GET …/Colis/Tracking/{tracking}` (+ `/API_v1/` fallback); optional `POST …/Colis/Liste` (≤100) | Parcel may be a single object or list under `Colis`/`colis`. Status from `Avancement` + `Situation`; `Date_Livrée`/`Date_Livree` non-null → `delivered`. |
+| `getFees` | **DB** `ecom_delivery_prices` (`tarif` / `tarif_stopdesk`) | No HTTP fee API in adapter → SDK either needs a documented native endpoint, or ships static/fixture data, or returns `NOT_SUPPORTED` until then. |
+| `getWilayas` | **DB** distinct `ecom_delivery_communes.wilaya_id` (+ names via `yalidine_wilayas`) | Same caveat as fees. |
+| `getCommunes` | **DB** `ecom_delivery_communes` | Includes derived `has_stop_desk` from stopdesk name match. |
+| `getStopDesks` | **DB** `ecom_delivery_stopdesks` | `stopdesk_code` → `StopDesk.id` / create `CodeStopdesk`. |
+| `cancelParcel` | — | **Not present** in legacy → likely `NOT_SUPPORTED`. |
+| `healthCheck` | probe `GET /Api_v1/Colis` or Tracking with dummy | TBD once live credentials exist. |
+
+#### Status mapping (draft from legacy `mapColisToPlatformStatus`)
+
+| Native signal | Unified |
+|---------------|---------|
+| non-empty `Date_Livrée` / `Date_Livree` | `delivered` |
+| text contains `perdu` | map via platform helper (failed / returned — confirm) |
+| other `Avancement` / `Situation` | normalize through shared status helper → often `in_transit` / `unknown` until fixtures exist |
+
+#### Blockers before implementation
+
+1. Capture anonymized JSON fixtures for create, track, and (if any) live wilayas/fees endpoints — or formally decide locations/fees are `NOT_SUPPORTED` / offline catalog.
+2. Confirm official PDF/docs for path casing and error bodies.
+3. Add `T6.1c` work only after the above; keep TS and PHP in lockstep with this table.
 
 ---
 
 ## Adding a provider
 
 Copy the ZRExpress section structure (Auth, Method mapping, Field mapping, Status mapping, Errors) and see [`CONTRIBUTING.md`](../CONTRIBUTING.md#how-to-add-a-provider).
+

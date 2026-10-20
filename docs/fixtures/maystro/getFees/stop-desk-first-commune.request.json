@@ -1,5 +1,6 @@
 [
   { "method": "GET", "path": "/api/base/wilayas/" },
   { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
-  { "method": "GET", "path": "/api/base/delivery-options/", "query": { "commune": 554 } }
+  { "method": "GET", "path": "/api/stores/delivery_price/", "query": { "commune": 554, "delivery_type": 1, "express": "false" } },
+  { "method": "GET", "path": "/api/stores/delivery_price/", "query": { "commune": 554, "delivery_type": 2, "express": "false" } }
 ]

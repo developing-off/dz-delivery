@@ -28,7 +28,7 @@ describe('ZRExpress createParcel', () => {
       { status: 201, body: { id: PARCEL } },
       { status: 200, body: { id: PARCEL, trackingNumber: 'DZ-1', state: { name: 'OrderReceived' } } },
     ]);
-    const parcel = await c.createParcel({ ...baseInput, remark: 'ignored', isStopDesk: false });
+    const parcel = await c.createParcel({ ...baseInput, remark: 'fragile', isStopDesk: false });
 
     expect(parcel).toMatchObject({ id: PARCEL, trackingNumber: 'DZ-1', status: 'pending', provider: 'zrexpress' });
     expect(parcel.raw).toMatchObject({ id: PARCEL });
@@ -36,12 +36,22 @@ describe('ZRExpress createParcel', () => {
     const body = mock.calls[0]!.body as Record<string, any>;
     expect(body.customer.customerId).toMatch(/^[0-9a-f-]{36}$/);
     expect(body.customer.phone).toEqual({ number1: '+213550123456' });
+    expect(body.description).toBe('T-shirt - fragile');
     expect(body.deliveryType).toBe('home');
     expect(body).not.toHaveProperty('hubId');
     expect(body).not.toHaveProperty('externalId');
     expect(body).not.toHaveProperty('weight');
     expect(mock.calls[0]!.headers['x-api-key']).toBe('k');
     expect(mock.calls[0]!.headers['x-tenant']).toBe('t');
+  });
+
+  it('rejects amount above the ZRExpress ceiling before any HTTP call', async () => {
+    const { c, mock } = client([]);
+    await expect(c.createParcel({ ...baseInput, price: 150_001 })).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      details: [{ field: 'price' }],
+    });
+    expect(mock.calls).toHaveLength(0);
   });
 
   it('validates input before any HTTP call', async () => {

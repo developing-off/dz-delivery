@@ -1,0 +1,67 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "11111111-1111-4111-8111-000000000016",
+          "code": 16,
+          "name": "Alger",
+          "level": "wilaya",
+          "parentId": null,
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": true }
+        }
+      ],
+      "hasNext": false
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "22222222-2222-4222-8222-000000016001",
+          "name": "Sidi M'Hamed",
+          "postalCode": "16000",
+          "level": "commune",
+          "parentId": "11111111-1111-4111-8111-000000000016",
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": true }
+        },
+        {
+          "id": "22222222-2222-4222-8222-000000016002",
+          "name": "Bab Ezzouar",
+          "postalCode": "16024",
+          "level": "commune",
+          "parentId": "11111111-1111-4111-8111-000000000016",
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": true }
+        }
+      ],
+      "hasNext": false
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "33333333-3333-4333-8333-000000000001",
+          "name": "Bureau Bab Ezzouar",
+          "type": "stopdesk",
+          "isPickupPoint": true,
+          "address": {
+            "street": "Cité 221 lots",
+            "city": "Alger",
+            "cityTerritoryId": "11111111-1111-4111-8111-000000000016",
+            "district": "Bab Ezzouar",
+            "districtTerritoryId": "22222222-2222-4222-8222-000000016002",
+            "postalCode": "16024"
+          }
+        }
+      ],
+      "hasNext": false
+    }
+  }
+]

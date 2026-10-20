@@ -33,7 +33,7 @@ final class EcotrackProviderTest extends TestCase
     /** @return iterable<string, array{string, string}> every `<method>/<case>` under docs/fixtures/ecotrack */
     public static function fixtureCases(): iterable
     {
-        foreach (glob(self::FIXTURES . '/ecotrack/*/*.expected.json') ?: [] as $file) {
+        foreach (glob(self::fixturesDir() . '/ecotrack/*/*.expected.json') ?: [] as $file) {
             $method = basename(dirname($file));
             $case = basename($file, '.expected.json');
             yield "$method/$case" => [$method, $case];
@@ -44,9 +44,9 @@ final class EcotrackProviderTest extends TestCase
     public function testSharedFixture(string $method, string $case): void
     {
         $base = "ecotrack/$method/$case";
-        $native = is_file(self::FIXTURES . "/$base.native.json") ? self::nativeResponses("$base.native.json") : [];
-        $input = is_file(self::FIXTURES . "/$base.input.json") ? self::fixture("$base.input.json") : [];
-        $config = is_file(self::FIXTURES . "/$base.config.json") ? self::fixture("$base.config.json") : [];
+        $native = is_file(self::fixturesDir() . "/$base.native.json") ? self::nativeResponses("$base.native.json") : [];
+        $input = is_file(self::fixturesDir() . "/$base.input.json") ? self::fixture("$base.input.json") : [];
+        $config = is_file(self::fixturesDir() . "/$base.config.json") ? self::fixture("$base.config.json") : [];
         $expected = self::fixture("$base.expected.json");
         $client = $this->client('ecotrack', $native, $config);
 
@@ -58,7 +58,7 @@ final class EcotrackProviderTest extends TestCase
             $error = $e;
         }
 
-        if (is_file(self::FIXTURES . "/$base.request.json")) {
+        if (is_file(self::fixturesDir() . "/$base.request.json")) {
             $this->assertRequests("$base.request.json");
         } else {
             self::assertCount(0, $this->history);
@@ -100,6 +100,11 @@ final class EcotrackProviderTest extends TestCase
         self::assertSame('https://platform.dhd-dz.com/api/v1/get/wilayas', (string) $this->history[0]['request']->getUri());
         self::assertSame('Bearer t', $this->history[0]['request']->getHeaderLine('Authorization'));
         self::assertSame('https://app.conexlog-dz.com', EcotrackProvider::resolveBaseUrl(null, 'conexlog'));
+        self::assertSame('https://anderson-ecommerce.ecotrack.dz', EcotrackProvider::resolveBaseUrl(null, 'anderson'));
+        self::assertSame('https://anderson-ecommerce.ecotrack.dz', EcotrackProvider::resolveBaseUrl(null, 'andersondelivery'));
+        self::assertSame('https://world-express.ecotrack.dz', EcotrackProvider::resolveBaseUrl(null, 'worldexpress'));
+        self::assertSame('https://48hr.ecotrack.dz', EcotrackProvider::resolveBaseUrl(null, '48hrexpress'));
+        self::assertSame('https://ecorapide-express.ecotrack.dz', EcotrackProvider::resolveBaseUrl(null, 'ecorapid'));
     }
 
     public function testBaseUrlGetsApiPrefixOnce(): void

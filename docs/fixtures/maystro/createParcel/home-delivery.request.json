@@ -8,7 +8,7 @@
   { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
   {
     "method": "POST",
-    "path": "/api/orders",
+    "path": "/api/orders/",
     "headers": { "Authorization": "Token test-api-token" },
     "body": [
       {

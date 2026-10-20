@@ -1,6 +1,7 @@
 [
   { "method": "GET", "path": "/v1/wilayas/" },
-  { "method": "GET", "path": "/v1/communes/" },
+  { "method": "GET", "path": "/v1/communes/", "query": { "wilaya_id": 16 } },
+  { "method": "GET", "path": "/v1/centers/", "query": { "wilaya_id": 16 } },
   {
     "method": "POST",
     "path": "/v1/parcels/",

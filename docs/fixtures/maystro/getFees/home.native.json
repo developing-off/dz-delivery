@@ -2,18 +2,11 @@
   {
     "status": 200,
     "headers": {},
-    "body": [
-      { "type": "home", "name": "Home", "price": 400, "min_total_price": 400, "required_points": 40.0, "current_points": 0.0 },
-      { "type": "stopdesk", "name": "Stop-Desk", "price": 300, "min_total_price": 300, "required_points": 30.0, "current_points": 0.0 },
-      {
-        "type": "pickup",
-        "name": "GSM Test",
-        "price": 300,
-        "min_total_price": 300,
-        "required_points": 30.0,
-        "current_points": 0.0,
-        "pickup_point_id": 7
-      }
-    ]
+    "body": { "delivery_price": 400 }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": { "delivery_price": 300 }
   }
 ]

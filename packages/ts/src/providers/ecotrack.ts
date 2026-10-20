@@ -1,12 +1,11 @@
 /**
  * Ecotrack provider — one implementation for every courier running on the Ecotrack
- * platform (DHD, Conexlog, Anderson, World Express, MSM Go, Packers, ...).
+ * platform (DHD, Anderson, World Express, 48Hr, EcoRapid, Conexlog, …).
  *
- * Built from third-party integration notes on the official Postman collection
- * (docs/vendor/ecotrack/; mapping and assumptions in docs/PROVIDERS.md#ecotrack):
+ * Built from Postman notes + Delivery/Ecotrack.php tenant hosts
+ * (docs/vendor/ecotrack/; mapping in docs/PROVIDERS.md#ecotrack):
  *
- * - Each courier hosts the same API on its own domain (`https://<name>.ecotrack.dz`,
- *   `https://platform.dhd-dz.com`, ...); endpoints live under `/api/v1`.
+ * - Each courier hosts the same API on its own domain; endpoints under `/api/v1`.
  *   Auth header `Authorization: Bearer <token>`.
  * - Single-order endpoints take query parameters, never a JSON body.
  * - Business failures come back as HTTP 200 `{ success: false, error: 1000x }`,
@@ -58,13 +57,18 @@ const NOTIFICATION = 'notification_on_order';
  * Any other tenant works with `baseUrl`.
  */
 export const ECOTRACK_COURIERS: Readonly<Record<string, string>> = {
+  // Hosts confirmed in Delivery/Ecotrack.php EntrepriseName (production tenants).
   dhd: 'https://platform.dhd-dz.com',
+  anderson: 'https://anderson-ecommerce.ecotrack.dz',
+  andersondelivery: 'https://anderson-ecommerce.ecotrack.dz', // alias
+  worldexpress: 'https://world-express.ecotrack.dz',
+  '48hrexpress': 'https://48hr.ecotrack.dz',
+  ecorapid: 'https://ecorapide-express.ecotrack.dz',
+  // Hosts from Ecotrack integration notes (not in Delivery; use baseUrl if wrong).
   conexlog: 'https://app.conexlog-dz.com',
-  andersondelivery: 'https://andersondelivery.ecotrack.dz',
   msmgo: 'https://msmgo.ecotrack.dz',
   packers: 'https://packers.ecotrack.dz',
   rocketdelivery: 'https://rocketdelivery.ecotrack.dz',
-  worldexpress: 'https://worldexpress.ecotrack.dz',
 };
 
 /**
@@ -192,6 +196,27 @@ function entries(value: unknown): unknown[] {
   return isRecord(value) ? Object.values(value) : [];
 }
 
+/**
+ * Tracking from `create/order` — some tenants nest it under `data` / `data.order` / `order`
+ * (see Delivery/Ecotrack.php `extractEcotrackCreateOrderTracking`).
+ */
+function extractCreateOrderTracking(body: unknown): string | undefined {
+  const keys = ['tracking', 'tracking_number', 'tracking_id', 'numero_tracking', 'n_tracking', 'track'];
+  const from = (node: unknown): string | undefined => {
+    if (!isRecord(node)) return undefined;
+    for (const key of keys) {
+      if (hasValue(node[key])) return String(node[key]).trim();
+    }
+    return undefined;
+  };
+  if (!isRecord(body)) return undefined;
+  return (
+    from(body) ??
+    (isRecord(body.data) ? (from(body.data) ?? from(body.data.order)) : undefined) ??
+    from(body.order)
+  );
+}
+
 /** `{ success: false, error, message }` (HTTP 200) → ShippingError. */
 function businessError(body: Record<string, unknown>, httpStatus: number, raw: unknown): ShippingError {
   const nativeCode = hasValue(body.error) && /^\d+$/.test(String(body.error).trim()) ? Number(body.error) : undefined;
@@ -285,11 +310,17 @@ export class EcotrackProvider implements ShippingProvider {
     const res = await this.http.request<unknown>({ method: 'POST', path: '/create/order', query });
     const body = res.body;
     if (isRecord(body) && body.success === false) throw businessError(body, res.status, body);
-    if (!isRecord(body) || !hasValue(body.tracking)) {
+    if (isRecord(body) && body.status === 'error') {
+      throw new ShippingError('PROVIDER_ERROR', str(body.message) || 'Ecotrack rejected the request', {
+        provider: PROVIDER,
+        raw: body,
+        httpStatus: res.status,
+      });
+    }
+    const tracking = extractCreateOrderTracking(body);
+    if (!tracking) {
       throw new ShippingError('PROVIDER_ERROR', 'Ecotrack did not return a tracking number', { provider: PROVIDER, raw: body });
     }
-
-    const tracking = String(body.tracking).trim();
     let status: ParcelStatus = 'pending';
     if (this.autoValidate) {
       await this.validateOrder(tracking);

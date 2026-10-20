@@ -19,7 +19,7 @@ final class MaystroProviderTest extends TestCase
     /** @return iterable<string, array{string, string}> every `<method>/<case>` under docs/fixtures/maystro */
     public static function fixtureCases(): iterable
     {
-        foreach (glob(self::FIXTURES . '/maystro/*/*.expected.json') ?: [] as $file) {
+        foreach (glob(self::fixturesDir() . '/maystro/*/*.expected.json') ?: [] as $file) {
             $method = basename(dirname($file));
             $case = basename($file, '.expected.json');
             yield "$method/$case" => [$method, $case];
@@ -30,8 +30,8 @@ final class MaystroProviderTest extends TestCase
     public function testSharedFixture(string $method, string $case): void
     {
         $base = "maystro/$method/$case";
-        $native = is_file(self::FIXTURES . "/$base.native.json") ? self::nativeResponses("$base.native.json") : [];
-        $input = is_file(self::FIXTURES . "/$base.input.json") ? self::fixture("$base.input.json") : [];
+        $native = is_file(self::fixturesDir() . "/$base.native.json") ? self::nativeResponses("$base.native.json") : [];
+        $input = is_file(self::fixturesDir() . "/$base.input.json") ? self::fixture("$base.input.json") : [];
         $expected = self::fixture("$base.expected.json");
         $client = $this->client('maystro', $native);
 
@@ -43,7 +43,7 @@ final class MaystroProviderTest extends TestCase
             $error = $e;
         }
 
-        if (is_file(self::FIXTURES . "/$base.request.json")) {
+        if (is_file(self::fixturesDir() . "/$base.request.json")) {
             $this->assertRequests("$base.request.json");
         } else {
             self::assertCount(0, $this->history);

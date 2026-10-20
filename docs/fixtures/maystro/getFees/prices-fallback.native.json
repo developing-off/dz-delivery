@@ -1,0 +1,32 @@
+[
+  {
+    "status": 404,
+    "headers": {},
+    "body": { "detail": "Not found" }
+  },
+  {
+    "status": 404,
+    "headers": {},
+    "body": { "detail": "Store not found" }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "delivery_price": 400,
+      "min_total_price": 400,
+      "required_points": 40.0,
+      "current_points": 0.0
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "delivery_price": 300,
+      "min_total_price": 300,
+      "required_points": 30.0,
+      "current_points": 0.0
+    }
+  }
+]

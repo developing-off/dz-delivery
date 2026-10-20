@@ -6,10 +6,10 @@ Unified PHP client for Algerian delivery carriers. Implements the shared contrac
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | MVP (5 operations) |
-| Yalidine | `yalidine` | MVP (5 operations + `getStopDesks`), checked against the developer docs |
+| ZRExpress | `zrexpress` | MVP (all methods including `getStopDesks` via hubs search) |
+| Yalidine | `yalidine` | MVP (all methods), checked against the developer docs |
 | Maystro Delivery | `maystro` | createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
-| Ecotrack (DHD, Conexlog, …) | `ecotrack` | all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
+| Ecotrack (DHD, Anderson, World Express, …) | `ecotrack` | all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
 
 Requires PHP ≥ 8.2 and Guzzle 7.
 
@@ -44,6 +44,7 @@ $client = ClientFactory::create('zrexpress', [
 
 // Yalidine also needs the origin wilaya (for createParcel and getFees):
 // ClientFactory::create('yalidine', ['apiId' => ..., 'apiToken' => ..., 'fromWilayaId' => 16]);
+// GuepEx (same API): add 'baseUrl' => YalidineProvider::GUEPEX_DEFAULT_BASE_URL
 
 // Ecotrack couriers (DHD, Conexlog, ...): token + 'courier' key or the tenant 'baseUrl':
 // ClientFactory::create('ecotrack', ['token' => getenv('ECOTRACK_TOKEN'), 'courier' => 'dhd']);
@@ -76,7 +77,7 @@ try {
     $communes = $client->getCommunes(16);
 
     // Stop desks / pickup points: use $desk->id as 'stopDeskId' with 'isStopDesk' => true.
-    // Yalidine: communeId optional; Maystro: communeId required; ZRExpress: NOT_SUPPORTED.
+    // ZRExpress / Yalidine / Ecotrack: communeId optional; Maystro: communeId required.
     $desks = $client->getStopDesks(['wilayaId' => 16, 'communeId' => 1630]);
 
     // Connectivity / credentials probe (always hits the network)

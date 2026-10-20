@@ -1,0 +1,13 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/stores/delivery_price/",
+    "query": { "commune": 575, "delivery_type": 1, "express": "false" },
+    "headers": { "Authorization": "Token test-api-token" }
+  },
+  {
+    "method": "GET",
+    "path": "/api/stores/delivery_price/",
+    "query": { "commune": 575, "delivery_type": 2, "express": "false" }
+  }
+]

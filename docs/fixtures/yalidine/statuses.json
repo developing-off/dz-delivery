@@ -32,5 +32,6 @@
   "Colis abandonné": "returned",
   "Echange échoué": "returned",
   "Annulé": "cancelled",
+  "Supprimé": "cancelled",
   "Statut inconnu": "unknown"
 }

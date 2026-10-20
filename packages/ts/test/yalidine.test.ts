@@ -101,6 +101,49 @@ describe('Yalidine', () => {
     expect((mock.calls[2]!.body as Record<string, unknown>[])[0]).toMatchObject({ length: 20, width: 0, height: 0, weight: 2 });
   });
 
+  it('aligns stopdesk to_commune_name / to_wilaya_name with the center', async () => {
+    const mock = mockFetch([
+      { status: 200, body: wilayas },
+      { status: 200, body: { has_more: false, data: [{ id: 1601, name: 'Alger Centre', wilaya_id: 16 }] } },
+      {
+        status: 200,
+        body: {
+          has_more: false,
+          data: [
+            {
+              center_id: 163001,
+              name: 'Centre Bab Ezzouar',
+              commune_id: 1630,
+              commune_name: 'Bab Ezzouar',
+              wilaya_id: 16,
+              wilaya_name: 'Alger',
+            },
+          ],
+        },
+      },
+      { status: 200, body: { O1: { success: true, order_id: 'O1', tracking: 'yal-1' } } },
+    ]);
+    const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fromWilayaId: 16, fetch: mock.fetch });
+    await c.createParcel({
+      recipientName: 'Test',
+      phone: '0550123456',
+      address: 'x',
+      wilayaId: 16,
+      communeId: 1601,
+      productName: 'Mug',
+      price: 100,
+      isStopDesk: true,
+      stopDeskId: '163001',
+      orderId: 'O1',
+    });
+    expect((mock.calls[3]!.body as Record<string, unknown>[])[0]).toMatchObject({
+      is_stopdesk: true,
+      stopdesk_id: 163001,
+      to_commune_name: 'Bab Ezzouar',
+      to_wilaya_name: 'Alger',
+    });
+  });
+
   it('reports a refused delete as VALIDATION_ERROR', async () => {
     const mock = mockFetch([{ status: 200, body: [{ tracking: 'yal-1', deleted: false }] }]);
     const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fetch: mock.fetch });

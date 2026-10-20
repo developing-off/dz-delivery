@@ -20,7 +20,7 @@ final class SupportTest extends TestCase
     public static function statuses(): iterable
     {
         foreach (['zrexpress', 'yalidine', 'maystro', 'ecotrack'] as $provider) {
-            $table = json_decode((string) file_get_contents(self::FIXTURES . "/$provider/statuses.json"), true);
+            $table = json_decode((string) file_get_contents(self::fixturesDir() . "/$provider/statuses.json"), true);
             foreach ($table as $native => $unified) {
                 yield "$provider: '$native'" => [$provider, (string) $native, $unified];
             }
