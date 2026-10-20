@@ -369,13 +369,117 @@
     .tab-panel pre {
       background: #1c2328;
       color: #e6ebe8;
-      min-height: 16.5rem;
+      min-height: 12rem;
     }
     .c-key { color: #8fb9a4; }
     .c-str { color: #d4b483; }
     .c-num { color: #9db4d0; }
     .c-cmt { color: #7a858c; }
     .c-fn { color: #c9d4cf; }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .callout {
+      margin: 0 0 1.5rem;
+      padding: 0.9rem 1rem;
+      border-left: 3px solid var(--accent);
+      background: #e9f0ea;
+      color: var(--ink-soft);
+      font-size: 0.98rem;
+    }
+    .callout strong { color: var(--ink); font-weight: 600; }
+
+    .doc-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--bg-elev);
+      box-shadow: var(--shadow);
+    }
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    .doc-table th,
+    .doc-table td {
+      padding: 0.7rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    .doc-table th {
+      font-family: var(--font-display);
+      font-weight: 650;
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #fafbf8;
+      white-space: nowrap;
+    }
+    .doc-table tr:last-child td { border-bottom: none; }
+    .doc-table td.ok { color: var(--accent-ink); font-weight: 600; }
+    .doc-table td.no { color: var(--muted); }
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.82em;
+      background: var(--code-bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+
+    .steps {
+      list-style: none;
+      margin: 0 0 2rem;
+      padding: 0;
+      display: grid;
+      gap: 0.85rem;
+    }
+    .steps li {
+      display: grid;
+      grid-template-columns: 1.75rem 1fr;
+      gap: 0.85rem;
+      align-items: start;
+    }
+    .steps .n {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-ink);
+      font-weight: 500;
+      line-height: 1.55;
+    }
+    .steps p { margin: 0; color: var(--ink-soft); }
+    .steps strong { color: var(--ink); font-weight: 600; }
+
+    .doc-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .doc-links a {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 0.85rem;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 0.92rem;
+      box-shadow: var(--shadow);
+    }
+    .doc-links a:hover {
+      border-color: var(--ink-soft);
+      color: var(--accent-ink);
+    }
 
     /* —— Foot —— */
     footer {
@@ -424,8 +528,9 @@
     <header class="nav">
       <a class="nav-brand" href="./">dz-delivery</a>
       <nav class="nav-links" aria-label="Principal">
-        <a class="hide-sm" href="#api">API</a>
         <a class="hide-sm" href="#install">Installer</a>
+        <a class="hide-sm" href="#usage">Usage</a>
+        <a class="hide-sm" href="#matrix">Support</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
       </nav>
     </header>
@@ -447,7 +552,7 @@
         </p>
         <div class="hero-ctas">
           <a class="btn btn-primary" href="#install">Installer</a>
-          <a class="btn btn-ghost" href="https://github.com/developing-off/dz-delivery">Voir le dépôt</a>
+          <a class="btn btn-ghost" href="#usage">Voir l’usage</a>
         </div>
       </section>
 
@@ -528,12 +633,12 @@
           </div>
         </div>
 
-        <div class="panel code-block">
-          <div class="tabs" role="tablist" aria-label="Langage">
-            <button type="button" class="tab" role="tab" id="tab-ts" aria-controls="panel-ts" aria-selected="true">TypeScript</button>
-            <button type="button" class="tab" role="tab" id="tab-php" aria-controls="panel-php" aria-selected="false">PHP</button>
+        <div class="panel code-block" data-tabs>
+          <div class="tabs" role="tablist" aria-label="Créer un colis">
+            <button type="button" class="tab" role="tab" aria-controls="panel-create-ts" aria-selected="true">TypeScript</button>
+            <button type="button" class="tab" role="tab" aria-controls="panel-create-php" aria-selected="false">PHP</button>
           </div>
-          <div class="tab-panel" role="tabpanel" id="panel-ts" aria-labelledby="tab-ts">
+          <div class="tab-panel" role="tabpanel" id="panel-create-ts">
             <pre><span class="c-cmt">import { createClient } from '@dz-delivery/core';</span>
 
 <span class="c-key">const</span> shipping = <span class="c-fn">createClient</span>(<span class="c-str">'zrexpress'</span>, {
@@ -549,9 +654,10 @@
   communeName: <span class="c-str">'Alger Centre'</span>,
   productName: <span class="c-str">'T-shirt'</span>,
   price: <span class="c-num">2500</span>,
-});</pre>
+});
+<span class="c-cmt">// parcel.trackingNumber · parcel.status · parcel.id</span></pre>
           </div>
-          <div class="tab-panel" role="tabpanel" id="panel-php" aria-labelledby="tab-php" hidden>
+          <div class="tab-panel" role="tabpanel" id="panel-create-php" hidden>
             <pre><span class="c-cmt">use DzDelivery\ClientFactory;</span>
 
 $shipping = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [
@@ -567,9 +673,342 @@ $parcel = $shipping-><span class="c-fn">createParcel</span>([
     <span class="c-str">'communeName'</span>   => <span class="c-str">'Alger Centre'</span>,
     <span class="c-str">'productName'</span>   => <span class="c-str">'T-shirt'</span>,
     <span class="c-str">'price'</span>         => <span class="c-num">2500</span>,
+]);
+<span class="c-cmt">// $parcel->trackingNumber · $parcel->status</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="usage" aria-labelledby="usage-title">
+        <p class="section-kicker">Guide rapide</p>
+        <h2 class="section-title" id="usage-title">Comment bien l’utiliser</h2>
+        <p class="section-desc">
+          Le flux type d’une boutique : configurer le client, résoudre les lieux, coter, créer, suivre.
+        </p>
+
+        <ol class="steps">
+          <li>
+            <span class="n">1</span>
+            <p><strong>Un client par transporteur.</strong> Passe les credentials du compte marchand. Options communes : <span class="mono">timeoutMs</span>, <span class="mono">includeRaw</span>, <span class="mono">baseUrl</span>.</p>
+          </li>
+          <li>
+            <span class="n">2</span>
+            <p><strong>Wilaya / commune.</strong> Tu peux envoyer le code officiel <span class="mono">1–58</span>, un id transporteur, ou un nom. Le SDK résout avant l’appel HTTP.</p>
+          </li>
+          <li>
+            <span class="n">3</span>
+            <p><strong>Stop desk.</strong> Liste avec <span class="mono">getStopDesks</span>, puis <span class="mono">isStopDesk: true</span> + <span class="mono">stopDeskId</span> (l’<span class="mono">id</span> renvoyé).</p>
+          </li>
+          <li>
+            <span class="n">4</span>
+            <p><strong>Stocke le tracking.</strong> Garde <span class="mono">trackingNumber</span> (et <span class="mono">id</span> si besoin d’annuler chez ZRExpress).</p>
+          </li>
+          <li>
+            <span class="n">5</span>
+            <p><strong>Attrape <span class="mono">ShippingError</span>.</strong> Codes unifiés : auth, validation, not found, rate limit, not supported…</p>
+          </li>
+        </ol>
+
+        <p class="callout">
+          <strong>Yalidine / GuepEx</strong> exigent une wilaya d’origine : <span class="mono">fromWilayaId</span> (ou <span class="mono">fromWilayaName</span>) au client.
+          <strong>Maystro</strong> : pas de <span class="mono">track</span> / <span class="mono">cancelParcel</span> (webhooks). <strong>Ecotrack</strong> : <span class="mono">courier</span> ou <span class="mono">baseUrl</span> HTTPS.
+        </p>
+
+        <h3 class="section-title" style="font-size:1.25rem;margin-top:2rem">Credentials par transporteur</h3>
+        <div class="doc-table-wrap" style="margin-bottom:2rem">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Clé</th>
+                <th>Config</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>zrexpress</code></td>
+                <td><code>apiKey</code>, <code>tenant</code></td>
+                <td>Headers <code>X-Api-Key</code> / <code>X-Tenant</code></td>
+              </tr>
+              <tr>
+                <td><code>yalidine</code></td>
+                <td><code>apiId</code>, <code>apiToken</code>, <code>fromWilayaId</code></td>
+                <td>GuepEx : même provider + <code>baseUrl</code> GuepEx</td>
+              </tr>
+              <tr>
+                <td><code>maystro</code></td>
+                <td><code>apiToken</code></td>
+                <td><code>Authorization: Token …</code></td>
+              </tr>
+              <tr>
+                <td><code>ecotrack</code></td>
+                <td><code>token</code> + <code>courier</code> ou <code>baseUrl</code></td>
+                <td>ex. <code>dhd</code>, <code>anderson</code>, <code>worldexpress</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel code-block" data-tabs>
+          <div class="tabs" role="tablist" aria-label="Configurer les clients">
+            <button type="button" class="tab" role="tab" aria-controls="panel-clients-ts" aria-selected="true">TypeScript</button>
+            <button type="button" class="tab" role="tab" aria-controls="panel-clients-php" aria-selected="false">PHP</button>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-clients-ts">
+            <pre><span class="c-cmt">import { createClient, GUEPEX_DEFAULT_BASE_URL } from '@dz-delivery/core';</span>
+
+<span class="c-key">const</span> zr = <span class="c-fn">createClient</span>(<span class="c-str">'zrexpress'</span>, {
+  apiKey: process.env.ZREXPRESS_API_KEY!,
+  tenant: process.env.ZREXPRESS_TENANT!,
+});
+
+<span class="c-key">const</span> yalidine = <span class="c-fn">createClient</span>(<span class="c-str">'yalidine'</span>, {
+  apiId: process.env.YALIDINE_API_ID!,
+  apiToken: process.env.YALIDINE_API_TOKEN!,
+  fromWilayaId: <span class="c-num">16</span>,
+});
+
+<span class="c-cmt">// GuepEx = même API Yalidine, autre host</span>
+<span class="c-key">const</span> guepex = <span class="c-fn">createClient</span>(<span class="c-str">'yalidine'</span>, {
+  apiId: process.env.GUEPEX_API_ID!,
+  apiToken: process.env.GUEPEX_API_TOKEN!,
+  fromWilayaId: <span class="c-num">16</span>,
+  baseUrl: GUEPEX_DEFAULT_BASE_URL,
+});
+
+<span class="c-key">const</span> maystro = <span class="c-fn">createClient</span>(<span class="c-str">'maystro'</span>, {
+  apiToken: process.env.MAYSTRO_API_TOKEN!,
+});
+
+<span class="c-key">const</span> dhd = <span class="c-fn">createClient</span>(<span class="c-str">'ecotrack'</span>, {
+  token: process.env.ECOTRACK_TOKEN!,
+  courier: <span class="c-str">'dhd'</span>,
+  <span class="c-cmt">// autoValidate: true,</span>
+});</pre>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-clients-php" hidden>
+            <pre><span class="c-cmt">use DzDelivery\ClientFactory;
+use DzDelivery\Providers\YalidineProvider;</span>
+
+$zr = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [
+    <span class="c-str">'apiKey'</span> => getenv(<span class="c-str">'ZREXPRESS_API_KEY'</span>),
+    <span class="c-str">'tenant'</span> => getenv(<span class="c-str">'ZREXPRESS_TENANT'</span>),
+]);
+
+$yalidine = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'yalidine'</span>, [
+    <span class="c-str">'apiId'</span> => getenv(<span class="c-str">'YALIDINE_API_ID'</span>),
+    <span class="c-str">'apiToken'</span> => getenv(<span class="c-str">'YALIDINE_API_TOKEN'</span>),
+    <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
+]);
+
+$guepex = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'yalidine'</span>, [
+    <span class="c-str">'apiId'</span> => getenv(<span class="c-str">'GUEPEX_API_ID'</span>),
+    <span class="c-str">'apiToken'</span> => getenv(<span class="c-str">'GUEPEX_API_TOKEN'</span>),
+    <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
+    <span class="c-str">'baseUrl'</span> => YalidineProvider::GUEPEX_DEFAULT_BASE_URL,
+]);
+
+$maystro = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'maystro'</span>, [
+    <span class="c-str">'apiToken'</span> => getenv(<span class="c-str">'MAYSTRO_API_TOKEN'</span>),
+]);
+
+$dhd = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'ecotrack'</span>, [
+    <span class="c-str">'token'</span> => getenv(<span class="c-str">'ECOTRACK_TOKEN'</span>),
+    <span class="c-str">'courier'</span> => <span class="c-str">'dhd'</span>,
 ]);</pre>
           </div>
         </div>
+
+        <h3 class="section-title" style="font-size:1.25rem;margin-top:2.5rem">Tarifs, stop desks, suivi</h3>
+        <p class="section-desc" style="margin-bottom:1rem">
+          Même surface pour tous les providers supportés.
+        </p>
+        <div class="panel code-block" data-tabs>
+          <div class="tabs" role="tablist" aria-label="Opérations courantes">
+            <button type="button" class="tab" role="tab" aria-controls="panel-ops-ts" aria-selected="true">TypeScript</button>
+            <button type="button" class="tab" role="tab" aria-controls="panel-ops-php" aria-selected="false">PHP</button>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-ops-ts">
+            <pre><span class="c-cmt">// Lieux (mis en cache sur le client)</span>
+<span class="c-key">const</span> wilayas = <span class="c-key">await</span> shipping.<span class="c-fn">getWilayas</span>();
+<span class="c-key">const</span> communes = <span class="c-key">await</span> shipping.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+
+<span class="c-cmt">// Tarifs — Yalidine utilise fromWilayaId du client</span>
+<span class="c-key">const</span> quote = <span class="c-key">await</span> shipping.<span class="c-fn">getFees</span>({
+  toWilayaId: <span class="c-num">16</span>,
+  toCommuneId: <span class="c-str">'1630'</span>, <span class="c-cmt">// recommandé Maystro / Yalidine</span>
+  isStopDesk: <span class="c-key">false</span>,
+});
+
+<span class="c-cmt">// Points relais — Maystro : communeId obligatoire</span>
+<span class="c-key">const</span> desks = <span class="c-key">await</span> shipping.<span class="c-fn">getStopDesks</span>({
+  wilayaId: <span class="c-num">16</span>,
+  communeId: <span class="c-str">'1630'</span>,
+});
+
+<span class="c-key">const</span> stopDeskParcel = <span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>({
+  <span class="c-cmt">/* … champs obligatoires … */</span>
+  isStopDesk: <span class="c-key">true</span>,
+  stopDeskId: desks[<span class="c-num">0</span>].id,
+});
+
+<span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> shipping.<span class="c-fn">track</span>(stopDeskParcel.trackingNumber);
+<span class="c-key">await</span> shipping.<span class="c-fn">cancelParcel</span>(stopDeskParcel.trackingNumber);
+
+<span class="c-key">await</span> shipping.<span class="c-fn">healthCheck</span>(); <span class="c-cmt">// { ok, provider, latencyMs }</span></pre>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-ops-php" hidden>
+            <pre>$wilayas = $shipping-><span class="c-fn">getWilayas</span>();
+$communes = $shipping-><span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+
+$quote = $shipping-><span class="c-fn">getFees</span>([
+    <span class="c-str">'toWilayaId'</span>  => <span class="c-num">16</span>,
+    <span class="c-str">'toCommuneId'</span> => <span class="c-num">1630</span>,
+    <span class="c-str">'isStopDesk'</span>  => <span class="c-key">false</span>,
+]);
+
+$desks = $shipping-><span class="c-fn">getStopDesks</span>([
+    <span class="c-str">'wilayaId'</span>  => <span class="c-num">16</span>,
+    <span class="c-str">'communeId'</span> => <span class="c-num">1630</span>,
+]);
+
+$parcel = $shipping-><span class="c-fn">createParcel</span>([
+    <span class="c-cmt">/* … */</span>
+    <span class="c-str">'isStopDesk'</span> => <span class="c-key">true</span>,
+    <span class="c-str">'stopDeskId'</span> => $desks[<span class="c-num">0</span>]->id,
+]);
+
+$result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);
+$shipping-><span class="c-fn">cancelParcel</span>($parcel->trackingNumber);
+$health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
+          </div>
+        </div>
+
+        <h3 class="section-title" style="font-size:1.25rem;margin-top:2.5rem">Erreurs</h3>
+        <p class="section-desc">
+          Toute échec lève <span class="mono">ShippingError</span> (TS : <span class="mono">isShippingError</span>). Ne catch pas les erreurs génériques sans lire <span class="mono">code</span>.
+        </p>
+        <div class="panel code-block" data-tabs style="margin-bottom:1.5rem">
+          <div class="tabs" role="tablist" aria-label="Gestion des erreurs">
+            <button type="button" class="tab" role="tab" aria-controls="panel-err-ts" aria-selected="true">TypeScript</button>
+            <button type="button" class="tab" role="tab" aria-controls="panel-err-php" aria-selected="false">PHP</button>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-err-ts">
+            <pre><span class="c-cmt">import { isShippingError } from '@dz-delivery/core';</span>
+
+<span class="c-key">try</span> {
+  <span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>(input);
+} <span class="c-key">catch</span> (err) {
+  <span class="c-key">if</span> (<span class="c-fn">isShippingError</span>(err)) {
+    <span class="c-cmt">// AUTH_FAILED | VALIDATION_ERROR | NOT_FOUND | RATE_LIMITED</span>
+    <span class="c-cmt">// NOT_SUPPORTED | PROVIDER_ERROR | NETWORK_ERROR | UNKNOWN</span>
+    console.error(err.code, err.message, err.httpStatus, err.details);
+    <span class="c-key">if</span> (err.code === <span class="c-str">'RATE_LIMITED'</span> && err.retryAfter) {
+      <span class="c-cmt">// attendre retryAfter secondes</span>
+    }
+  }
+  <span class="c-key">throw</span> err;
+}</pre>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-err-php" hidden>
+            <pre><span class="c-cmt">use DzDelivery\Errors\ShippingError;</span>
+
+<span class="c-key">try</span> {
+    $shipping-><span class="c-fn">createParcel</span>($input);
+} <span class="c-key">catch</span> (ShippingError $e) {
+    <span class="c-cmt">// $e->code · $e->httpStatus · $e->details · $e->retryAfter</span>
+    echo $e->code . <span class="c-str">': '</span> . $e-><span class="c-fn">getMessage</span>();
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="matrix" aria-labelledby="matrix-title">
+        <p class="section-kicker">Compatibilité</p>
+        <h2 class="section-title" id="matrix-title">Ce que chaque transporteur expose</h2>
+        <p class="section-desc">
+          <span class="mono">NOT_SUPPORTED</span> = l’opération n’existe pas chez le carrier (pas un bug SDK).
+        </p>
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Méthode</th>
+                <th>ZRExpress</th>
+                <th>Yalidine</th>
+                <th>Maystro</th>
+                <th>Ecotrack</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>createParcel</code></td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+              </tr>
+              <tr>
+                <td><code>track</code></td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="no">webhooks</td>
+                <td class="ok">oui</td>
+              </tr>
+              <tr>
+                <td><code>getFees</code></td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+              </tr>
+              <tr>
+                <td><code>getWilayas</code> / <code>getCommunes</code></td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+              </tr>
+              <tr>
+                <td><code>getStopDesks</code></td>
+                <td class="ok">hubs</td>
+                <td class="ok">centers</td>
+                <td class="ok">communeId requis</td>
+                <td class="ok">oui</td>
+              </tr>
+              <tr>
+                <td><code>cancelParcel</code></td>
+                <td class="ok">oui</td>
+                <td class="ok">si En prép.</td>
+                <td class="no">non</td>
+                <td class="ok">si non validé</td>
+              </tr>
+              <tr>
+                <td><code>healthCheck</code></td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+                <td class="ok">oui</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="docs" aria-labelledby="docs-title">
+        <p class="section-kicker">Documentation</p>
+        <h2 class="section-title" id="docs-title">Aller plus loin</h2>
+        <p class="section-desc">
+          Le détail des champs, statuts et mappings natifs est dans le dépôt.
+        </p>
+        <ul class="doc-links">
+          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat unifié</a></li>
+          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">Mapping providers</a></li>
+          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">Guide PHP complet</a></li>
+          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/packages/ts/README.md">README TypeScript</a></li>
+          <li><a href="https://www.npmjs.com/package/@dz-delivery/core">npm · @dz-delivery/core</a></li>
+          <li><a href="https://packagist.org/packages/dz-delivery/sdk">Packagist · dz-delivery/sdk</a></li>
+        </ul>
       </section>
     </main>
 
@@ -589,15 +1028,16 @@ $parcel = $shipping-><span class="c-fn">createParcel</span>([
 
   <script>
     (function () {
-      var tabs = document.querySelectorAll(".tab");
-      tabs.forEach(function (tab) {
-        tab.addEventListener("click", function () {
-          var selected = tab.getAttribute("aria-controls");
-          tabs.forEach(function (t) {
-            var on = t === tab;
-            t.setAttribute("aria-selected", on ? "true" : "false");
-            var panel = document.getElementById(t.getAttribute("aria-controls"));
-            if (panel) panel.hidden = !on;
+      document.querySelectorAll("[data-tabs]").forEach(function (group) {
+        var tabs = group.querySelectorAll(".tab");
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            tabs.forEach(function (t) {
+              var on = t === tab;
+              t.setAttribute("aria-selected", on ? "true" : "false");
+              var panel = document.getElementById(t.getAttribute("aria-controls"));
+              if (panel) panel.hidden = !on;
+            });
           });
         });
       });
