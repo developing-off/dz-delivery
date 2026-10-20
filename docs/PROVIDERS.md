@@ -14,32 +14,41 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 
 ## ZRExpress
 
-- Docs: <https://docs.zrexpress.app/reference>
+Official docs (source of truth for native paths):
+
+| | URL |
+|--|-----|
+| API reference index | <https://docs.zrexpress.app/reference> |
+| Guides (auth, webhooks, search body) | <https://docs.zrexpress.app/docs> · [Authentication](https://docs.zrexpress.app/docs/authentication) · [How to use search endpoints](https://docs.zrexpress.app/docs) |
+| Machine-readable index | <https://docs.zrexpress.app/llms.txt> |
+
 - Base URL: `https://api.zrexpress.app`
-- API version: path segment `/api/v1/...` (the docs also show `v1.0`; use `v1`).
+- API version: path segment `/api/v1/...` (OpenAPI uses `/api/v{version}/…` with default `1`).
 
 ### Auth
 
-Every request sends:
+Every request sends ([Authentication guide](https://docs.zrexpress.app/docs/authentication)):
 
 | Header | Value | Config key |
 |--------|-------|------------|
-| `X-Api-Key` | API key | `apiKey` (`ZREXPRESS_API_KEY`) |
+| `X-Api-Key` | Secret API key from the portal | `apiKey` (`ZREXPRESS_API_KEY`) |
 | `X-Tenant` | Tenant ID | `tenant` (`ZREXPRESS_TENANT`) |
 | `Accept` / `Content-Type` | `application/json` | — |
 
 ### Method mapping
 
-| Unified method | Native endpoint | Notes |
-|----------------|-----------------|-------|
-| `createParcel` | `POST /api/v1/parcels` | Returns `201 { id }` only → follow up with `GET /api/v1/parcels/{id}` to fill `trackingNumber` and `status`. |
-| `track` | `GET /api/v1/parcels/{trackingNumber}` + `GET /api/v1/parcels/{parcelId}/state-history` | First call gives the current parcel and its UUID `id`; second gives the event list. |
-| `getFees` | `GET /api/v1/delivery-pricing/rates/{toTerritoryId}` | Also available: `GET /api/v1/delivery-pricing/rates` (all territories). Pick the `deliveryPrices[]` entry matching `deliveryType` (`home` / `pickup-point`). |
-| `getWilayas` | `POST /api/v1/territories/search` | Filter `level = "wilaya"`. Paginated (`pageSize` ≤ 1000); loop over pages while `hasNext`. Body: `{ pageNumber, pageSize, orderBy: ["code asc"], advancedFilter: { logic: "and", filters: [{ field, operator: "eq", value }] } }`. Territories whose `delivery.hasHomeDelivery` and `delivery.hasPickupPoint` are both `false` are skipped. |
-| `getCommunes` | `POST /api/v1/territories/search` | Filter `level = "commune"` and `parentId = <wilaya id>`. |
-| `getStopDesks` | — | `NOT_SUPPORTED`: no hub listing endpoint documented yet. Pass the hub UUID as `stopDeskId` yourself. |
-| `cancelParcel` | `DELETE /api/v1/parcels/{id}` | Requires the parcel **UUID**. If given a tracking number, resolve it first with `GET /api/v1/parcels/{trackingNumber}`. Returns `204`. |
-| `healthCheck` | `POST /api/v1/territories/search` (wilayas) | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
+| Unified method | Native endpoint | Official doc | Notes |
+|----------------|-----------------|--------------|-------|
+| `createParcel` | `POST /api/v1/parcels` | [Creates a parcel](https://docs.zrexpress.app/reference/createparcelendpoint) | Returns `201 { id }` only → follow up with [get by id](https://docs.zrexpress.app/reference/getparcelbyidsupplierendpoint) to fill `trackingNumber` and `status`. `StockType`: `local` \| `warehouse` \| `none` (we use `none` in MVP). `DeliveryType`: `home` \| `pickup-point`. |
+| `track` | `GET …/parcels/by-tracking-number/{trackingNumber}` + state-history | [Get by trackingNumber](https://docs.zrexpress.app/reference/getparcelbytrackingnumbersupplierendpoint) · [State history](https://docs.zrexpress.app/reference/getparcelstatehistorysupplierendpoint) | First call gives the current parcel and its UUID `id`; second gives the event list. Prefer webhooks over polling when possible ([Webhooks vs Polling](https://docs.zrexpress.app/docs/webhooks-vs-polling-a-comparison)). |
+| `getFees` | `GET /api/v1/delivery-pricing/rates/{toTerritoryId}` | [Rate for a territory](https://docs.zrexpress.app/reference/getrateendpoint) · [All rates](https://docs.zrexpress.app/reference/getallratesendpoint) | Pick the `deliveryPrices[]` entry matching `deliveryType` (`home` / `pickup-point`). Supplier-specific prices override price-list prices. |
+| `getWilayas` | `POST /api/v1/territories/search` | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Filter `level = "wilaya"`. Paginated (`pageSize` ≤ 1000); loop while `hasNext`. Body shape: see [search endpoints guide](https://docs.zrexpress.app/docs). Territories with both `delivery.hasHomeDelivery` and `delivery.hasPickupPoint` false are skipped. |
+| `getCommunes` | `POST /api/v1/territories/search` | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Filter `level = "commune"` and `parentId = <wilaya id>`. |
+| `getStopDesks` | `POST /api/v1/hubs/search` | [Search hubs](https://docs.zrexpress.app/reference/searchhubsendpoint) · [Get hub by id](https://docs.zrexpress.app/reference/gethubendpoint) | **SDK status: `NOT_SUPPORTED` (not wired yet).** Native API exists: filter e.g. `isPickupPoint = true` and `address.cityTerritoryId` / `address.districtTerritoryId`. Hub `id` → `StopDesk.id` / `ParcelInput.stopDeskId` (`hubId` on create). Until implemented, pass the hub UUID from the ZRExpress dashboard. |
+| `cancelParcel` | `DELETE /api/v1/parcels/{id}` | [Delete a parcel](https://docs.zrexpress.app/reference/deleteparcelendpoint) | Requires the parcel **UUID**. If given a tracking number, resolve it first. |
+| `healthCheck` | `POST /api/v1/territories/search` (wilayas) | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
+
+**Out of MVP** (documented natively, not on `ShippingProvider`): catalog ([create product](https://docs.zrexpress.app/reference/createproductendpoint), categories, stock), bulk parcels, exchanges/refunds, labels, pickup bags, claims, treasury, [webhooks](https://docs.zrexpress.app/docs/webhooks). See `CONTRACT.md` §7.
 
 ### `ParcelInput` → `POST /parcels` body
 

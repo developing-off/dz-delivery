@@ -336,7 +336,7 @@ Carrier differences:
 
 - **Yalidine**: Yalidine "centers". `communeId` is an optional filter.
 - **Maystro**: `communeId` is required. The commune's own Maystro stop desk has the **commune id** as its `id`; partner pickup points have their pickup-point id.
-- **ZRExpress**: `NOT_SUPPORTED` (no documented listing endpoint). Pass the hub UUID yourself as `stopDeskId`.
+- **ZRExpress**: `NOT_SUPPORTED` in the SDK for now. The native API documents [`POST /api/v1/hubs/search`](https://docs.zrexpress.app/reference/searchhubsendpoint) — not wired yet. Pass the hub UUID from the dashboard as `stopDeskId` (see [ZRExpress mapping](./PROVIDERS.md#zrexpress)).
 
 ### 3.7 `cancelParcel(string $trackingNumberOrId): void`
 

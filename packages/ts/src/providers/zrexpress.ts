@@ -288,7 +288,11 @@ export class ZRExpressProvider implements ShippingProvider {
     return cached;
   }
 
-  /** Not available yet: the ZRExpress hub listing endpoint is not documented. Pass the hub UUID as `stopDeskId`. */
+  /**
+   * Official listing: `POST /api/v1/hubs/search`
+   * (https://docs.zrexpress.app/reference/searchhubsendpoint) — not wired in the SDK yet.
+   * Pass the hub UUID from the dashboard as `stopDeskId`.
+   */
   async getStopDesks(_query: StopDeskQuery): Promise<StopDesk[]> {
     throw new ShippingError(
       'NOT_SUPPORTED',

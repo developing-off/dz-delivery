@@ -246,7 +246,11 @@ final class ZRExpressProvider implements ShippingProviderInterface
         return $this->communesOf($this->resolveWilayaId($wilayaId, false));
     }
 
-    /** Not available yet: the ZRExpress hub listing endpoint is not documented. Pass the hub UUID as `stopDeskId`. */
+    /**
+     * Official listing: POST /api/v1/hubs/search
+     * (https://docs.zrexpress.app/reference/searchhubsendpoint) — not wired in the SDK yet.
+     * Pass the hub UUID from the dashboard as `stopDeskId`.
+     */
     public function getStopDesks(StopDeskQuery|array $query): array
     {
         throw ShippingError::notSupported('ZRExpress hub listing is not supported yet; pass the hub UUID as stopDeskId', self::NAME);
