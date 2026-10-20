@@ -1,0 +1,49 @@
+# Trusted Publisher (OIDC) — configure on npmjs.com:
+#   Organization or user: developing-off
+#   Repository:           dz-delivery
+#   Workflow filename:    publish.yml
+#   Allowed actions:      allow npm publish (+ dist-tag if desired)
+#
+# Requires npm CLI >= 11.5.1 and Node >= 22.14.
+# First successful publish must happen within 2 days of creating the connection.
+
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required for OIDC → npm
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/ts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+          # never cache in release builds (npm trusted-publisher guidance)
+          package-manager-cache: false
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # OIDC auth — no NPM_TOKEN. Provenance is generated automatically.
+      - name: Publish to npm
+        run: npm publish --access public
