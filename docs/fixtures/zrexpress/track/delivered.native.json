@@ -1,0 +1,36 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "id": "8c1a4c53-0000-4000-8000-00000000a001",
+      "trackingNumber": "DZ-AL-20251121-00145",
+      "state": { "name": "Delivered", "description": "Livré" }
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "createdAt": "2025-11-22T09:00:00Z",
+        "oldState": { "name": "ReadyToDispatch" },
+        "newState": { "name": "OutForDelivery", "description": "En cours de livraison" }
+      },
+      {
+        "createdAt": "2025-11-21T10:00:00+00:00",
+        "newState": { "name": "commande_recue", "description": "Commande reçue" }
+      },
+      {
+        "createdAt": "2025-11-21T14:30:00+00:00",
+        "oldState": { "name": "commande_recue" },
+        "newState": { "name": "pret_a_expedier", "description": "Prêt à expédier" }
+      },
+      {
+        "createdAt": "2025-11-23T15:23:54+00:00",
+        "oldState": { "name": "OutForDelivery" },
+        "newState": { "name": "Delivered" }
+      }
+    ]
+  }
+]

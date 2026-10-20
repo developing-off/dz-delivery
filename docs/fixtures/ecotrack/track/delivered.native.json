@@ -1,0 +1,23 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "recipientName": "Test Client",
+      "shippedBy": "Test Shop",
+      "originCity": 16,
+      "destLocationCity": 16,
+      "currentStation": "Station Test",
+      "activity": [
+        { "date": "2025-10-18", "time": "09:00:00", "status": "order_information_received_by_carrier", "station": "", "scanLocation": "HUB" },
+        { "date": "2025-10-18", "time": "10:15:00", "status": "notification_on_order" },
+        { "date": "2025-10-19", "time": "08:30:12", "status": "picked" },
+        { "date": "2025-10-19", "time": "14:02:00", "status": "accepted_by_carrier" },
+        { "date": "2025-10-20", "time": "09:10:00", "status": "dispatched_to_driver", "scanLocation": "HUB" },
+        { "date": "2025-10-20", "time": "16:20:00", "status": "livred" },
+        { "date": "2025-10-20", "time": "11:45:00", "status": "attempt_delivery", "reason": "Client ne répond pas" }
+      ],
+      "reasons": []
+    }
+  }
+]

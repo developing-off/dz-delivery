@@ -1,0 +1,4 @@
+[
+  { "method": "GET", "path": "/api/v1/get/communes", "query": { "wilaya_id": 16 } },
+  { "method": "POST", "path": "/api/v1/create/order", "query": { "code_wilaya": 16 } }
+]

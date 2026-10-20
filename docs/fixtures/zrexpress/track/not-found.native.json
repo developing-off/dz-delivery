@@ -1,0 +1,13 @@
+[
+  {
+    "status": 404,
+    "headers": { "content-type": "application/problem+json" },
+    "body": {
+      "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+      "title": "Parcels.NotFound",
+      "status": 404,
+      "detail": "The parcel with the identifier DZ-AL-00000000-00000 was not found",
+      "traceId": "00-00000000000000000000000000000000-0000000000000000-01"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "recipientName": "Test Client",
+  "phone": "+213 666 55 44 33",
+  "phone2": "0770 00 00 00",
+  "address": "Cité de test, bloc A",
+  "wilayaId": 16,
+  "communeName": "alger centre",
+  "productList": [
+    { "name": "Mug", "quantity": 2, "sku": "MUG-001" },
+    { "name": "T-shirt", "quantity": 1 }
+  ],
+  "price": 2800,
+  "remark": "Appeler avant",
+  "orderId": "ORDER-3001"
+}

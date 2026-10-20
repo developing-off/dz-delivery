@@ -1,0 +1,14 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "0": { "nom": "Bab Ezzouar", "wilaya_id": 16, "code_postal": "1625", "has_stop_desk": 1 }
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": { "success": false, "error": 10002, "message": "Pas de livraison pour la wilaya sélectionnée" }
+  }
+]

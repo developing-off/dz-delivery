@@ -1,0 +1,50 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "id": "8c1a4c53-0000-4000-8000-000000000001",
+      "trackingNumber": "DZ-AL-20251121-00145",
+      "amount": 2500,
+      "state": {
+        "id": "95bc5a68-0000-4000-8000-000000000001",
+        "name": "sortie_en_livraison",
+        "description": "Sortie en livraison"
+      },
+      "lastStateUpdateAt": "2025-12-30T13:24:34.4697455+00:00"
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": "f940228b-0000-4000-8000-000000000002",
+        "createdAt": "2025-12-23T15:24:50.0209172+00:00",
+        "previousState": { "name": "commande_recue", "description": "Commande reçue" },
+        "newState": { "name": "pret_a_expedier", "description": "Prêt à expédier" },
+        "situations": []
+      },
+      {
+        "id": "b6762c5e-0000-4000-8000-000000000001",
+        "createdAt": "2025-12-23T15:23:54.2173951+00:00",
+        "newState": { "name": "commande_recue", "description": "Commande reçue" },
+        "situations": []
+      },
+      {
+        "id": "cf3f9fd7-0000-4000-8000-000000000003",
+        "createdAt": "2025-12-23T15:34:05.7191354+00:00",
+        "previousState": { "name": "pret_a_expedier", "description": "Prêt à expédier" },
+        "newState": { "name": "vers_wilaya", "description": "Dispatch dans une autre wilaya" },
+        "situations": []
+      },
+      {
+        "id": "6e7b5adb-0000-4000-8000-000000000004",
+        "createdAt": "2025-12-30T13:24:34.4697455+00:00",
+        "previousState": { "name": "vers_wilaya", "description": "Dispatch dans une autre wilaya" },
+        "newState": { "name": "sortie_en_livraison", "description": "Sortie en livraison" },
+        "situations": []
+      }
+    ]
+  }
+]

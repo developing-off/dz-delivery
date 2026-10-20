@@ -1,0 +1,8 @@
+[
+  {
+    "method": "GET",
+    "path": "/v1/parcels/yal-ABC123",
+    "headers": { "X-API-ID": "test-api-id", "X-API-TOKEN": "test-api-token" }
+  },
+  { "method": "GET", "path": "/v1/histories/yal-ABC123" }
+]

@@ -1,0 +1,9 @@
+[
+  { "method": "GET", "path": "/api/base/wilayas/" },
+  { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
+  {
+    "method": "POST",
+    "path": "/api/orders",
+    "body": [{ "external_id": "ORDER-3004", "commune": 554, "wilaya": "Alger" }]
+  }
+]

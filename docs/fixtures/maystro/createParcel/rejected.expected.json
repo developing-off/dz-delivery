@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Order wilaya or commune do not exist or they were not defined",
+    "details": [
+      {
+        "field": "communeId",
+        "message": "Order wilaya or commune do not exist or they were not defined",
+        "code": "40"
+      }
+    ]
+  }
+}

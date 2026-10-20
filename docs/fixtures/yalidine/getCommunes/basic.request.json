@@ -1,0 +1,4 @@
+[
+  { "method": "GET", "path": "/v1/wilayas/" },
+  { "method": "GET", "path": "/v1/communes/", "query": { "wilaya_id": 16, "page": 1 } }
+]

@@ -1,0 +1,17 @@
+{
+  "commande_recue": "pending",
+  "OrderReceived": "pending",
+  "pret_a_expedier": "created",
+  "ReadyToDispatch": "created",
+  "OutForDelivery": "in_transit",
+  "InTransit": "in_transit",
+  "AtHub": "in_transit",
+  "Delivered": "delivered",
+  "livre": "delivered",
+  "Returned": "returned",
+  "retour_expediteur": "returned",
+  "Cancelled": "cancelled",
+  "annule": "cancelled",
+  "SomethingNew": "unknown",
+  "": "unknown"
+}

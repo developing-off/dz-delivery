@@ -1,0 +1,14 @@
+{
+  "recipientName": "Test Client",
+  "phone": "+213 550 12 34 56",
+  "address": "Cité de test, bloc A",
+  "wilayaId": 16,
+  "communeName": "bab ezzouar",
+  "productList": [
+    { "name": "Mug", "quantity": 2 },
+    { "name": "T-shirt", "quantity": 1 }
+  ],
+  "price": 3200,
+  "weight": 2,
+  "orderId": "ORDER-2001"
+}

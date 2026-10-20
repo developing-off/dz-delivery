@@ -1,0 +1,16 @@
+{
+  "recipientName": "Test Client",
+  "phone": "+213550123456",
+  "phone2": "0770 12 34 56",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "bordj el kiffan",
+  "productList": [
+    { "name": "Mug", "quantity": 2 },
+    { "name": "T-shirt", "quantity": 1 }
+  ],
+  "price": 3200,
+  "weight": 1.5,
+  "remark": "Appeler avant",
+  "orderId": "ORD-1001"
+}

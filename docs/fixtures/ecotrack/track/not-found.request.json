@@ -1,0 +1,1 @@
+[{ "method": "GET", "path": "/api/v1/get/tracking/info", "query": { "tracking": "ECTEST0000000000" } }]

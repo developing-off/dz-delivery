@@ -1,0 +1,21 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "livraison": [
+        { "wilaya_id": 1, "tarif": "1300", "tarif_stopdesk": "900" },
+        { "wilaya_id": 12, "tarif": "900", "tarif_stopdesk": "0" },
+        { "wilaya_id": 16, "tarif": "450", "tarif_stopdesk": "300" }
+      ],
+      "pickup": [{ "wilaya_id": 16, "tarif": "450", "tarif_stopdesk": "300" }],
+      "echnage": [{ "wilaya_id": 16, "tarif": "500", "tarif_stopdesk": "350" }],
+      "recouvrement": [{ "wilaya_id": 16, "tarif": "450", "tarif_stopdesk": "300" }],
+      "retours": [
+        { "wilaya_id": 1, "tarif": "200", "tarif_stopdesk": "200" },
+        { "wilaya_id": 12, "tarif": "200", "tarif_stopdesk": "0" },
+        { "wilaya_id": 16, "tarif": "150", "tarif_stopdesk": "100" }
+      ]
+    }
+  }
+]

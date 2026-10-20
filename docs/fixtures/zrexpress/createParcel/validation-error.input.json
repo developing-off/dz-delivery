@@ -1,0 +1,9 @@
+{
+  "recipientName": "Client Test",
+  "phone": "+213550123456",
+  "address": "12 rue des Tests",
+  "wilayaId": "00000000-0000-4000-8000-000000000016",
+  "communeId": "00000000-0000-4000-8000-000000016042",
+  "productName": "T-shirt bleu",
+  "price": 2500
+}

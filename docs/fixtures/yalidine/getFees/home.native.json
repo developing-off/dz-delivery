@@ -1,0 +1,45 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 2,
+      "data": [
+        { "id": 16, "name": "Alger", "zone": 1, "is_deliverable": 1 },
+        { "id": 31, "name": "Oran", "zone": 2, "is_deliverable": 1 }
+      ]
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "from_wilaya_name": "Alger",
+      "to_wilaya_name": "Oran",
+      "zone": 2,
+      "retour_fee": 250,
+      "cod_percentage": 1,
+      "insurance_percentage": 1,
+      "oversize_fee": 50,
+      "per_commune": {
+        "3101": {
+          "commune_id": 3101,
+          "commune_name": "Oran",
+          "express_home": 600,
+          "express_desk": 400,
+          "economic_home": null,
+          "economic_desk": null
+        },
+        "3102": {
+          "commune_id": 3102,
+          "commune_name": "Gdyel",
+          "express_home": 700,
+          "express_desk": 400,
+          "economic_home": null,
+          "economic_desk": null
+        }
+      }
+    }
+  }
+]

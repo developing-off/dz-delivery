@@ -1,0 +1,12 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "id": "8c1a4c53-0000-4000-8000-000000000001",
+      "trackingNumber": "DZ-AL-20251121-00145",
+      "state": { "name": "commande_recue", "description": "Commande reçue" }
+    }
+  },
+  { "status": 204, "headers": {}, "body": null }
+]

@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 200,
+    "message": "Pas de livraison pour la wilaya sélectionnée",
+    "details": [{ "field": "wilayaId", "message": "Pas de livraison pour la wilaya sélectionnée", "code": "10002" }]
+  }
+}

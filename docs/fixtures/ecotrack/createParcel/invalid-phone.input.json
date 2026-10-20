@@ -1,0 +1,9 @@
+{
+  "recipientName": "Test Client",
+  "phone": "12345",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "Bab Ezzouar",
+  "productName": "Mug",
+  "price": 2000
+}

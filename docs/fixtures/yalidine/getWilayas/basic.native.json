@@ -1,0 +1,16 @@
+[
+  {
+    "status": 200,
+    "headers": { "x-second-quota-left": "4", "x-minute-quota-left": "49" },
+    "body": {
+      "has_more": false,
+      "total_data": 3,
+      "data": [
+        { "id": 16, "name": "Alger", "zone": 1, "is_deliverable": 1 },
+        { "id": 31, "name": "Oran", "zone": 2, "is_deliverable": 1 },
+        { "id": 33, "name": "Illizi", "zone": 5, "is_deliverable": 0 }
+      ],
+      "links": { "self": "https://api.yalidine.app/v1/wilayas/?page=1" }
+    }
+  }
+]

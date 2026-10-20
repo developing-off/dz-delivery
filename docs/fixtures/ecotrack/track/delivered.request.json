@@ -1,0 +1,8 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/get/tracking/info",
+    "headers": { "Authorization": "Bearer test-api-token" },
+    "query": { "tracking": "ECTEST2510200001" }
+  }
+]

@@ -1,0 +1,20 @@
+[
+  { "method": "GET", "path": "/api/base/wilayas/" },
+  { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
+  {
+    "method": "POST",
+    "path": "/api/orders",
+    "body": [
+      {
+        "customer_name": "Test Client",
+        "customer_phone": "0666554434",
+        "destination_text": "Stop desk Ben Aknoun",
+        "total_price": 1500,
+        "wilaya": "Alger",
+        "commune": 575,
+        "delivery_type": 2,
+        "details": [{ "product": "", "description": "Mug", "quantity": 1 }]
+      }
+    ]
+  }
+]

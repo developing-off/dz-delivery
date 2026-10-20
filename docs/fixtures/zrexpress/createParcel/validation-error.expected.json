@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 400,
+    "message": "One or more validation errors occurred.",
+    "details": [{ "message": "ExternalId already exists.", "code": "Parcel.ExternalId" }]
+  }
+}

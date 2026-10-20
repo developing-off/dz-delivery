@@ -1,0 +1,29 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": { "has_more": false, "data": [{ "id": 16, "name": "Alger", "is_deliverable": 1 }] }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "data": [{ "id": 1601, "name": "Alger Centre", "wilaya_id": 16, "is_deliverable": 1 }]
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "ORDER-2002": {
+        "success": false,
+        "order_id": "ORDER-2002",
+        "tracking": null,
+        "import_id": null,
+        "label": null,
+        "message": "stopdesk_id is not valid"
+      }
+    }
+  }
+]

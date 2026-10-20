@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "httpStatus": 404,
+    "message": "The parcel with the identifier DZ-AL-00000000-00000 was not found"
+  }
+}

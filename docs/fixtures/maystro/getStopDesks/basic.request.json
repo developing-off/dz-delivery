@@ -1,0 +1,20 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/base/wilayas/"
+  },
+  {
+    "method": "GET",
+    "path": "/api/base/communes/",
+    "query": {
+      "wilaya": 16
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/base/pickup-points",
+    "query": {
+      "commune": 575
+    }
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Duplicated order",
+    "details": [{ "message": "Duplicated order", "code": "55" }]
+  }
+}

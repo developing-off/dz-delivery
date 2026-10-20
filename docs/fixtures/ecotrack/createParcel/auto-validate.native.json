@@ -1,0 +1,11 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "0": { "nom": "Bab Ezzouar", "wilaya_id": 16, "code_postal": "1625", "has_stop_desk": 1 }
+    }
+  },
+  { "status": 200, "headers": {}, "body": { "success": true, "tracking": "ECTEST2510200003" } },
+  { "status": 200, "headers": {}, "body": { "success": true, "message": "Commande expedier avec succès" } }
+]

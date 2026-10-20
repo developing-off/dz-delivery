@@ -1,0 +1,11 @@
+{
+  "recipientName": "Test Client",
+  "phone": "0666554434",
+  "address": "Stop desk Ben Aknoun",
+  "wilayaName": "ALGER",
+  "communeId": 575,
+  "productName": "Mug",
+  "price": 1500.4,
+  "isStopDesk": true,
+  "stopDeskId": "575"
+}

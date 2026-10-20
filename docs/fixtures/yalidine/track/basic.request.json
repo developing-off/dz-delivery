@@ -1,0 +1,4 @@
+[
+  { "method": "GET", "path": "/v1/parcels/yal-000TST" },
+  { "method": "GET", "path": "/v1/histories/yal-000TST", "query": { "page": 1 } }
+]

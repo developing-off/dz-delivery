@@ -1,0 +1,9 @@
+{
+  "recipientName": "Test Client",
+  "phone": "0666554433",
+  "address": "Cité de test",
+  "wilayaId": 16,
+  "communeId": 554,
+  "productName": "Mug",
+  "price": 2000
+}

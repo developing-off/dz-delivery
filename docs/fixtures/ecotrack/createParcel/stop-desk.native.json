@@ -1,0 +1,20 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      { "wilaya_id": 1, "wilaya_name": "Adrar" },
+      { "wilaya_id": 16, "wilaya_name": "Alger" },
+      { "wilaya_id": 31, "wilaya_name": "Oran" }
+    ]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "0": { "nom": "Bab Ezzouar", "wilaya_id": 16, "code_postal": "1625", "has_stop_desk": 1 },
+      "1": { "nom": "Bordj El Kiffan", "wilaya_id": 16, "code_postal": "1617", "has_stop_desk": 0 }
+    }
+  },
+  { "status": 200, "headers": {}, "body": { "success": true, "tracking": "ECTEST2510200002" } }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "0": { "nom": "Bab Ezzouar", "wilaya_id": 16, "code_postal": "1625", "has_stop_desk": 1 },
+      "1": { "nom": "Bordj El Kiffan", "wilaya_id": 16, "code_postal": "1617", "has_stop_desk": 0 },
+      "2": { "nom": "Batna", "wilaya_id": 5, "code_postal": "501", "has_stop_desk": 1 },
+      "3": { "nom": "Zéralda", "wilaya_id": 16, "code_postal": "1633", "has_stop_desk": 0 }
+    }
+  }
+]

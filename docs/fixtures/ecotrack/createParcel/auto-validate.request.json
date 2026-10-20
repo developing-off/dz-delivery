@@ -1,0 +1,9 @@
+[
+  { "method": "GET", "path": "/api/v1/get/communes", "query": { "wilaya_id": 16 } },
+  {
+    "method": "POST",
+    "path": "/api/v1/create/order",
+    "query": { "code_wilaya": 16, "commune": "Bab Ezzouar", "montant": 2000, "type": 1, "stop_desk": 0 }
+  },
+  { "method": "POST", "path": "/api/v1/valid/order", "query": { "tracking": "ECTEST2510200003" } }
+]

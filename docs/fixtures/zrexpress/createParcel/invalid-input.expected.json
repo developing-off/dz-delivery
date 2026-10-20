@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": [
+      { "field": "phone", "message": "phone is required" },
+      { "field": "wilayaId", "message": "Exactly one of wilayaId / wilayaName is required" }
+    ]
+  }
+}

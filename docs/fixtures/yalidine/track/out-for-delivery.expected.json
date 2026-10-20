@@ -1,0 +1,15 @@
+{
+  "result": {
+    "parcel": {
+      "id": "yal-ABC123",
+      "trackingNumber": "yal-ABC123",
+      "status": "in_transit",
+      "provider": "yalidine"
+    },
+    "events": [
+      { "status": "pending", "label": "En préparation", "at": "2025-11-21T10:00:00+01:00" },
+      { "status": "in_transit", "label": "Expédié", "at": "2025-11-22T08:30:00+01:00" },
+      { "status": "in_transit", "label": "Sorti en livraison", "at": "2025-11-23T09:15:00+01:00" }
+    ]
+  }
+}

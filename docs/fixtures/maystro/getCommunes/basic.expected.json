@@ -1,0 +1,6 @@
+{
+  "result": [
+    { "id": "554", "name": "Alger Centre", "parentId": "16", "code": "16001" },
+    { "id": "575", "name": "Ben Aknoun", "parentId": "16", "code": "16030" }
+  ]
+}

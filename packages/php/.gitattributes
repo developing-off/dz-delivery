@@ -1,0 +1,5 @@
+# Keep the Composer dist archive small: tests need the monorepo fixtures (docs/fixtures).
+/tests            export-ignore
+/phpunit.xml      export-ignore
+/.gitattributes   export-ignore
+/.gitignore       export-ignore

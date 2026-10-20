@@ -1,0 +1,33 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/base/wilayas/",
+    "query": { "language": "fr", "country": 1 },
+    "headers": { "Authorization": "Token test-api-token" }
+  },
+  { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
+  {
+    "method": "POST",
+    "path": "/api/orders",
+    "headers": { "Authorization": "Token test-api-token" },
+    "body": [
+      {
+        "customer_name": "Test Client",
+        "customer_phone": "0666554433",
+        "customer_phone2": "0770000000",
+        "destination_text": "Cité de test, bloc A",
+        "total_price": 2800,
+        "wilaya": "Alger",
+        "commune": 554,
+        "delivery_type": 1,
+        "express": false,
+        "note_to_driver": "Appeler avant",
+        "external_id": "ORDER-3001",
+        "details": [
+          { "product": "MUG-001", "description": "Mug", "quantity": 2 },
+          { "product": "", "description": "T-shirt", "quantity": 1 }
+        ]
+      }
+    ]
+  }
+]

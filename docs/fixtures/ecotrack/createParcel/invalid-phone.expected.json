@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid Algerian phone number: 12345",
+    "details": [{ "field": "phone", "message": "Invalid Algerian phone number: 12345" }]
+  }
+}

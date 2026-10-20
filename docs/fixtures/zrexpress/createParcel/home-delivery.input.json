@@ -1,0 +1,11 @@
+{
+  "recipientName": "Client Test",
+  "phone": "0550 12 34 56",
+  "address": "12 rue des Tests",
+  "wilayaName": "alger",
+  "communeName": "Bab Ezzouar",
+  "productName": "T-shirt bleu",
+  "price": 2500,
+  "weight": 1.2,
+  "orderId": "ORD-1001"
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "method": "GET",
+    "path": "/v1/wilayas/"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/communes/",
+    "query": {
+      "wilaya_id": 16
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/v1/centers/",
+    "query": {
+      "wilaya_id": 16,
+      "commune_id": 1630,
+      "page_size": 1000
+    }
+  }
+]
