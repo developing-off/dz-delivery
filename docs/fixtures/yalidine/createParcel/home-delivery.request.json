@@ -1,0 +1,32 @@
+[
+  { "method": "GET", "path": "/v1/wilayas/" },
+  { "method": "GET", "path": "/v1/communes/", "query": { "wilaya_id": 16 } },
+  {
+    "method": "POST",
+    "path": "/v1/parcels/",
+    "headers": { "X-API-ID": "test-api-id", "X-API-TOKEN": "test-api-token" },
+    "body": [
+      {
+        "order_id": "ORDER-2001",
+        "from_wilaya_name": "Alger",
+        "firstname": "Test",
+        "familyname": "Client",
+        "contact_phone": "0550123456",
+        "address": "Cité de test, bloc A",
+        "to_commune_name": "Bab Ezzouar",
+        "to_wilaya_name": "Alger",
+        "product_list": "Mug x2, T-shirt",
+        "price": 3200,
+        "do_insurance": false,
+        "declared_value": 3200,
+        "freeshipping": true,
+        "is_stopdesk": false,
+        "has_exchange": false,
+        "length": 0,
+        "width": 0,
+        "height": 0,
+        "weight": 2
+      }
+    ]
+  }
+]

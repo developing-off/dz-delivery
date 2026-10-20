@@ -1,0 +1,70 @@
+{
+  "name": "@dz-delivery/core",
+  "version": "0.1.0",
+  "description": "Unified SDK for Algerian delivery carriers (ZRExpress, Yalidine, Maystro, Ecotrack)",
+  "license": "MIT",
+  "author": "developing-off",
+  "homepage": "https://github.com/developing-off/dz-delivery#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/developing-off/dz-delivery.git",
+    "directory": "packages/ts"
+  },
+  "bugs": {
+    "url": "https://github.com/developing-off/dz-delivery/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "algeria",
+    "cod",
+    "delivery",
+    "dhd",
+    "ecotrack",
+    "maystro",
+    "sdk",
+    "shipping",
+    "yalidine",
+    "zrexpress"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

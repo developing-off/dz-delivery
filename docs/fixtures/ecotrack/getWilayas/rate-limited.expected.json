@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "httpStatus": 429,
+    "retryAfter": 60,
+    "message": "Too Many Attempts."
+  }
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/territories/search",
+    "headers": { "X-Api-Key": "test-api-key", "X-Tenant": "test-tenant" },
+    "body": {
+      "pageNumber": 1,
+      "pageSize": 1000,
+      "orderBy": ["code asc"],
+      "advancedFilter": { "logic": "and", "filters": [{ "field": "level", "operator": "eq", "value": "wilaya" }] }
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/territories/search",
+    "body": {
+      "pageNumber": 2,
+      "pageSize": 1000,
+      "orderBy": ["code asc"],
+      "advancedFilter": { "logic": "and", "filters": [{ "field": "level", "operator": "eq", "value": "wilaya" }] }
+    }
+  }
+]

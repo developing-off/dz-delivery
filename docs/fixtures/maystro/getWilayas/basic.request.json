@@ -1,0 +1,8 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/base/wilayas/",
+    "query": { "language": "fr", "country": 1 },
+    "headers": { "Authorization": "Token test-api-token" }
+  }
+]

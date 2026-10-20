@@ -1,0 +1,8 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/base/delivery-options/",
+    "query": { "commune": 575 },
+    "headers": { "Authorization": "Token test-api-token" }
+  }
+]

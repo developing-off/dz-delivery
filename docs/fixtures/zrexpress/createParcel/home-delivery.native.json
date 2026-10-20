@@ -1,0 +1,74 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000016",
+          "code": 16,
+          "name": "Alger",
+          "postalCode": "16000",
+          "level": "wilaya",
+          "parentId": null,
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": true }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000031",
+          "code": 31,
+          "name": "Oran",
+          "postalCode": "31000",
+          "level": "wilaya",
+          "parentId": null,
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": false }
+        }
+      ],
+      "pageNumber": 1,
+      "pageSize": 1000,
+      "totalCount": 2,
+      "totalPages": 1,
+      "hasPrevious": false,
+      "hasNext": false
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000016042",
+          "name": "Bab Ezzouar",
+          "postalCode": "16042",
+          "level": "commune",
+          "parentId": "00000000-0000-4000-8000-000000000016",
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": true }
+        }
+      ],
+      "pageNumber": 1,
+      "pageSize": 1000,
+      "totalCount": 1,
+      "totalPages": 1,
+      "hasPrevious": false,
+      "hasNext": false
+    }
+  },
+  {
+    "status": 201,
+    "headers": {},
+    "body": { "id": "8c1a4c53-0000-4000-8000-00000000a001" }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "id": "8c1a4c53-0000-4000-8000-00000000a001",
+      "trackingNumber": "DZ-AL-20251121-00145",
+      "externalId": "ORD-1001",
+      "amount": 2500,
+      "deliveryType": "home",
+      "state": { "name": "commande_recue", "description": "Commande reçue" },
+      "createdAt": "2025-11-21T10:00:00+00:00"
+    }
+  }
+]

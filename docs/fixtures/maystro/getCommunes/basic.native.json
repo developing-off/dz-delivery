@@ -1,0 +1,15 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [[16, "Alger"], [31, "Oran"]]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      { "id": 554, "wilaya": 16, "name": "Alger Centre", "postcode": 16001, "zone": 1 },
+      { "id": 575, "wilaya": 16, "name": "Ben Aknoun", "postcode": 16030, "zone": 1 }
+    ]
+  }
+]

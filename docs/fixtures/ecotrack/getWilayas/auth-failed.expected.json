@@ -1,0 +1,1 @@
+{ "error": { "code": "AUTH_FAILED", "httpStatus": 401, "message": "Unauthenticated." } }

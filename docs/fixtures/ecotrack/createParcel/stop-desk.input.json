@@ -1,0 +1,11 @@
+{
+  "recipientName": "Test Client",
+  "phone": "0550123456",
+  "address": "Stop desk Bab Ezzouar",
+  "wilayaName": "alger",
+  "communeId": "1625",
+  "productName": "Mug",
+  "price": 1500,
+  "isStopDesk": true,
+  "stopDeskId": "1625"
+}

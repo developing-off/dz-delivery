@@ -1,0 +1,5 @@
+[
+  { "method": "GET", "path": "/api/base/wilayas/" },
+  { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
+  { "method": "GET", "path": "/api/base/delivery-options/", "query": { "commune": 554 } }
+]

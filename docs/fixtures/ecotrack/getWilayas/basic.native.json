@@ -1,0 +1,11 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      { "wilaya_id": 1, "wilaya_name": "Adrar" },
+      { "wilaya_id": 16, "wilaya_name": "Alger" },
+      { "wilaya_id": 31, "wilaya_name": "Oran" }
+    ]
+  }
+]

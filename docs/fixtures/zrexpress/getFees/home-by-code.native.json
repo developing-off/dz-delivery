@@ -1,0 +1,32 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "11111111-1111-4111-8111-000000000016",
+          "code": 16,
+          "name": "Alger",
+          "level": "wilaya",
+          "parentId": null,
+          "delivery": { "hasHomeDelivery": true, "hasPickupPoint": true }
+        }
+      ],
+      "hasNext": false
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "toTerritoryId": "11111111-1111-4111-8111-000000000016",
+      "toTerritoryName": "Alger",
+      "toTerritoryLevel": "wilaya",
+      "deliveryPrices": [
+        { "deliveryType": "home", "price": 400 },
+        { "deliveryType": "pickup-point", "price": 250 }
+      ]
+    }
+  }
+]

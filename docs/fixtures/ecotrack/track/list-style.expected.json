@@ -1,0 +1,9 @@
+{
+  "result": {
+    "parcel": { "id": "ECTEST2510200001", "trackingNumber": "ECTEST2510200001", "status": "returned", "provider": "ecotrack" },
+    "events": [
+      { "status": "in_transit", "label": "picked", "at": "2025-10-19T08:30:12+01:00" },
+      { "status": "returned", "label": "return_asked", "at": "2025-10-19T18:00:00+01:00" }
+    ]
+  }
+}

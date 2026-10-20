@@ -1,0 +1,10 @@
+[
+  {
+    "status": 422,
+    "headers": {},
+    "body": {
+      "message": "The given data was invalid.",
+      "errors": { "tracking": ["Le champ tracking sélectionné est invalide."] }
+    }
+  }
+]

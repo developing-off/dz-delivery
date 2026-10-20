@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 200,
+    "message": "Ecotrack order ECTEST2510200003 cannot be cancelled: it has already been validated (only orders not yet validated can be deleted)",
+    "details": [{ "message": "Commande non modifiable", "code": "10001" }]
+  }
+}

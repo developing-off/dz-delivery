@@ -1,0 +1,52 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 2,
+      "data": [
+        { "id": 16, "name": "Alger", "zone": 1, "is_deliverable": 1 },
+        { "id": 31, "name": "Oran", "zone": 2, "is_deliverable": 1 }
+      ]
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 3,
+      "data": [
+        {
+          "id": 1601,
+          "name": "Alger Centre",
+          "wilaya_id": 16,
+          "wilaya_name": "Alger",
+          "has_stop_desk": 1,
+          "is_deliverable": 1,
+          "delivery_time_parcel": 1,
+          "delivery_time_payment": 4
+        },
+        {
+          "id": 1624,
+          "name": "Bab Ezzouar",
+          "wilaya_id": 16,
+          "wilaya_name": "Alger",
+          "has_stop_desk": 1,
+          "is_deliverable": 1,
+          "delivery_time_parcel": 1,
+          "delivery_time_payment": 4
+        },
+        {
+          "id": 1699,
+          "name": "Commune Fermée",
+          "wilaya_id": 16,
+          "wilaya_name": "Alger",
+          "has_stop_desk": 0,
+          "is_deliverable": 0
+        }
+      ]
+    }
+  }
+]

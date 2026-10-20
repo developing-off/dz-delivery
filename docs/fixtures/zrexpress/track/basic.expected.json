@@ -1,0 +1,16 @@
+{
+  "result": {
+    "parcel": {
+      "id": "8c1a4c53-0000-4000-8000-000000000001",
+      "trackingNumber": "DZ-AL-20251121-00145",
+      "status": "in_transit",
+      "provider": "zrexpress"
+    },
+    "events": [
+      { "status": "pending", "label": "Commande reçue", "at": "2025-12-23T15:23:54+00:00" },
+      { "status": "created", "label": "Prêt à expédier", "at": "2025-12-23T15:24:50+00:00" },
+      { "status": "in_transit", "label": "Dispatch dans une autre wilaya", "at": "2025-12-23T15:34:05+00:00" },
+      { "status": "in_transit", "label": "Sortie en livraison", "at": "2025-12-30T13:24:34+00:00" }
+    ]
+  }
+}

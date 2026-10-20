@@ -1,0 +1,7 @@
+[
+  {
+    "status": 401,
+    "headers": {},
+    "body": { "error": { "status_code": 401, "message": "Invalid API credentials" } }
+  }
+]

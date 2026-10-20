@@ -1,0 +1,15 @@
+{
+  "result": {
+    "parcel": {
+      "id": "yal-000TST",
+      "trackingNumber": "yal-000TST",
+      "status": "in_transit",
+      "provider": "yalidine"
+    },
+    "events": [
+      { "status": "pending", "label": "En préparation", "at": "2025-12-23T15:23:54+01:00" },
+      { "status": "in_transit", "label": "Expédié", "at": "2025-12-24T09:00:00+01:00" },
+      { "status": "in_transit", "label": "Sorti en livraison", "at": "2025-12-30T13:24:34+01:00" }
+    ]
+  }
+}

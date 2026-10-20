@@ -1,0 +1,4 @@
+[
+  { "method": "GET", "path": "/api/base/wilayas/" },
+  { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } }
+]

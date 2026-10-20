@@ -1,0 +1,8 @@
+[
+  {
+    "method": "GET",
+    "path": "/v1/wilayas/",
+    "query": { "page": 1, "page_size": 1000 },
+    "headers": { "X-API-ID": "test-api-id", "X-API-TOKEN": "test-api-token" }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [[16, "Alger"]]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [{ "id": 554, "wilaya": 16, "name": "Alger Centre", "postcode": 16001, "zone": 1 }]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": null,
+        "external_id": "ORDER-3004",
+        "tracking": null,
+        "success": false,
+        "delivery_price": null,
+        "errors": [40]
+      }
+    ]
+  }
+]

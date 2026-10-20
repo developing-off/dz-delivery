@@ -1,0 +1,144 @@
+# @dz-delivery/core (TypeScript)
+
+One API for Algerian delivery carriers. Implements the shared contract in
+[`docs/CONTRACT.md`](../../docs/CONTRACT.md); carrier-specific mappings are in
+[`docs/PROVIDERS.md`](../../docs/PROVIDERS.md).
+
+| Provider | Key | Status |
+|----------|-----|--------|
+| ZRExpress | `zrexpress` | ✅ all 6 methods |
+| Yalidine | `yalidine` | ✅ all 7 methods (mapping checked against the developer docs, see PROVIDERS.md) |
+| Maystro Delivery | `maystro` | ✅ createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
+| Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
+
+- ESM + CommonJS, bundled type definitions
+- Node.js ≥ 18 (uses global `fetch`), no runtime dependencies
+
+## Install
+
+```bash
+npm install @dz-delivery/core
+```
+
+## Usage
+
+```ts
+import { createClient, isShippingError } from '@dz-delivery/core';
+
+const zr = createClient('zrexpress', {
+  apiKey: process.env.ZREXPRESS_API_KEY!,
+  tenant: process.env.ZREXPRESS_TENANT!,
+});
+
+const yalidine = createClient('yalidine', {
+  apiId: process.env.YALIDINE_API_ID!,
+  apiToken: process.env.YALIDINE_API_TOKEN!,
+  fromWilayaId: 16, // origin wilaya, required by Yalidine to create parcels / quote fees
+});
+
+const maystro = createClient('maystro', {
+  apiToken: process.env.MAYSTRO_API_TOKEN!, // sent as `Authorization: Token <apiToken>`
+});
+// Maystro has no tracking API: map webhook statuses yourself.
+// mapMaystroStatus(payload.status) → 'delivered' for 41
+
+const dhd = createClient('ecotrack', {
+  token: process.env.ECOTRACK_TOKEN!, // sent as `Authorization: Bearer <token>`
+  courier: 'dhd',                     // or baseUrl: 'https://<tenant>.ecotrack.dz'
+  // autoValidate: true,              // hand orders to the courier right after creation
+});
+
+// Locations
+const wilayas = await zr.getWilayas();           // [{ id, name, code: '16', raw }]
+const communes = await zr.getCommunes(16);       // provider id or official code 1–58
+
+// Fees
+const quote = await zr.getFees({ toWilayaId: 16, isStopDesk: false });
+// { deliveryFee: 400, stopDeskFee: 250, currency: 'DZD', raw }
+
+// Create a parcel (ids, official codes or names are accepted)
+const parcel = await zr.createParcel({
+  recipientName: 'Mohamed Amine',
+  phone: '0550 12 34 56',          // normalized to the carrier's format
+  address: 'Cité 221 lots, n°98',
+  wilayaName: 'Alger',
+  communeName: 'Bab Ezzouar',
+  productName: 'T-shirt',
+  price: 2500,                     // amount collected from the recipient (DZD)
+  orderId: 'ORDER-1001',
+});
+// { id, trackingNumber: 'DZ-AL-…', status: 'pending', provider: 'zrexpress', raw }
+
+// Track
+const { parcel: current, events } = await zr.track(parcel.trackingNumber);
+// events are sorted oldest first: [{ status: 'pending', label: 'Commande reçue', at: '2025-…+00:00' }, …]
+
+// Cancel (tracking number or internal id)
+await zr.cancelParcel(parcel.trackingNumber);
+```
+
+### Methods
+
+Every provider implements `ShippingProvider`:
+
+| Method | Returns |
+|--------|---------|
+| `createParcel(input: ParcelInput)` | `Promise<Parcel>` |
+| `track(trackingNumber)` | `Promise<{ parcel, events }>` |
+| `getFees(query: FeeQuery)` | `Promise<FeeQuote>` |
+| `getWilayas()` | `Promise<Location[]>` (cached per client) |
+| `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
+| `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (Yalidine centers, Maystro stop desks / pickup points with `communeId` required; ZRExpress: `NOT_SUPPORTED`) |
+| `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
+
+Statuses are unified: `pending | created | in_transit | delivered | returned | cancelled | unknown`.
+An unmapped native status never throws — it maps to `unknown` and the native label stays in
+`TrackingEvent.label` / `raw`.
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `baseUrl` | carrier default | Override the API base URL (sandbox, proxy). |
+| `timeoutMs` | `15000` | HTTP timeout. |
+| `includeRaw` | `true` | Attach the native response as `raw` on every returned model. |
+| `fetch` | `globalThis.fetch` | Custom fetch implementation (tests, proxies). |
+
+Provider credentials: `zrexpress` → `apiKey`, `tenant`; `yalidine` → `apiId`, `apiToken`
+(+ `fromWilayaId` or `fromWilayaName`); `maystro` → `apiToken`; `ecotrack` → `token` + exactly one of
+`courier` (`dhd`, `conexlog`, `andersondelivery`, `msmgo`, `packers`, `rocketdelivery`, `worldexpress`) or
+`baseUrl` (any tenant, `https` only), optional `autoValidate`.
+
+### Errors
+
+Every failure is a `ShippingError` with a normalized `code`:
+
+```ts
+try {
+  await zr.track('DZ-UNKNOWN');
+} catch (err) {
+  if (isShippingError(err)) {
+    err.code;       // 'NOT_FOUND' | 'AUTH_FAILED' | 'VALIDATION_ERROR' | 'RATE_LIMITED' | 'NOT_SUPPORTED' | 'PROVIDER_ERROR' | 'NETWORK_ERROR' | 'UNKNOWN'
+    err.httpStatus; // 404
+    err.details;    // e.g. [{ field: 'phone', message: '…' }] for validation errors
+    err.raw;        // native error body
+  }
+}
+```
+
+Input is validated before any HTTP call (`VALIDATION_ERROR`), and wilaya/commune names that
+cannot be resolved throw `NOT_FOUND`.
+
+## Development
+
+```bash
+npm install
+npm test          # vitest — mocked fetch, no network
+npm run typecheck
+npm run build     # tsup → dist/ (ESM + CJS + .d.ts)
+```
+
+Tests replay the shared fixtures in [`docs/fixtures/`](../../docs/fixtures/) (also used by the
+PHP package), so both implementations produce the same output for the same native responses.
+
+A runnable example lives in [`examples/ts/quickstart.ts`](../../examples/ts/quickstart.ts).

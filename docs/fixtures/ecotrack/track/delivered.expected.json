@@ -1,0 +1,14 @@
+{
+  "result": {
+    "parcel": { "id": "ECTEST2510200001", "trackingNumber": "ECTEST2510200001", "status": "delivered", "provider": "ecotrack" },
+    "events": [
+      { "status": "created", "label": "order_information_received_by_carrier", "at": "2025-10-18T09:00:00+01:00" },
+      { "status": "created", "label": "notification_on_order", "at": "2025-10-18T10:15:00+01:00" },
+      { "status": "in_transit", "label": "picked", "at": "2025-10-19T08:30:12+01:00" },
+      { "status": "in_transit", "label": "accepted_by_carrier", "at": "2025-10-19T14:02:00+01:00" },
+      { "status": "in_transit", "label": "dispatched_to_driver", "at": "2025-10-20T09:10:00+01:00" },
+      { "status": "in_transit", "label": "attempt_delivery (Client ne répond pas)", "at": "2025-10-20T11:45:00+01:00" },
+      { "status": "delivered", "label": "livred", "at": "2025-10-20T16:20:00+01:00" }
+    ]
+  }
+}

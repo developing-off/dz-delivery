@@ -1,0 +1,15 @@
+[
+  { "method": "GET", "path": "/api/base/wilayas/" },
+  { "method": "GET", "path": "/api/base/communes/", "query": { "wilaya": 16 } },
+  {
+    "method": "POST",
+    "path": "/api/orders",
+    "body": [
+      {
+        "commune": 575,
+        "delivery_type": 3,
+        "pickup_point": 7
+      }
+    ]
+  }
+]

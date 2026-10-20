@@ -1,0 +1,66 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      [
+        16,
+        "Alger"
+      ],
+      [
+        31,
+        "Oran"
+      ]
+    ]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 554,
+        "wilaya": 16,
+        "name": "Alger Centre",
+        "postcode": 16001,
+        "zone": 1
+      },
+      {
+        "id": 575,
+        "wilaya": 16,
+        "name": "Ben Aknoun",
+        "postcode": 16030,
+        "zone": 1
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "name_lt": "Ben Aknoun - Stop desk test",
+        "name_ar": "-",
+        "commune": 575,
+        "pickup_point": null,
+        "delivery_type": 2,
+        "active": true
+      },
+      {
+        "name_lt": "Ben Aknoun - Point relais test",
+        "name_ar": "-",
+        "commune": 575,
+        "pickup_point": 7,
+        "delivery_type": 3,
+        "active": true
+      },
+      {
+        "name_lt": "Ben Aknoun - Point fermé",
+        "name_ar": "-",
+        "commune": 575,
+        "pickup_point": 8,
+        "delivery_type": 3,
+        "active": false
+      }
+    ]
+  }
+]

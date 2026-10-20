@@ -1,0 +1,11 @@
+{
+  "recipientName": "Test Client",
+  "phone": "0666554435",
+  "address": "Point relais GSM",
+  "wilayaId": "16",
+  "communeId": "575",
+  "productName": "Mug",
+  "price": 1500,
+  "isStopDesk": true,
+  "stopDeskId": "7"
+}

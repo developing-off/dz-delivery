@@ -1,0 +1,41 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 1,
+      "data": [
+        {
+          "tracking": "yal-ABC123",
+          "order_id": "ORD-2001",
+          "firstname": "Client",
+          "familyname": "Test",
+          "contact_phone": "0550123456",
+          "address": "12 rue des Tests",
+          "to_wilaya_id": 16,
+          "to_wilaya_name": "Alger",
+          "to_commune_name": "Bab Ezzouar",
+          "is_stopdesk": false,
+          "price": 3200,
+          "last_status": "Sorti en livraison",
+          "date_last_status": "2025-11-23 09:15:00"
+        }
+      ],
+      "links": { "self": "https://api.yalidine.app/v1/parcels/yal-ABC123" }
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 3,
+      "data": [
+        { "date_status": "2025-11-23 09:15:00", "tracking": "yal-ABC123", "status": "Sorti en livraison", "reason": "", "center_name": "Bab Ezzouar" },
+        { "date_status": "2025-11-22 08:30:00", "tracking": "yal-ABC123", "status": "Expédié", "reason": "", "center_name": "Batna" },
+        { "date_status": "2025-11-21 10:00:00", "tracking": "yal-ABC123", "status": "En préparation", "reason": "" }
+      ]
+    }
+  }
+]

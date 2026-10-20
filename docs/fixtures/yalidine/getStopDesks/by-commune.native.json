@@ -1,0 +1,56 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 1,
+      "data": [
+        {
+          "id": 16,
+          "name": "Alger",
+          "zone": 1,
+          "is_deliverable": 1
+        }
+      ]
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 1,
+      "data": [
+        {
+          "id": 1630,
+          "name": "Bab Ezzouar",
+          "wilaya_id": 16,
+          "wilaya_name": "Alger",
+          "has_stop_desk": 1,
+          "is_deliverable": 1
+        }
+      ]
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": false,
+      "total_data": 1,
+      "data": [
+        {
+          "center_id": 163001,
+          "name": "Centre de test Bab Ezzouar",
+          "address": "Cité de test, bloc B",
+          "gps": "36.7,3.1",
+          "commune_id": 1630,
+          "commune_name": "Bab Ezzouar",
+          "wilaya_id": 16,
+          "wilaya_name": "Alger"
+        }
+      ]
+    }
+  }
+]

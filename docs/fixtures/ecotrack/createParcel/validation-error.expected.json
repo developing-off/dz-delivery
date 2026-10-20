@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 422,
+    "message": "Commune mal écrite, ou désactivée.; Le champ adresse ne doit pas dépasser 255 caractères.",
+    "details": [
+      { "field": "commune", "message": "Commune mal écrite, ou désactivée." },
+      { "field": "adresse", "message": "Le champ adresse ne doit pas dépasser 255 caractères." }
+    ]
+  }
+}

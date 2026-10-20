@@ -1,0 +1,13 @@
+[
+  {
+    "status": 401,
+    "headers": { "content-type": "application/problem+json" },
+    "body": {
+      "type": "https://tools.ietf.org/html/rfc7235#section-3.1",
+      "title": "Unauthorized",
+      "status": 401,
+      "detail": "Invalid API key",
+      "traceId": "00-00000000000000000000000000000000-0000000000000000-01"
+    }
+  }
+]

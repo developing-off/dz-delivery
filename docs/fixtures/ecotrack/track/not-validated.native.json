@@ -1,0 +1,7 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": { "recipientName": "Test Client", "shippedBy": "Test Shop", "originCity": 16, "destLocationCity": 16, "activity": [] }
+  }
+]

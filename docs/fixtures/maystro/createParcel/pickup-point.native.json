@@ -1,0 +1,29 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [[16, "Alger"], [31, "Oran"]]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      { "id": 554, "wilaya": 16, "name": "Alger Centre", "postcode": 16001, "zone": 1 },
+      { "id": 575, "wilaya": 16, "name": "Ben Aknoun", "postcode": 16030, "zone": 1 }
+    ]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": "2a7c1e90-0000-4000-8000-00000000b003",
+        "external_id": null,
+        "tracking": "172316976800003",
+        "success": true,
+        "delivery_price": 300,
+        "errors": []
+      }
+    ]
+  }
+]
