@@ -15,13 +15,12 @@ on:
       - "v*"
   workflow_dispatch:
 
-permissions:
-  id-token: write # required for OIDC → npm
-  contents: read
-
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # required for OIDC → npm
+      contents: read
     defaults:
       run:
         working-directory: packages/ts
@@ -32,8 +31,12 @@ jobs:
         with:
           node-version: "22"
           # Do NOT set registry-url: it injects a fake NODE_AUTH_TOKEN that
-          # shadows OIDC Trusted Publisher auth and causes E404 on publish.
+          # shadows OIDC Trusted Publisher auth.
           package-manager-cache: false
+
+      # Trusted publishing needs npm >= 11.5.1
+      - name: Upgrade npm
+        run: npm install -g npm@latest
 
       - name: Install
         run: npm ci
@@ -46,6 +49,7 @@ jobs:
 
       # OIDC Trusted Publisher — no NPM_TOKEN. Provenance is automatic.
       - name: Publish to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ""
+        run: |
+          unset NODE_AUTH_TOKEN || true
+          npm --version
+          npm publish --access public
