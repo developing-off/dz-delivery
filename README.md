@@ -105,6 +105,12 @@ examples/php/    PHP examples
 
 Contributions are very welcome — especially new providers. See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
+## Site
+
+Landing page (GitHub Pages) : [`index.html`](./index.html) à la racine.  
+Activer dans **Settings → Pages → Deploy from a branch → `main` / `/ (root)`**.  
+URL typique : `https://developing-off.github.io/dz-delivery/`.
+
 ## License
 
 [MIT](./LICENSE) © 2026 dz-delivery contributors

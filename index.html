@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dz-delivery — un SDK, tous les transporteurs algériens</title>
+  <meta name="description" content="SDK TypeScript et PHP pour créer, suivre et tarifer des colis avec ZRExpress, Yalidine, Maystro, Ecotrack et plus — une seule interface." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4f5f2;
+      --bg-elev: #ffffff;
+      --ink: #14181c;
+      --ink-soft: #3d474f;
+      --muted: #6b757c;
+      --line: #d8ddd6;
+      --accent: #1a6b4a;
+      --accent-ink: #0f3f2c;
+      --code-bg: #eef1ec;
+      --shadow: 0 1px 0 rgba(20, 24, 28, 0.04);
+      --radius: 6px;
+      --font-display: "Archivo", system-ui, sans-serif;
+      --font-body: "Source Sans 3", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --max: 1080px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #e7efe8 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #e8ecef 0%, transparent 50%),
+        var(--bg);
+      font-family: var(--font-body);
+      font-size: 1.0625rem;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 2.5rem));
+      margin-inline: auto;
+    }
+
+    /* —— Nav —— */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 0 0;
+      gap: 1rem;
+    }
+    .nav-brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.95rem;
+    }
+    .nav-links a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--ink); }
+
+    /* —— Hero —— */
+    .hero {
+      position: relative;
+      padding: 4.5rem 0 5rem;
+      overflow: hidden;
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      background-image:
+        linear-gradient(to right, rgba(20, 24, 28, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 24, 28, 0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, #000 30%, transparent 92%);
+    }
+    .hero-route {
+      position: absolute;
+      right: -5%;
+      top: 18%;
+      width: min(52vw, 560px);
+      height: 340px;
+      pointer-events: none;
+      opacity: 0;
+      animation: fade-in 1.1s ease 0.25s forwards;
+    }
+    .hero-route path {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.5;
+      stroke-dasharray: 8 10;
+      opacity: 0.35;
+    }
+    .hero-route .dot {
+      fill: var(--accent);
+      opacity: 0.7;
+    }
+    .hero-route .pulse {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1;
+      opacity: 0;
+      transform-origin: center;
+      animation: pulse-ring 2.8s ease-out 0.8s infinite;
+    }
+
+    .hero-brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(2.75rem, 7vw, 4.25rem);
+      letter-spacing: -0.045em;
+      line-height: 0.95;
+      margin: 0 0 1.35rem;
+      color: var(--ink);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease forwards;
+    }
+    .hero-lead {
+      max-width: 34rem;
+      margin: 0 0 1.75rem;
+      font-size: 1.2rem;
+      color: var(--ink-soft);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease 0.08s forwards;
+    }
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s ease 0.16s forwards;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.15rem;
+      border-radius: var(--radius);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #f7f8f5;
+    }
+    .btn-primary:hover {
+      background: #000;
+      color: #fff;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    .btn-ghost:hover {
+      border-color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    /* —— Sections —— */
+    section {
+      padding: 3.75rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .section-kicker {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 0.65rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 650;
+      font-size: clamp(1.55rem, 3vw, 1.9rem);
+      letter-spacing: -0.03em;
+      margin: 0 0 0.6rem;
+      line-height: 1.2;
+    }
+    .section-desc {
+      margin: 0 0 2rem;
+      max-width: 36rem;
+      color: var(--ink-soft);
+    }
+
+    /* —— Ops —— */
+    .ops {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+    .ops li {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr auto;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .ops .n {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .ops .label {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .ops .method {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent-ink);
+      background: var(--code-bg);
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    /* —— Providers —— */
+    .providers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.65rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .providers li {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 500;
+      padding: 0.45rem 0.7rem;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      color: var(--ink-soft);
+    }
+    .providers li.soon {
+      color: var(--muted);
+      border-style: dashed;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    /* —— Install / code —— */
+    .install-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 720px) {
+      .install-grid { grid-template-columns: 1fr; }
+      .ops li { grid-template-columns: 2rem 1fr; }
+      .ops .method { grid-column: 2; margin-top: 0.25rem; }
+      .nav-links .hide-sm { display: none; }
+    }
+
+    .panel {
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid var(--line);
+      background: #fafbf8;
+    }
+    .panel-head span {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .copy {
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0.25rem 0.55rem;
+      cursor: pointer;
+    }
+    .copy:hover { color: var(--ink); border-color: var(--ink-soft); }
+    .copy.ok { color: var(--accent); border-color: #b7d4c4; }
+
+    pre {
+      margin: 0;
+      padding: 1rem 1.1rem 1.15rem;
+      overflow-x: auto;
+      background: var(--code-bg);
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+    .token-cmd { color: var(--accent-ink); font-weight: 500; }
+    .token-pkg { color: var(--ink); }
+
+    .code-block {
+      margin-top: 1.5rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+      background: #fafbf8;
+    }
+    .tab {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.7rem 1.1rem;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab[aria-selected="true"] {
+      color: var(--ink);
+      border-bottom-color: var(--accent);
+    }
+    .tab-panel[hidden] { display: none; }
+    .tab-panel pre {
+      background: #1c2328;
+      color: #e6ebe8;
+      min-height: 16.5rem;
+    }
+    .c-key { color: #8fb9a4; }
+    .c-str { color: #d4b483; }
+    .c-num { color: #9db4d0; }
+    .c-cmt { color: #7a858c; }
+    .c-fn { color: #c9d4cf; }
+
+    /* —— Foot —— */
+    footer {
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    footer .row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+    }
+    footer strong {
+      font-family: var(--font-display);
+      color: var(--ink);
+      font-weight: 650;
+    }
+    footer a { color: var(--ink-soft); text-decoration: none; font-weight: 500; }
+    footer a:hover { color: var(--ink); }
+
+    @keyframes rise {
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes fade-in {
+      to { opacity: 1; }
+    }
+    @keyframes pulse-ring {
+      0% { opacity: 0.55; r: 6; }
+      100% { opacity: 0; r: 22; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      .hero-brand, .hero-lead, .hero-ctas, .hero-route { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="./">dz-delivery</a>
+      <nav class="nav-links" aria-label="Principal">
+        <a class="hide-sm" href="#api">API</a>
+        <a class="hide-sm" href="#install">Installer</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="brand">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <svg class="hero-route" viewBox="0 0 560 340" aria-hidden="true">
+          <path d="M40 260 C120 240, 160 120, 250 140 S380 220, 420 100 S500 60, 520 90" />
+          <circle class="dot" cx="40" cy="260" r="4.5" />
+          <circle class="dot" cx="250" cy="140" r="4.5" />
+          <circle class="dot" cx="420" cy="100" r="5" />
+          <circle class="pulse" cx="420" cy="100" r="6" />
+        </svg>
+
+        <h1 class="hero-brand" id="brand">dz-delivery</h1>
+        <p class="hero-lead">
+          Un seul SDK pour créer, suivre et tarifer des colis avec les transporteurs algériens — TypeScript et PHP, même contrat.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#install">Installer</a>
+          <a class="btn btn-ghost" href="https://github.com/developing-off/dz-delivery">Voir le dépôt</a>
+        </div>
+      </section>
+
+      <section id="api" aria-labelledby="api-title">
+        <p class="section-kicker">Interface unifiée</p>
+        <h2 class="section-title" id="api-title">Cinq opérations. Tous les transporteurs.</h2>
+        <p class="section-desc">
+          Pas un wrapper 1:1 de chaque API — juste ce dont une boutique a besoin, avec les mêmes noms en TS et en PHP.
+        </p>
+        <ol class="ops">
+          <li>
+            <span class="n">01</span>
+            <span class="label">Créer un colis</span>
+            <code class="method">createParcel</code>
+          </li>
+          <li>
+            <span class="n">02</span>
+            <span class="label">Suivre un envoi</span>
+            <code class="method">track</code>
+          </li>
+          <li>
+            <span class="n">03</span>
+            <span class="label">Coter les frais</span>
+            <code class="method">getFees</code>
+          </li>
+          <li>
+            <span class="n">04</span>
+            <span class="label">Wilayas, communes, stop desks</span>
+            <code class="method">getWilayas · getCommunes · getStopDesks</code>
+          </li>
+          <li>
+            <span class="n">05</span>
+            <span class="label">Annuler un colis</span>
+            <code class="method">cancelParcel</code>
+          </li>
+        </ol>
+      </section>
+
+      <section id="providers" aria-labelledby="providers-title">
+        <p class="section-kicker">Transporteurs</p>
+        <h2 class="section-title" id="providers-title">Déjà branchés</h2>
+        <p class="section-desc">
+          Statuts normalisés (<code style="font-family:var(--font-mono);font-size:0.9em">pending</code> → <code style="font-family:var(--font-mono);font-size:0.9em">delivered</code>). Le champ <code style="font-family:var(--font-mono);font-size:0.9em">raw</code> garde la réponse native si besoin.
+        </p>
+        <ul class="providers">
+          <li>ZRExpress</li>
+          <li>Yalidine</li>
+          <li>GuepEx</li>
+          <li>Maystro</li>
+          <li>Ecotrack · DHD</li>
+          <li>World Express</li>
+          <li>Anderson</li>
+          <li>48Hr Express</li>
+          <li>EcoRapid</li>
+          <li class="soon">Ecom · MDM · NoEST…</li>
+        </ul>
+      </section>
+
+      <section id="install" aria-labelledby="install-title">
+        <p class="section-kicker">Démarrage</p>
+        <h2 class="section-title" id="install-title">Installer</h2>
+        <p class="section-desc">Packages publiés sur npm et Packagist.</p>
+
+        <div class="install-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <span>TypeScript · npm</span>
+              <button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button>
+            </div>
+            <pre><span class="token-cmd">npm install</span> <span class="token-pkg">@dz-delivery/core</span></pre>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span>PHP · Composer</span>
+              <button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button>
+            </div>
+            <pre><span class="token-cmd">composer require</span> <span class="token-pkg">dz-delivery/sdk</span></pre>
+          </div>
+        </div>
+
+        <div class="panel code-block">
+          <div class="tabs" role="tablist" aria-label="Langage">
+            <button type="button" class="tab" role="tab" id="tab-ts" aria-controls="panel-ts" aria-selected="true">TypeScript</button>
+            <button type="button" class="tab" role="tab" id="tab-php" aria-controls="panel-php" aria-selected="false">PHP</button>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-ts" aria-labelledby="tab-ts">
+            <pre><span class="c-cmt">import { createClient } from '@dz-delivery/core';</span>
+
+<span class="c-key">const</span> shipping = <span class="c-fn">createClient</span>(<span class="c-str">'zrexpress'</span>, {
+  apiKey: process.env.ZREXPRESS_API_KEY!,
+  tenant: process.env.ZREXPRESS_TENANT!,
+});
+
+<span class="c-key">const</span> parcel = <span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>({
+  recipientName: <span class="c-str">'Amine B.'</span>,
+  phone: <span class="c-str">'0550123456'</span>,
+  address: <span class="c-str">'12 rue Didouche Mourad'</span>,
+  wilayaId: <span class="c-num">16</span>,
+  communeName: <span class="c-str">'Alger Centre'</span>,
+  productName: <span class="c-str">'T-shirt'</span>,
+  price: <span class="c-num">2500</span>,
+});</pre>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="panel-php" aria-labelledby="tab-php" hidden>
+            <pre><span class="c-cmt">use DzDelivery\ClientFactory;</span>
+
+$shipping = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [
+    <span class="c-str">'apiKey'</span> => getenv(<span class="c-str">'ZREXPRESS_API_KEY'</span>),
+    <span class="c-str">'tenant'</span> => getenv(<span class="c-str">'ZREXPRESS_TENANT'</span>),
+]);
+
+$parcel = $shipping-><span class="c-fn">createParcel</span>([
+    <span class="c-str">'recipientName'</span> => <span class="c-str">'Amine B.'</span>,
+    <span class="c-str">'phone'</span>         => <span class="c-str">'0550123456'</span>,
+    <span class="c-str">'address'</span>       => <span class="c-str">'12 rue Didouche Mourad'</span>,
+    <span class="c-str">'wilayaId'</span>      => <span class="c-num">16</span>,
+    <span class="c-str">'communeName'</span>   => <span class="c-str">'Alger Centre'</span>,
+    <span class="c-str">'productName'</span>   => <span class="c-str">'T-shirt'</span>,
+    <span class="c-str">'price'</span>         => <span class="c-num">2500</span>,
+]);</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">Guide PHP</a>
+          ·
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll(".tab");
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          var selected = tab.getAttribute("aria-controls");
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+            var panel = document.getElementById(t.getAttribute("aria-controls"));
+            if (panel) panel.hidden = !on;
+          });
+        });
+      });
+
+      document.querySelectorAll(".copy").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var text = btn.getAttribute("data-copy") || "";
+          function done() {
+            var prev = btn.textContent;
+            btn.textContent = "Copié";
+            btn.classList.add("ok");
+            setTimeout(function () {
+              btn.textContent = prev;
+              btn.classList.remove("ok");
+            }, 1400);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(function () {
+              window.prompt("Copier :", text);
+            });
+          } else {
+            window.prompt("Copier :", text);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
