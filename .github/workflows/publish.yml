@@ -31,8 +31,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          registry-url: "https://registry.npmjs.org"
-          # never cache in release builds (npm trusted-publisher guidance)
+          # Do NOT set registry-url: it injects a fake NODE_AUTH_TOKEN that
+          # shadows OIDC Trusted Publisher auth and causes E404 on publish.
           package-manager-cache: false
 
       - name: Install
@@ -44,6 +44,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      # OIDC auth — no NPM_TOKEN. Provenance is generated automatically.
+      # OIDC Trusted Publisher — no NPM_TOKEN. Provenance is automatic.
       - name: Publish to npm
         run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ""
