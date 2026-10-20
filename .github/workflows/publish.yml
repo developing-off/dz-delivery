@@ -47,9 +47,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      # OIDC Trusted Publisher — no NPM_TOKEN. Provenance is automatic.
-      - name: Publish to npm
+      # OIDC Trusted Publisher — stage publish (approve on npmjs.com), then
+      # promote. If Trusted Publisher allows direct `npm publish`, you can
+      # switch this step back to `npm publish --access public`.
+      - name: Stage publish to npm
         run: |
           unset NODE_AUTH_TOKEN || true
           npm --version
-          npm publish --access public
+          npm stage publish --access public
