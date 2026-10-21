@@ -187,3 +187,122 @@ describe('ZRExpress locations', () => {
     });
   });
 });
+
+describe('ZRExpress stockType', () => {
+  it('defaults orderedProducts stockType to none', async () => {
+    const { c, mock } = client([
+      { status: 201, body: { id: PARCEL } },
+      { status: 200, body: { id: PARCEL, trackingNumber: 'DZ-1', state: { name: 'OrderReceived' } } },
+    ]);
+    await c.createParcel(baseInput);
+    const products = (mock.calls[0]!.body as any).orderedProducts;
+    expect(products[0].stockType).toBe('none');
+  });
+
+  it('forwards ParcelInput.stockType and ProductItem catalog fields', async () => {
+    const { c, mock } = client([
+      { status: 201, body: { id: PARCEL } },
+      { status: 200, body: { id: PARCEL, trackingNumber: 'DZ-1', state: { name: 'OrderReceived' } } },
+    ]);
+    const { productName, ...rest } = baseInput;
+    await c.createParcel({
+      ...rest,
+      stockType: 'local',
+      productList: [
+        {
+          name: 'Chocolat',
+          quantity: 2,
+          unitPrice: 500,
+          sku: 'CHOCO-1',
+          productId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        },
+      ],
+    });
+    expect((mock.calls[0]!.body as any).orderedProducts[0]).toMatchObject({
+      productName: 'Chocolat',
+      stockType: 'local',
+      productSku: 'CHOCO-1',
+      productId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    });
+  });
+
+  it('rejects local stockType without productId and sku before any HTTP call', async () => {
+    const { c, mock } = client([]);
+    await expect(c.createParcel({ ...baseInput, stockType: 'local' })).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      details: expect.arrayContaining([
+        expect.objectContaining({ field: 'productName.productId' }),
+        expect.objectContaining({ field: 'productName.sku' }),
+      ]),
+    });
+    expect(mock.calls).toHaveLength(0);
+  });
+});
+
+describe('ZRExpress getStopDesks', () => {
+  it('maps hub phone, hours, coordinates and type', async () => {
+    const { c } = client([
+      { status: 200, body: { items: [{ id: WILAYA, code: 16, name: 'Alger', level: 'wilaya' }], hasNext: false } },
+      {
+        status: 200,
+        body: {
+          items: [
+            {
+              id: '33333333-3333-4333-8333-000000000001',
+              name: 'Bureau Test',
+              type: 'stopdesk',
+              isPickupPoint: true,
+              openingHours: '08:30-16:30',
+              phone: { number1: '+213555000000' },
+              address: {
+                street: '1 rue Test',
+                cityTerritoryId: WILAYA,
+                districtTerritoryId: COMMUNE,
+                coordinates: { lat: 36.7, lng: 3.1 },
+              },
+            },
+          ],
+          hasNext: false,
+        },
+      },
+    ]);
+    const desks = await c.getStopDesks({ wilayaId: 16 });
+    expect(desks).toEqual([
+      expect.objectContaining({
+        id: '33333333-3333-4333-8333-000000000001',
+        phone: '+213555000000',
+        openingHours: '08:30-16:30',
+        lat: 36.7,
+        lng: 3.1,
+        type: 'stopdesk',
+      }),
+    ]);
+  });
+
+  it('throws NOT_FOUND with EMPTY_COMMUNE_HUBS when commune is empty but wilaya has hubs', async () => {
+    const emptyCommune = '22222222-2222-4222-8222-000000016099';
+    const { c, mock } = client([
+      { status: 200, body: { items: [{ id: WILAYA, code: 16, name: 'Alger', level: 'wilaya' }], hasNext: false } },
+      { status: 200, body: { items: [], hasNext: false } },
+      {
+        status: 200,
+        body: {
+          items: [
+            {
+              id: '33333333-3333-4333-8333-000000000001',
+              name: 'Bureau',
+              isPickupPoint: true,
+              address: { cityTerritoryId: WILAYA, districtTerritoryId: COMMUNE },
+            },
+          ],
+          hasNext: false,
+        },
+      },
+    ]);
+    await expect(c.getStopDesks({ wilayaId: 16, communeId: emptyCommune })).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+      details: [{ field: 'communeId', code: 'EMPTY_COMMUNE_HUBS' }],
+    });
+    expect(mock.calls).toHaveLength(3);
+  });
+});

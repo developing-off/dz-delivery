@@ -37,6 +37,8 @@ final class ParcelInput
         public readonly ?string $stopDeskId = null,
         public readonly ?string $remark = null,
         public readonly ?string $orderId = null,
+        /** Default stock mode for products that omit ProductItem::$stockType (ZRExpress). */
+        public readonly ?string $stockType = null,
     ) {
         $this->productList = $productList === null
             ? null
@@ -78,6 +80,7 @@ final class ParcelInput
                 stopDeskId: isset($input['stopDeskId']) ? (string) $input['stopDeskId'] : null,
                 remark: self::stringOrNull($input['remark'] ?? null),
                 orderId: isset($input['orderId']) ? (string) $input['orderId'] : null,
+                stockType: self::stockTypeOrNull($input['stockType'] ?? null, $provider),
             );
         }
 
@@ -112,12 +115,18 @@ final class ParcelInput
         if (($this->productName === null) === !$hasList) {
             throw $fail('productName', 'Exactly one of productName / productList is required');
         }
+        if ($this->stockType !== null && !in_array($this->stockType, ['none', 'local', 'warehouse'], true)) {
+            throw $fail('stockType', 'stockType must be one of: none, local, warehouse');
+        }
         foreach ($this->productList ?? [] as $i => $item) {
             if (trim($item->name) === '') {
                 throw $fail("productList.$i.name", 'productList[].name is required');
             }
             if ($item->quantity < 1) {
                 throw $fail("productList.$i.quantity", 'productList[].quantity must be >= 1');
+            }
+            if ($item->stockType !== null && !in_array($item->stockType, ['none', 'local', 'warehouse'], true)) {
+                throw $fail("productList.$i.stockType", 'stockType must be one of: none, local, warehouse');
             }
         }
         if ($this->isStopDesk && ($this->stopDeskId === null || $this->stopDeskId === '')) {
@@ -169,5 +178,22 @@ final class ParcelInput
     private static function numberOrNull(mixed $value): int|float|null
     {
         return is_numeric($value) ? $value + 0 : null;
+    }
+
+    private static function stockTypeOrNull(mixed $value, ?string $provider): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $stockType = (string) $value;
+        if (!in_array($stockType, ['none', 'local', 'warehouse'], true)) {
+            throw ShippingError::validation(
+                'stockType must be one of: none, local, warehouse',
+                $provider,
+                'stockType',
+            );
+        }
+
+        return $stockType;
     }
 }

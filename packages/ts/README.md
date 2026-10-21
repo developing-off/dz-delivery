@@ -89,7 +89,7 @@ Every provider implements `ShippingProvider`:
 | `getFees(query: FeeQuery)` | `Promise<FeeQuote>` |
 | `getWilayas()` | `Promise<Location[]>` (cached per client) |
 | `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
-| `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (ZRExpress hubs, Yalidine centers, Maystro stop desks / pickup points with `communeId` required, Ecotrack communes with a stop desk) |
+| `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (ZRExpress hubs: prefer wilaya-only; Yalidine centers; Maystro needs `communeId`; Ecotrack communes with a stop desk). Optional fields: `phone`, `openingHours`, `lat`, `lng`, `type`. |
 | `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
 | `healthCheck()` | `Promise<{ ok: true, provider, latencyMs }>` — authenticated connectivity probe (wilayas listing, cache bypassed) |
 

@@ -26,13 +26,16 @@
           "name": "Bureau Bab Ezzouar",
           "type": "stopdesk",
           "isPickupPoint": true,
+          "openingHours": "08:30-16:30",
+          "phone": { "number1": "+213555111111", "number2": "", "number3": "" },
           "address": {
             "street": "Cité 221 lots",
             "city": "Alger",
             "cityTerritoryId": "11111111-1111-4111-8111-000000000016",
             "district": "Bab Ezzouar",
             "districtTerritoryId": "22222222-2222-4222-8222-000000016002",
-            "postalCode": "16024"
+            "postalCode": "16024",
+            "coordinates": { "lat": 36.716, "lng": 3.185 }
           }
         },
         {
@@ -53,12 +56,15 @@
           "name": "Bureau Sidi M'Hamed",
           "type": "stopdesk",
           "isPickupPoint": true,
+          "openingHours": "09:00-17:00",
+          "phone": { "number1": "+213555222222" },
           "address": {
             "street": "Place des Martyrs",
             "city": "Alger",
             "cityTerritoryId": "11111111-1111-4111-8111-000000000016",
             "district": "Sidi M'Hamed",
-            "districtTerritoryId": "22222222-2222-4222-8222-000000016001"
+            "districtTerritoryId": "22222222-2222-4222-8222-000000016001",
+            "coordinates": { "lat": 36.753, "lng": 3.058 }
           }
         }
       ],

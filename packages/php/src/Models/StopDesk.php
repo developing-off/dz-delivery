@@ -13,6 +13,11 @@ final class StopDesk
         public readonly ?string $address = null,
         public readonly ?string $communeId = null,
         public readonly ?string $wilayaId = null,
+        public readonly ?string $phone = null,
+        public readonly ?string $openingHours = null,
+        public readonly int|float|null $lat = null,
+        public readonly int|float|null $lng = null,
+        public readonly ?string $type = null,
         public readonly mixed $raw = null,
     ) {
     }

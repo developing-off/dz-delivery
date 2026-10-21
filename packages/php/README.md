@@ -77,8 +77,8 @@ try {
     $communes = $client->getCommunes(16);
 
     // Stop desks / pickup points: use $desk->id as 'stopDeskId' with 'isStopDesk' => true.
-    // ZRExpress / Yalidine / Ecotrack: communeId optional; Maystro: communeId required.
-    $desks = $client->getStopDesks(['wilayaId' => 16, 'communeId' => 1630]);
+    // ZRExpress: prefer wilaya-only (commune filter often empty). Maystro: communeId required.
+    $desks = $client->getStopDesks(['wilayaId' => 16]);
 
     // Connectivity / credentials probe (always hits the network)
     $health = $client->healthCheck(); // { ok: true, provider, latencyMs }

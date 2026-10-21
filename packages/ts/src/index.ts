@@ -42,6 +42,7 @@ export type {
   ProviderName,
   ShippingErrorCode,
   ShippingErrorDetail,
+  StockType,
   StopDesk,
   StopDeskQuery,
   TrackingEvent,

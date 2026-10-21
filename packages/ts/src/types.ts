@@ -22,11 +22,18 @@ export const PARCEL_STATUSES: readonly ParcelStatus[] = [
   'unknown',
 ];
 
+/** ZRExpress `orderedProducts[].stockType`. Other carriers ignore it. */
+export type StockType = 'none' | 'local' | 'warehouse';
+
 export interface ProductItem {
   name: string;
   quantity: number;
   unitPrice?: number;
   sku?: string;
+  /** Carrier catalog product id (ZRExpress when `stockType` is `local` / `warehouse`). */
+  productId?: string;
+  /** Per-item stock mode; overrides `ParcelInput.stockType` when set. */
+  stockType?: StockType;
 }
 
 export interface ParcelInput {
@@ -54,6 +61,11 @@ export interface ParcelInput {
   stopDeskId?: string;
   remark?: string;
   orderId?: string;
+  /**
+   * Default stock mode for products that omit `ProductItem.stockType`.
+   * ZRExpress only (`orderedProducts[].stockType`); default when omitted: `"none"`.
+   */
+  stockType?: StockType;
 }
 
 export interface Parcel {
@@ -109,7 +121,12 @@ export interface Location {
 export interface StopDeskQuery {
   /** Wilaya (provider `Location.id`, official code `1`–`58`, or name). */
   wilayaId: string | number;
-  /** Commune (provider `Location.id` or name). Required by some carriers (Maystro). */
+  /**
+   * Commune (provider `Location.id` or name). Required by some carriers (Maystro).
+   * Optional filter elsewhere — for ZRExpress prefer wilaya-only first (many hubs
+   * are not tagged with a district; empty commune results throw `NOT_FOUND` with a hint
+   * when the wilaya still has hubs).
+   */
   communeId?: string | number;
 }
 
@@ -120,6 +137,14 @@ export interface StopDesk {
   address?: string;
   communeId?: string;
   wilayaId?: string;
+  /** Primary phone when the carrier returns it. */
+  phone?: string;
+  /** Opening hours text when available. */
+  openingHours?: string;
+  lat?: number;
+  lng?: number;
+  /** Carrier hub/desk type label when exposed (e.g. ZRExpress `"stopdesk"`). */
+  type?: string;
   raw?: unknown;
 }
 

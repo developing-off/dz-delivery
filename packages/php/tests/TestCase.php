@@ -149,7 +149,18 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /** @return array<string, mixed> */
     protected static function stopDeskToArray(StopDesk $d): array
     {
-        return ['id' => $d->id, 'name' => $d->name, 'address' => $d->address, 'communeId' => $d->communeId, 'wilayaId' => $d->wilayaId];
+        return array_filter([
+            'id' => $d->id,
+            'name' => $d->name,
+            'address' => $d->address,
+            'communeId' => $d->communeId,
+            'wilayaId' => $d->wilayaId,
+            'phone' => $d->phone,
+            'openingHours' => $d->openingHours,
+            'lat' => $d->lat,
+            'lng' => $d->lng,
+            'type' => $d->type,
+        ], static fn ($v) => $v !== null);
     }
 
     /** @return array<string, mixed> */

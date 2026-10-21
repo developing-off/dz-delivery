@@ -10,6 +10,7 @@ import type {
   ParcelInput,
   ParcelStatus,
   ShippingErrorDetail,
+  StockType,
   StopDesk,
   StopDeskQuery,
   TrackingEvent,
@@ -135,6 +136,17 @@ interface ZRRate {
   deliveryPrices?: Array<{ deliveryType?: string | null; price?: number }> | null;
 }
 
+interface ZRHubCoordinates {
+  lat?: number | null;
+  lng?: number | null;
+}
+
+interface ZRHubPhone {
+  number1?: string | null;
+  number2?: string | null;
+  number3?: string | null;
+}
+
 interface ZRHubAddress {
   street?: string | null;
   city?: string | null;
@@ -142,6 +154,7 @@ interface ZRHubAddress {
   district?: string | null;
   districtTerritoryId?: string | null;
   postalCode?: string | null;
+  coordinates?: ZRHubCoordinates | null;
 }
 
 interface ZRHub {
@@ -151,6 +164,8 @@ interface ZRHub {
   isPickupPoint?: boolean | null;
   IsPickupPoint?: boolean | null;
   address?: ZRHubAddress | null;
+  openingHours?: string | null;
+  phone?: ZRHubPhone | null;
 }
 
 interface ZRHubPage {
@@ -208,16 +223,7 @@ export class ZRExpressProvider implements ShippingProvider {
     const wilaya = await this.resolveWilaya(input.wilayaId ?? input.wilayaName!);
     const communeId = await this.resolveCommuneId(wilaya.id, input);
 
-    const orderedProducts = input.productList
-      ? input.productList.map((p) => ({
-          productName: p.name,
-          quantity: p.quantity,
-          // Assumption: ZRExpress requires a unit price; 0 when the merchant did not provide one.
-          unitPrice: p.unitPrice ?? 0,
-          ...(p.sku ? { productSku: p.sku } : {}),
-          stockType: 'none',
-        }))
-      : [{ productName: input.productName!.trim(), quantity: 1, unitPrice: input.price, stockType: 'none' }];
+    const orderedProducts = this.buildOrderedProducts(input);
 
     // No parcel-level dimensions: applied to the first product (docs/PROVIDERS.md).
     const first = orderedProducts[0] as Record<string, unknown>;
@@ -339,6 +345,12 @@ export class ZRExpressProvider implements ShippingProvider {
   /**
    * `POST /api/v1/hubs/search` filtered to pickup points of the wilaya
    * (optional commune). Hub `id` is the `stopDeskId` / `hubId` for createParcel.
+   *
+   * Prefer **wilaya-only** first: many ZR hubs are not tagged with
+   * `districtTerritoryId`, so `communeId` often returns `[]` even when the wilaya
+   * has desks. When that happens, this method throws `NOT_FOUND` with a hint to
+   * retry without `communeId`.
+   *
    * @see https://docs.zrexpress.app/reference/searchhubsendpoint
    */
   async getStopDesks(query: StopDeskQuery): Promise<StopDesk[]> {
@@ -352,6 +364,24 @@ export class ZRExpressProvider implements ShippingProvider {
         : undefined;
 
     const hubs = await this.searchHubs(wilaya.id, communeTerritoryId);
+    if (hubs.length === 0 && communeTerritoryId) {
+      const wilayaHubs = await this.searchHubs(wilaya.id);
+      if (wilayaHubs.length > 0) {
+        const message =
+          `No ZRExpress stop desks for this commune; ${wilayaHubs.length} hub(s) exist in the wilaya — ` +
+          'call getStopDesks({ wilayaId }) without communeId';
+        throw new ShippingError('NOT_FOUND', message, {
+          provider: PROVIDER,
+          details: [
+            {
+              field: 'communeId',
+              message,
+              code: 'EMPTY_COMMUNE_HUBS',
+            },
+          ],
+        });
+      }
+    }
     return hubs.map((hub) => this.toStopDesk(hub, wilaya.id));
   }
 
@@ -374,6 +404,81 @@ export class ZRExpressProvider implements ShippingProvider {
   }
 
   // --- internals -------------------------------------------------------------
+
+  /**
+   * Builds `orderedProducts[]`. Default `stockType` is `"none"` (no catalog).
+   * `local` / `warehouse` require `productId` + `sku` per ZRExpress docs.
+   */
+  private buildOrderedProducts(input: ParcelInput): Array<Record<string, unknown>> {
+    const defaultStock = this.resolveStockType(input.stockType, 'stockType');
+    const items = input.productList
+      ? input.productList.map((p, i) => {
+          const stockType = this.resolveStockType(p.stockType ?? defaultStock, `productList.${i}.stockType`);
+          this.assertCatalogFields(stockType, p.productId, p.sku, `productList.${i}`);
+          return {
+            productName: p.name,
+            quantity: p.quantity,
+            // Assumption: ZRExpress requires a unit price; 0 when the merchant did not provide one.
+            unitPrice: p.unitPrice ?? 0,
+            stockType,
+            ...(p.sku ? { productSku: p.sku } : {}),
+            ...(p.productId ? { productId: p.productId } : {}),
+          };
+        })
+      : (() => {
+          const stockType = defaultStock;
+          this.assertCatalogFields(stockType, undefined, undefined, 'productName');
+          return [
+            {
+              productName: input.productName!.trim(),
+              quantity: 1,
+              unitPrice: input.price,
+              stockType,
+            },
+          ];
+        })();
+    return items;
+  }
+
+  private resolveStockType(value: StockType | undefined, field: string): StockType {
+    const stockType = value ?? 'none';
+    if (stockType !== 'none' && stockType !== 'local' && stockType !== 'warehouse') {
+      throw new ShippingError('VALIDATION_ERROR', 'stockType must be one of: none, local, warehouse', {
+        provider: PROVIDER,
+        details: [{ field, message: 'stockType must be one of: none, local, warehouse' }],
+      });
+    }
+    return stockType;
+  }
+
+  private assertCatalogFields(
+    stockType: StockType,
+    productId: string | undefined,
+    sku: string | undefined,
+    fieldPrefix: string,
+  ): void {
+    if (stockType === 'none') return;
+    const details: ShippingErrorDetail[] = [];
+    if (!productId?.trim()) {
+      details.push({
+        field: `${fieldPrefix}.productId`,
+        message: `productId is required when stockType is "${stockType}"`,
+      });
+    }
+    if (!sku?.trim()) {
+      details.push({
+        field: `${fieldPrefix}.sku`,
+        message: `sku is required when stockType is "${stockType}"`,
+      });
+    }
+    if (details.length > 0) {
+      throw new ShippingError(
+        'VALIDATION_ERROR',
+        `productId and sku are required when stockType is "${stockType}"`,
+        { provider: PROVIDER, details },
+      );
+    }
+  }
 
   /** Product text (+ optional remark), capped at 250 chars for the API. */
   private parcelDescription(input: ParcelInput): string {
@@ -517,6 +622,16 @@ export class ZRExpressProvider implements ShippingProvider {
     if (address) desk.address = address;
     const communeId = str(hub.address?.districtTerritoryId);
     if (communeId) desk.communeId = communeId;
+    const phone = str(hub.phone?.number1);
+    if (phone) desk.phone = phone;
+    const openingHours = str(hub.openingHours);
+    if (openingHours) desk.openingHours = openingHours;
+    const lat = hub.address?.coordinates?.lat;
+    const lng = hub.address?.coordinates?.lng;
+    if (typeof lat === 'number' && Number.isFinite(lat)) desk.lat = lat;
+    if (typeof lng === 'number' && Number.isFinite(lng)) desk.lng = lng;
+    const type = str(hub.type);
+    if (type) desk.type = type;
     return withRaw(desk, hub, this.includeRaw);
   }
 

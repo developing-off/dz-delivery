@@ -97,14 +97,21 @@ final class ZRExpressProvider implements ShippingProviderInterface
         $communeId = $this->resolveCommuneId($wilayaId, $input->communeId ?? $input->communeName, $input->communeId === null);
 
         $products = [];
+        $defaultStock = $this->resolveStockType($input->stockType, 'stockType');
         foreach ($input->products() as $i => $item) {
+            $fieldPrefix = $input->productList !== null && $input->productList !== []
+                ? "productList.$i"
+                : 'productName';
+            $stockType = $this->resolveStockType($item->stockType ?? $defaultStock, "$fieldPrefix.stockType");
+            $this->assertCatalogFields($stockType, $item->productId, $item->sku, $fieldPrefix);
             $product = array_filter([
                 'productName' => $item->name,
                 'quantity' => $item->quantity,
                 // Assumption: ZRExpress requires a unit price; 0 when the merchant did not provide one.
                 'unitPrice' => $item->unitPrice ?? 0,
                 'productSku' => $item->sku,
-                'stockType' => 'none',
+                'productId' => $item->productId,
+                'stockType' => $stockType,
             ], static fn ($v) => $v !== null);
             if ($i === 0) {
                 $product += array_filter([
@@ -252,6 +259,10 @@ final class ZRExpressProvider implements ShippingProviderInterface
      * POST /api/v1/hubs/search filtered to pickup points of the wilaya (optional commune).
      * Hub id → StopDesk.id / ParcelInput.stopDeskId (hubId on create).
      *
+     * Prefer wilaya-only first: many ZR hubs are not tagged with districtTerritoryId,
+     * so communeId often returns no desks even when the wilaya has hubs. In that case
+     * throws NOT_FOUND with an actionable hint to retry without communeId.
+     *
      * @see https://docs.zrexpress.app/reference/searchhubsendpoint
      *
      * @return list<\DzDelivery\Models\StopDesk>
@@ -269,8 +280,26 @@ final class ZRExpressProvider implements ShippingProviderInterface
             );
         }
 
+        $hubs = $this->searchHubs($wilayaId, $communeId);
+        if ($hubs === [] && $communeId !== null) {
+            $wilayaHubs = $this->searchHubs($wilayaId);
+            if ($wilayaHubs !== []) {
+                $count = count($wilayaHubs);
+                $message = "No ZRExpress stop desks for this commune; {$count} hub(s) exist in the wilaya — "
+                    . 'call getStopDesks({ wilayaId }) without communeId';
+                throw new ShippingError(
+                    ShippingError::NOT_FOUND,
+                    $message,
+                    null,
+                    [['field' => 'communeId', 'message' => $message, 'code' => 'EMPTY_COMMUNE_HUBS']],
+                    null,
+                    self::NAME,
+                );
+            }
+        }
+
         $desks = [];
-        foreach ($this->searchHubs($wilayaId, $communeId) as $hub) {
+        foreach ($hubs as $hub) {
             $desks[] = $this->toStopDesk($hub, $wilayaId);
         }
 
@@ -398,6 +427,13 @@ final class ZRExpressProvider implements ShippingProviderInterface
     {
         $address = is_array($hub['address'] ?? null) ? $hub['address'] : [];
         $street = trim((string) ($address['street'] ?? ''));
+        $phone = is_array($hub['phone'] ?? null) ? $hub['phone'] : [];
+        $number1 = trim((string) ($phone['number1'] ?? ''));
+        $openingHours = trim((string) ($hub['openingHours'] ?? ''));
+        $coords = is_array($address['coordinates'] ?? null) ? $address['coordinates'] : [];
+        $lat = isset($coords['lat']) && is_numeric($coords['lat']) ? $coords['lat'] + 0 : null;
+        $lng = isset($coords['lng']) && is_numeric($coords['lng']) ? $coords['lng'] + 0 : null;
+        $type = trim((string) ($hub['type'] ?? ''));
 
         return new StopDesk(
             id: (string) ($hub['id'] ?? ''),
@@ -409,8 +445,57 @@ final class ZRExpressProvider implements ShippingProviderInterface
             wilayaId: isset($address['cityTerritoryId']) && $address['cityTerritoryId'] !== ''
                 ? (string) $address['cityTerritoryId']
                 : $wilayaId,
+            phone: $number1 !== '' ? $number1 : null,
+            openingHours: $openingHours !== '' ? $openingHours : null,
+            lat: $lat,
+            lng: $lng,
+            type: $type !== '' ? $type : null,
             raw: $this->raw($hub),
         );
+    }
+
+    private function resolveStockType(?string $value, string $field): string
+    {
+        $stockType = $value ?? 'none';
+        if (!in_array($stockType, ['none', 'local', 'warehouse'], true)) {
+            throw ShippingError::validation(
+                'stockType must be one of: none, local, warehouse',
+                self::NAME,
+                $field,
+            );
+        }
+
+        return $stockType;
+    }
+
+    private function assertCatalogFields(string $stockType, ?string $productId, ?string $sku, string $fieldPrefix): void
+    {
+        if ($stockType === 'none') {
+            return;
+        }
+        $details = [];
+        if ($productId === null || trim($productId) === '') {
+            $details[] = [
+                'field' => "$fieldPrefix.productId",
+                'message' => "productId is required when stockType is \"{$stockType}\"",
+            ];
+        }
+        if ($sku === null || trim($sku) === '') {
+            $details[] = [
+                'field' => "$fieldPrefix.sku",
+                'message' => "sku is required when stockType is \"{$stockType}\"",
+            ];
+        }
+        if ($details !== []) {
+            throw new ShippingError(
+                ShippingError::VALIDATION_ERROR,
+                "productId and sku are required when stockType is \"{$stockType}\"",
+                null,
+                $details,
+                null,
+                self::NAME,
+            );
+        }
     }
 
     /**
@@ -419,7 +504,7 @@ final class ZRExpressProvider implements ShippingProviderInterface
      *
      * @return list<array<string, mixed>>
      */
-    private function searchHubs(string $wilayaTerritoryId, ?string $communeTerritoryId): array
+    private function searchHubs(string $wilayaTerritoryId, ?string $communeTerritoryId = null): array
     {
         $filters = [
             ['field' => 'isPickupPoint', 'operator' => 'eq', 'value' => true],

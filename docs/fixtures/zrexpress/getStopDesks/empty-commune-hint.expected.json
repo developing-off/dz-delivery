@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "No ZRExpress stop desks for this commune; 2 hub(s) exist in the wilaya — call getStopDesks({ wilayaId }) without communeId",
+    "details": [
+      {
+        "field": "communeId",
+        "message": "No ZRExpress stop desks for this commune; 2 hub(s) exist in the wilaya — call getStopDesks({ wilayaId }) without communeId",
+        "code": "EMPTY_COMMUNE_HUBS"
+      }
+    ]
+  }
+}

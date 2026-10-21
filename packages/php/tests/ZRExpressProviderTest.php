@@ -109,6 +109,83 @@ final class ZRExpressProviderTest extends TestCase
         $this->assertRequests('zrexpress/getStopDesks/by-commune.request.json');
     }
 
+    public function testGetStopDesksHintsWhenCommuneEmptyButWilayaHasHubs(): void
+    {
+        $client = $this->client('zrexpress', self::nativeResponses('zrexpress/getStopDesks/empty-commune-hint.native.json'));
+        $expected = self::fixture('zrexpress/getStopDesks/empty-commune-hint.expected.json')['error'];
+
+        try {
+            $client->getStopDesks(self::fixture('zrexpress/getStopDesks/empty-commune-hint.input.json'));
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame($expected['code'], $e->code);
+            self::assertSame($expected['message'], $e->getMessage());
+            self::assertSame($expected['details'], $e->details);
+        }
+        $this->assertRequests('zrexpress/getStopDesks/empty-commune-hint.request.json');
+    }
+
+    public function testCreateParcelForwardsStockTypeAndCatalogFields(): void
+    {
+        $client = $this->client('zrexpress', [
+            self::json(201, ['id' => self::PARCEL_ID]),
+            self::json(200, ['id' => self::PARCEL_ID, 'trackingNumber' => 'DZ-AL-1', 'state' => ['name' => 'OrderReceived']]),
+        ]);
+
+        $client->createParcel([
+            'recipientName' => 'Client Test',
+            'phone' => '0550123456',
+            'address' => 'x',
+            'wilayaId' => self::WILAYA_16,
+            'communeId' => '00000000-0000-4000-8000-000000016042',
+            'price' => 1000,
+            'stockType' => 'local',
+            'productList' => [[
+                'name' => 'Chocolat',
+                'quantity' => 2,
+                'unitPrice' => 500,
+                'sku' => 'CHOCO-1',
+                'productId' => 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            ]],
+        ]);
+
+        $body = json_decode((string) $this->history[0]['request']->getBody(), true);
+        self::assertSame(
+            [
+                'productName' => 'Chocolat',
+                'quantity' => 2,
+                'unitPrice' => 500,
+                'productSku' => 'CHOCO-1',
+                'productId' => 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                'stockType' => 'local',
+            ],
+            $body['orderedProducts'][0],
+        );
+    }
+
+    public function testCreateParcelRejectsLocalStockWithoutCatalogFields(): void
+    {
+        $client = $this->client('zrexpress', []);
+
+        try {
+            $client->createParcel([
+                'recipientName' => 'Client Test',
+                'phone' => '0550123456',
+                'address' => 'x',
+                'wilayaId' => self::WILAYA_16,
+                'communeId' => self::WILAYA_16,
+                'productName' => 'Tee',
+                'price' => 100,
+                'stockType' => 'local',
+            ]);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
+            self::assertSame('productName.productId', $e->details[0]['field'] ?? null);
+        }
+        self::assertCount(0, $this->history);
+    }
+
     public function testCreateParcelValidatesBeforeAnyHttpCall(): void
     {
         $client = $this->client('zrexpress', []);

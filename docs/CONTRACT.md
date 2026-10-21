@@ -58,6 +58,7 @@ Input to `createParcel`.
 | `stopDeskId` | `string` | if `isStopDesk` | Provider ID of the stop desk / hub. |
 | `remark` | `string` | no | Note for the delivery agent. |
 | `orderId` | `string` | no | Merchant's own order reference (stored as external ID when supported). |
+| `stockType` | `"none" \| "local" \| "warehouse"` | no | Default stock mode for products that omit `ProductItem.stockType`. Used by ZRExpress (`orderedProducts[].stockType`); ignored by other MVP carriers. SDK default when omitted: `"none"` (no catalog). |
 
 ¹ Exactly one of `wilayaId` / `wilayaName` is required.
 ² Exactly one of `communeId` / `communeName` is required.
@@ -73,6 +74,8 @@ Whether `price` includes the delivery fee is carrier-dependent; providers MUST d
 | `quantity` | `int` | **yes** | Quantity (≥ 1). |
 | `unitPrice` | `number` | no | Unit price in DZD. |
 | `sku` | `string` | no | Merchant SKU. |
+| `productId` | `string` | no | Carrier catalog product id (ZRExpress when `stockType` is `local` / `warehouse`). |
+| `stockType` | `"none" \| "local" \| "warehouse"` | no | Per-item stock mode. Overrides `ParcelInput.stockType` when set. Carriers that ignore stock omit it. |
 
 ### 2.2 `Parcel`
 
@@ -160,7 +163,7 @@ Input to `getStopDesks`.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `wilayaId` | `string \| int` | **yes** | Wilaya (provider `Location.id`, code `1`–`58`, or name). |
-| `communeId` | `string \| int` | no | Commune (provider `Location.id` or name). Some carriers require it (Maystro). |
+| `communeId` | `string \| int` | no | Commune (provider `Location.id` or name). Some carriers require it (Maystro). Optional filter elsewhere — prefer wilaya-only when unsure (see carrier notes in `PROVIDERS.md`). |
 
 ### 2.10 `StopDesk`
 
@@ -173,6 +176,11 @@ A stop desk / pickup point where the recipient collects the parcel.
 | `address` | `string` | no | Street address, when the carrier returns it. |
 | `communeId` | `string` | no | Provider commune id. |
 | `wilayaId` | `string` | no | Provider wilaya id. |
+| `phone` | `string` | no | Primary phone, when the carrier returns it. |
+| `openingHours` | `string` | no | Opening hours text, when available. |
+| `lat` | `number` | no | Latitude. |
+| `lng` | `number` | no | Longitude. |
+| `type` | `string` | no | Carrier hub/desk type label when exposed (e.g. ZRExpress `"stopdesk"`). |
 | `raw` | `unknown` / `mixed` | no | Native object. |
 
 ---
@@ -286,7 +294,7 @@ interface ShippingProviderInterface
 4. **`getWilayas` / `getCommunes`** — Return only deliverable locations when the carrier exposes that information. Implementations MAY cache results in memory for the client's lifetime.
 5. **`cancelParcel`** — Accepts a tracking number or an internal ID. Resolves to the identifier the carrier needs. Throws `NOT_SUPPORTED` if the carrier cannot cancel, or `VALIDATION_ERROR` / `PROVIDER_ERROR` if the parcel is past the cancellable state.
 
-6. **`getStopDesks`** — Lists the stop desks / pickup points of a wilaya (optionally one commune). Throws `VALIDATION_ERROR` when a carrier needs `communeId` and it is missing, `NOT_SUPPORTED` when the carrier exposes no listing.
+6. **`getStopDesks`** — Lists the stop desks / pickup points of a wilaya (optionally one commune). Throws `VALIDATION_ERROR` when a carrier needs `communeId` and it is missing, `NOT_SUPPORTED` when the carrier exposes no listing. Carriers MAY throw `NOT_FOUND` with an actionable `details` hint when a commune filter yields no desks but the wilaya still has desks (typical for ZRExpress hubs keyed at wilaya level).
 
 7. **`healthCheck`** — Probes credentials and connectivity with a lightweight authenticated request (the carrier's wilayas listing). **Always hits the network** (bypasses the in-memory wilayas cache). On success returns `{ ok: true, provider, latencyMs }`. On failure throws `ShippingError` (`AUTH_FAILED`, `NETWORK_ERROR`, `RATE_LIMITED`, …) like any other method. Never throws `NOT_SUPPORTED`.
 

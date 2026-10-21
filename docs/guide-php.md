@@ -188,6 +188,7 @@ Input (`ParcelInput`):
 | `length`, `width`, `height` | `number` | no | cm. **Yalidine** always receives these four fields as integers: `0` when missing, decimals rounded up. ZRExpress puts the dimensions on the first product. Maystro ignores weight and dimensions. |
 | `isStopDesk` | `bool` | no | Default `false` (home delivery). |
 | `stopDeskId` | `string` | if `isStopDesk` | Desk id from `getStopDesks` (ZRExpress: the hub UUID). |
+| `stockType` | `?string` | no | ZRExpress only: `"none"` (default) \| `"local"` \| `"warehouse"`. Per-item override via `productList[].stockType`; `local`/`warehouse` need `productId` + `sku`. |
 | `remark` | `string` | no | Note for the driver (sent to Maystro only; not sent to ZRExpress or Yalidine). |
 | `orderId` | `string` | no | Your order reference. Yalidine requires one and generates `dzd-…` when absent. |
 
@@ -307,7 +308,8 @@ Undeliverable wilayas/communes are skipped. Results are cached for the lifetime 
 New. Lists the stop desks / pickup points where a parcel can be collected. Use the returned `id` as `stopDeskId` in `createParcel`.
 
 ```php
-$desks = $client->getStopDesks(['wilayaId' => 16, 'communeId' => 1630]);
+// ZRExpress: start with wilaya only — commune filter often returns no hubs.
+$desks = $client->getStopDesks(['wilayaId' => 16]);
 
 foreach ($desks as $desk) {
     echo "{$desk->id}  {$desk->name}  {$desk->address}\n";
@@ -330,13 +332,17 @@ Output (`StopDesk[]`):
 | `address` | `?string` | When the carrier gives it. |
 | `communeId` | `?string` | Commune of the desk. |
 | `wilayaId` | `?string` | Wilaya of the desk. |
+| `phone` | `?string` | Primary phone when available. |
+| `openingHours` | `?string` | Opening hours text when available. |
+| `lat` / `lng` | `?float` | Coordinates when available. |
+| `type` | `?string` | Carrier hub type (e.g. ZRExpress `"stopdesk"`). |
 | `raw` | `mixed` | Native item. |
 
 Carrier differences:
 
 - **Yalidine**: Yalidine "centers". `communeId` is an optional filter.
 - **Maystro**: `communeId` is required. The commune's own Maystro stop desk has the **commune id** as its `id`; partner pickup points have their pickup-point id.
-- **ZRExpress**: [`POST /api/v1/hubs/search`](https://docs.zrexpress.app/reference/searchhubsendpoint) with `isPickupPoint = true`. `communeId` is optional. Use the returned hub UUID as `stopDeskId`.
+- **ZRExpress**: [`POST /api/v1/hubs/search`](https://docs.zrexpress.app/reference/searchhubsendpoint) with `isPickupPoint = true`. Prefer **wilaya-only** listing; if `communeId` yields no desks but the wilaya has hubs, throws `NOT_FOUND` with `EMPTY_COMMUNE_HUBS`. Use the returned hub UUID as `stopDeskId`.
 
 ### 3.7 `cancelParcel(string $trackingNumberOrId): void`
 
