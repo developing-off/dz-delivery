@@ -1,0 +1,46 @@
+# Sets npm dist-tags via Trusted Publisher OIDC (no local npm login).
+# On npmjs.com → package → Trusted Publisher: allow "npm publish" and dist-tag.
+#
+# Example: Actions → "npm dist-tag" → Run workflow → version=0.1.5, tag=latest
+
+name: npm dist-tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to tag (e.g. 0.1.5)
+        required: true
+        type: string
+      tag:
+        description: Dist-tag name
+        required: true
+        default: latest
+        type: string
+
+jobs:
+  dist-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: packages/ts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Set dist-tag
+        run: |
+          unset NODE_AUTH_TOKEN || true
+          npm --version
+          npm dist-tag add "@dz-delivery/core@${{ inputs.version }}" "${{ inputs.tag }}"
+          npm dist-tag ls @dz-delivery/core
