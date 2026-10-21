@@ -76,6 +76,34 @@ export interface Parcel {
   raw?: unknown;
 }
 
+/** Input to `listParcels` (CONTRACT.md §2.11). */
+export interface ParcelListQuery {
+  /** 1-based. Default `1`. */
+  page?: number;
+  /** Default `50`. Carriers MAY clamp (ZRExpress ≤ 1000). */
+  pageSize?: number;
+  /** Free-text search (tracking, customer name, phone…). */
+  keyword?: string;
+  /** Merchant order reference (`ParcelInput.orderId`). */
+  orderId?: string;
+  /** Unified status filter (often applied after mapping). */
+  status?: ParcelStatus;
+  /** ISO 8601 — parcels updated at/after this instant when supported. */
+  updatedSince?: string;
+  /** Follow `hasNext` and merge pages (safety-capped). Default `false`. */
+  allPages?: boolean;
+}
+
+/** Result of `listParcels` (CONTRACT.md §2.12). */
+export interface ParcelListPage {
+  parcels: Parcel[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  hasNext: boolean;
+  raw?: unknown;
+}
+
 export interface TrackingEvent {
   status: ParcelStatus;
   label: string;

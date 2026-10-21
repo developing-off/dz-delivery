@@ -1,0 +1,16 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "8c1a4c53-0000-4000-8000-00000000a001",
+        "trackingNumber": "16-AAA111-ZR",
+        "status": "pending",
+        "provider": "zrexpress"
+      }
+    ],
+    "page": 1,
+    "pageSize": 50,
+    "totalCount": 1,
+    "hasNext": false
+  }
+}

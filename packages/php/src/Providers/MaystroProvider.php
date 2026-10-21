@@ -442,6 +442,11 @@ final class MaystroProvider implements ShippingProviderInterface
         return $desks;
     }
 
+    public function listParcels(\DzDelivery\Models\ParcelListQuery|array|null $query = null): \DzDelivery\Models\ParcelListPage
+    {
+        throw ShippingError::notSupported('Maystro has no parcels listing API (use webhooks)', self::NAME);
+    }
+
     public function cancelParcel(string $trackingNumberOrId): void
     {
         throw ShippingError::notSupported('Maystro has no order cancellation endpoint', self::NAME);

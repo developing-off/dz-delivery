@@ -1,0 +1,15 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/parcels/search",
+    "body": {
+      "pageNumber": 1,
+      "pageSize": 50,
+      "orderBy": ["createdAt desc"],
+      "advancedFilter": {
+        "logic": "and",
+        "filters": [{ "field": "externalId", "operator": "eq", "value": "ORD-1001" }]
+      }
+    }
+  }
+]

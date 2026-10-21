@@ -509,6 +509,12 @@ export class MaystroProvider implements ShippingProvider {
   }
 
   /** Not available: Maystro documents no order cancellation endpoint. */
+  async listParcels(): Promise<never> {
+    throw new ShippingError('NOT_SUPPORTED', 'Maystro has no parcels listing API (use webhooks)', {
+      provider: PROVIDER,
+    });
+  }
+
   async cancelParcel(_trackingNumberOrId: string): Promise<void> {
     throw new ShippingError('NOT_SUPPORTED', 'Maystro has no order cancellation endpoint', { provider: PROVIDER });
   }

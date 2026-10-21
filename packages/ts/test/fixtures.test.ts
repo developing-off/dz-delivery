@@ -29,6 +29,8 @@ function call(client: ShippingProvider, c: FixtureCase): Promise<unknown> {
       return client.getCommunes(input.wilayaId);
     case 'getStopDesks':
       return client.getStopDesks(input as any);
+    case 'listParcels':
+      return client.listParcels(input as any);
     case 'cancelParcel':
       return client.cancelParcel(input.trackingNumberOrId);
     default:

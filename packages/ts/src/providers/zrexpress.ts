@@ -1,21 +1,24 @@
 import { ShippingError } from '../errors';
 import { HttpClient, type ErrorBodyParser } from '../http';
 import { createStatusMapper } from '../status';
-import type {
-  FeeQuery,
-  FeeQuote,
-  HealthCheckResult,
-  Location,
-  Parcel,
-  ParcelInput,
-  ParcelStatus,
-  ShippingErrorDetail,
-  StockType,
-  StopDesk,
-  StopDeskQuery,
-  TrackingEvent,
-  TrackResult,
-  ZRExpressConfig,
+import {
+  PARCEL_STATUSES,
+  type FeeQuery,
+  type FeeQuote,
+  type HealthCheckResult,
+  type Location,
+  type Parcel,
+  type ParcelInput,
+  type ParcelListPage,
+  type ParcelListQuery,
+  type ParcelStatus,
+  type ShippingErrorDetail,
+  type StockType,
+  type StopDesk,
+  type StopDeskQuery,
+  type TrackingEvent,
+  type TrackResult,
+  type ZRExpressConfig,
 } from '../types';
 import {
   findLocationByName,
@@ -39,6 +42,10 @@ const PROVIDER = 'zrexpress';
 const API = '/api/v1';
 const PAGE_SIZE = 1000;
 const MAX_AMOUNT = 150_000;
+const LIST_DEFAULT_PAGE_SIZE = 50;
+const LIST_MAX_PAGE_SIZE = 1000;
+/** Safety cap when `allPages: true` (pages × pageSize). */
+const LIST_MAX_PAGES = 100;
 
 /**
  * Native state → unified status. Matching is case-, accent- and separator-insensitive
@@ -290,6 +297,66 @@ export class ZRExpressProvider implements ShippingProvider {
   }
 
   /**
+   * `POST /api/v1/parcels/search` — paginated account parcels with current status.
+   * Does not include state-history events (use `track` for that).
+   * @see https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint
+   */
+  async listParcels(query: ParcelListQuery = {}): Promise<ParcelListPage> {
+    const page = query.page ?? 1;
+    const pageSize = Math.min(Math.max(query.pageSize ?? LIST_DEFAULT_PAGE_SIZE, 1), LIST_MAX_PAGE_SIZE);
+    if (page < 1) {
+      throw new ShippingError('VALIDATION_ERROR', 'page must be >= 1', {
+        provider: PROVIDER,
+        details: [{ field: 'page', message: 'page must be >= 1' }],
+      });
+    }
+    if (query.status !== undefined && !(PARCEL_STATUSES as readonly string[]).includes(query.status)) {
+      throw new ShippingError('VALIDATION_ERROR', 'status must be a unified ParcelStatus', {
+        provider: PROVIDER,
+        details: [{ field: 'status', message: 'status must be a unified ParcelStatus' }],
+      });
+    }
+
+    if (query.allPages) {
+      const all: Parcel[] = [];
+      let totalCount = 0;
+      let lastRaw: unknown;
+      let pageNumber = 1;
+      let hasNext = true;
+      while (hasNext && pageNumber <= LIST_MAX_PAGES) {
+        const pageResult = await this.searchParcelsPage({ ...query, page: pageNumber, pageSize, allPages: false });
+        all.push(...pageResult.parcels);
+        totalCount = pageResult.totalCount;
+        lastRaw = pageResult.raw;
+        hasNext = pageResult.hasNext;
+        pageNumber += 1;
+      }
+      const parcels = query.status ? all.filter((p) => p.status === query.status) : all;
+      return withRaw(
+        { parcels, page: 1, pageSize, totalCount, hasNext: false },
+        lastRaw,
+        this.includeRaw,
+      );
+    }
+
+    const pageResult = await this.searchParcelsPage({ ...query, page, pageSize });
+    const parcels = query.status
+      ? pageResult.parcels.filter((p) => p.status === query.status)
+      : pageResult.parcels;
+    return withRaw(
+      {
+        parcels,
+        page: pageResult.page,
+        pageSize: pageResult.pageSize,
+        totalCount: pageResult.totalCount,
+        hasNext: pageResult.hasNext,
+      },
+      pageResult.raw,
+      this.includeRaw,
+    );
+  }
+
+  /**
    * Uses the effective rate of the destination wilaya. `toCommuneId`, `fromWilayaId`
    * and `weight` are ignored: the rates endpoint prices per destination territory only.
    */
@@ -486,6 +553,59 @@ export class ZRExpressProvider implements ShippingProvider {
     const remark = input.remark?.trim();
     const full = remark ? `${base} - ${remark}` : base;
     return full.slice(0, 250);
+  }
+
+  private async searchParcelsPage(query: ParcelListQuery & { page: number; pageSize: number }): Promise<{
+    parcels: Parcel[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    hasNext: boolean;
+    raw: unknown;
+  }> {
+    const filters: Array<Record<string, unknown>> = [];
+    if (query.orderId?.trim()) {
+      filters.push({ field: 'externalId', operator: 'eq', value: query.orderId.trim() });
+    }
+    if (query.updatedSince?.trim()) {
+      filters.push({ field: 'lastStateUpdateAt', operator: 'gte', value: query.updatedSince.trim() });
+    }
+
+    const body: Record<string, unknown> = {
+      pageNumber: query.page,
+      pageSize: query.pageSize,
+      orderBy: ['createdAt desc'],
+    };
+    if (query.keyword?.trim()) body.keyword = query.keyword.trim();
+    if (filters.length > 0) body.advancedFilter = { logic: 'and', filters };
+
+    const res = await this.http.request<{
+      items?: ZRParcel[];
+      pageNumber?: number;
+      pageSize?: number;
+      totalCount?: number;
+      hasNext?: boolean;
+    }>({ method: 'POST', path: `${API}/parcels/search`, body });
+
+    if (!isRecord(res.body) || !Array.isArray(res.body.items)) {
+      throw new ShippingError('PROVIDER_ERROR', 'Unexpected ZRExpress parcels search response', {
+        provider: PROVIDER,
+        raw: res.body,
+      });
+    }
+
+    const parcels = res.body.items
+      .filter((item) => isRecord(item) && str(item.id))
+      .map((item) => this.toParcel(item as ZRParcel));
+
+    return {
+      parcels,
+      page: Number(res.body.pageNumber) || query.page,
+      pageSize: Number(res.body.pageSize) || query.pageSize,
+      totalCount: Number(res.body.totalCount) || parcels.length,
+      hasNext: Boolean(res.body.hasNext),
+      raw: res.body,
+    };
   }
 
   /** `GET /parcels/{x}` accepts both the parcel UUID and the tracking number. */

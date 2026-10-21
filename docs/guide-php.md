@@ -124,6 +124,7 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 | `getFees` | yes | yes | yes | yes (per wilaya) |
 | `getWilayas` / `getCommunes` | yes | yes | yes | yes |
 | `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) |
+| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` (webhooks) | `NOT_SUPPORTED` (soon) |
 | `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) |
 | `healthCheck` | yes | yes | yes | yes |
 
@@ -344,7 +345,35 @@ Carrier differences:
 - **Maystro**: `communeId` is required. The commune's own Maystro stop desk has the **commune id** as its `id`; partner pickup points have their pickup-point id.
 - **ZRExpress**: [`POST /api/v1/hubs/search`](https://docs.zrexpress.app/reference/searchhubsendpoint) with `isPickupPoint = true`. Prefer **wilaya-only** listing; if `communeId` yields no desks but the wilaya has hubs, throws `NOT_FOUND` with `EMPTY_COMMUNE_HUBS`. Use the returned hub UUID as `stopDeskId`.
 
-### 3.7 `cancelParcel(string $trackingNumberOrId): void`
+### 3.7 `listParcels(ParcelListQuery|array|null $query = null): ParcelListPage`
+
+Paginated list of account parcels with current unified `status` (no event history — use `track()` for that).
+
+```php
+$page = $zr->listParcels(['page' => 1, 'pageSize' => 50]);
+foreach ($page->parcels as $parcel) {
+    echo "{$parcel->trackingNumber} {$parcel->status}\n";
+}
+
+// Sync helpers:
+// $zr->listParcels(['orderId' => 'ORD-1001']);
+// $zr->listParcels(['keyword' => '0550', 'status' => 'pending']);
+// $zr->listParcels(['updatedSince' => '2026-10-01T00:00:00+00:00', 'allPages' => true]);
+```
+
+| Field | Notes |
+|-------|-------|
+| `page` / `pageSize` | Default `1` / `50` (ZRExpress clamps ≤ 1000). |
+| `keyword` | Free-text (tracking, name, phone…). |
+| `orderId` | Merchant reference (`externalId` on ZRExpress). |
+| `status` | Unified status; filtered after mapping. |
+| `updatedSince` | ISO 8601 — ZRExpress filters `lastStateUpdateAt`. |
+| `allPages` | Follow pagination (safety-capped). |
+
+- **ZRExpress**: [`POST /api/v1/parcels/search`](https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint).
+- **Yalidine / Maystro / Ecotrack**: `NOT_SUPPORTED` for now (Maystro: use webhooks).
+
+### 3.8 `cancelParcel(string $trackingNumberOrId): void`
 
 ```php
 $client->cancelParcel($parcel->trackingNumber);
@@ -354,7 +383,7 @@ $client->cancelParcel($parcel->trackingNumber);
 - **Yalidine**: only parcels still in `En préparation` can be deleted; otherwise `VALIDATION_ERROR`.
 - **Maystro**: `NOT_SUPPORTED`.
 
-### 3.8 `healthCheck(): HealthCheckResult`
+### 3.9 `healthCheck(): HealthCheckResult`
 
 Lightweight authenticated probe (wilayas listing). **Always hits the network** (bypasses the in-memory cache). On success returns `{ ok: true, provider, latencyMs }`; on failure throws `ShippingError` (`AUTH_FAILED`, `NETWORK_ERROR`, …).
 

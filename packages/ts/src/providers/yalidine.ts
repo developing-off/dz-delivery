@@ -464,6 +464,12 @@ export class YalidineProvider implements ShippingProvider {
    * `DELETE /parcels/{tracking}`. Yalidine only deletes parcels still "En préparation";
    * a `deleted: false` answer is reported as `VALIDATION_ERROR`.
    */
+  async listParcels(): Promise<never> {
+    throw new ShippingError('NOT_SUPPORTED', 'Yalidine listParcels is not implemented yet', {
+      provider: PROVIDER,
+    });
+  }
+
   async cancelParcel(trackingNumberOrId: string): Promise<void> {
     const tracking = trackingNumberOrId?.trim();
     if (!tracking) throw new ShippingError('VALIDATION_ERROR', 'trackingNumberOrId is required', { provider: PROVIDER });

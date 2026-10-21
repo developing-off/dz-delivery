@@ -14,6 +14,8 @@ use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
+use DzDelivery\Models\ParcelListPage;
+use DzDelivery\Models\ParcelListQuery;
 use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\StopDeskQuery;
 use DzDelivery\Models\TrackingEvent;
@@ -306,6 +308,61 @@ final class ZRExpressProvider implements ShippingProviderInterface
         return $desks;
     }
 
+    /**
+     * POST /api/v1/parcels/search — paginated account parcels with current status.
+     * No state-history events (use track() for that).
+     *
+     * @see https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint
+     *
+     * @param ParcelListQuery|array<string, mixed>|null $query
+     */
+    public function listParcels(ParcelListQuery|array|null $query = null): ParcelListPage
+    {
+        $query = ParcelListQuery::from($query, self::NAME);
+        $pageSize = min(max($query->pageSize, 1), self::PAGE_SIZE);
+
+        if ($query->allPages) {
+            $all = [];
+            $totalCount = 0;
+            $lastRaw = null;
+            $pageNumber = 1;
+            $hasNext = true;
+            while ($hasNext && $pageNumber <= 100) {
+                [$parcels, $totalCount, $hasNext, $lastRaw] = $this->searchParcelsPage(
+                    $pageNumber,
+                    $pageSize,
+                    $query,
+                );
+                foreach ($parcels as $parcel) {
+                    $all[] = $parcel;
+                }
+                $pageNumber++;
+            }
+            if ($query->status !== null) {
+                $all = array_values(array_filter(
+                    $all,
+                    static fn (Parcel $p) => $p->status === $query->status,
+                ));
+            }
+
+            return new ParcelListPage($all, 1, $pageSize, $totalCount, false, $this->raw($lastRaw));
+        }
+
+        [$parcels, $totalCount, $hasNext, $raw] = $this->searchParcelsPage(
+            $query->page,
+            $pageSize,
+            $query,
+        );
+        if ($query->status !== null) {
+            $parcels = array_values(array_filter(
+                $parcels,
+                static fn (Parcel $p) => $p->status === $query->status,
+            ));
+        }
+
+        return new ParcelListPage($parcels, $query->page, $pageSize, $totalCount, $hasNext, $this->raw($raw));
+    }
+
     public function cancelParcel(string $trackingNumberOrId): void
     {
         $id = $trackingNumberOrId;
@@ -370,6 +427,53 @@ final class ZRExpressProvider implements ShippingProviderInterface
         }
 
         return [is_string($message) ? $message : null, $details];
+    }
+
+    /**
+     * @return array{0: list<Parcel>, 1: int, 2: bool, 3: mixed}
+     */
+    private function searchParcelsPage(int $page, int $pageSize, ParcelListQuery $query): array
+    {
+        $filters = [];
+        if ($query->orderId !== null) {
+            $filters[] = ['field' => 'externalId', 'operator' => 'eq', 'value' => $query->orderId];
+        }
+        if ($query->updatedSince !== null) {
+            $filters[] = ['field' => 'lastStateUpdateAt', 'operator' => 'gte', 'value' => $query->updatedSince];
+        }
+
+        $body = [
+            'pageNumber' => $page,
+            'pageSize' => $pageSize,
+            'orderBy' => ['createdAt desc'],
+        ];
+        if ($query->keyword !== null) {
+            $body['keyword'] = $query->keyword;
+        }
+        if ($filters !== []) {
+            $body['advancedFilter'] = ['logic' => 'and', 'filters' => $filters];
+        }
+
+        $response = $this->http->request('POST', self::API . '/parcels/search', [], $body);
+        if (!is_array($response) || !isset($response['items']) || !is_array($response['items'])) {
+            throw ShippingError::providerError(
+                'Unexpected ZRExpress parcels search response',
+                self::NAME,
+                $this->raw($response),
+            );
+        }
+
+        $parcels = [];
+        foreach ($response['items'] as $item) {
+            if (is_array($item) && ($item['id'] ?? '') !== '') {
+                $parcels[] = $this->toParcel($item);
+            }
+        }
+
+        $totalCount = isset($response['totalCount']) ? (int) $response['totalCount'] : count($parcels);
+        $hasNext = (bool) ($response['hasNext'] ?? false);
+
+        return [$parcels, $totalCount, $hasNext, $response];
     }
 
     /** @return array<string, mixed> */

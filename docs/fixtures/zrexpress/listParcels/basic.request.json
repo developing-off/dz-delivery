@@ -1,0 +1,12 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/parcels/search",
+    "headers": { "X-Api-Key": "test-api-key", "X-Tenant": "test-tenant" },
+    "body": {
+      "pageNumber": 1,
+      "pageSize": 50,
+      "orderBy": ["createdAt desc"]
+    }
+  }
+]

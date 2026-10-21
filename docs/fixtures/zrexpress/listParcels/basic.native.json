@@ -1,0 +1,27 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "items": [
+        {
+          "id": "8c1a4c53-0000-4000-8000-00000000a001",
+          "trackingNumber": "16-AAA111-ZR",
+          "externalId": "ORD-1001",
+          "state": { "name": "commande_recue", "description": "Commande reçue" },
+          "lastStateUpdateAt": "2026-10-21T10:00:00"
+        },
+        {
+          "id": "8c1a4c53-0000-4000-8000-00000000a002",
+          "trackingNumber": "16-BBB222-ZR",
+          "state": { "name": "Delivered", "description": "Livré" },
+          "lastStateUpdateAt": "2026-10-21T12:00:00"
+        }
+      ],
+      "pageNumber": 1,
+      "pageSize": 50,
+      "totalCount": 2,
+      "hasNext": false
+    }
+  }
+]

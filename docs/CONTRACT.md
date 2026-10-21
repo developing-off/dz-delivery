@@ -183,6 +183,31 @@ A stop desk / pickup point where the recipient collects the parcel.
 | `type` | `string` | no | Carrier hub/desk type label when exposed (e.g. ZRExpress `"stopdesk"`). |
 | `raw` | `unknown` / `mixed` | no | Native object. |
 
+### 2.11 `ParcelListQuery`
+
+Input to `listParcels` (paginated account sync).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `page` | `int` | no | 1-based page. Default `1`. |
+| `pageSize` | `int` | no | Page size. Default `50`. Carriers MAY clamp (ZRExpress ≤ 1000). |
+| `keyword` | `string` | no | Free-text search (tracking, customer name, phone… when the carrier supports it). |
+| `orderId` | `string` | no | Merchant order reference (`ParcelInput.orderId` / carrier external id). |
+| `status` | `ParcelStatus` | no | Unified status filter. Applied after mapping when the carrier has no unified filter (typical). |
+| `updatedSince` | `string` | no | ISO 8601 — only parcels whose status changed at/after this instant (when the carrier exposes an update timestamp). |
+| `allPages` | `boolean` | no | When `true`, follow `hasNext` and merge pages (subject to a safety cap). Default `false`. |
+
+### 2.12 `ParcelListPage`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `parcels` | `Parcel[]` | **yes** | Mapped parcels for this response (or all pages when `allPages`). |
+| `page` | `int` | **yes** | Page that was fetched (or `1` when `allPages` merged everything). |
+| `pageSize` | `int` | **yes** | Requested/effective page size. |
+| `totalCount` | `int` | **yes** | Carrier-reported total matching the query (before client-side `status` filter when applicable). |
+| `hasNext` | `boolean` | **yes** | More pages available (`false` when `allPages` finished or carrier has no more). |
+| `raw` | `unknown` / `mixed` | no | Native page payload (last page when `allPages`). |
+
 ---
 
 ## 3. Error codes
@@ -224,7 +249,7 @@ Each provider's native → unified table lives in `docs/PROVIDERS.md` and MUST b
 
 ## 5. `ShippingProvider` interface
 
-Five MVP operations (locations is split in two methods), plus `getStopDesks` and `healthCheck`:
+Five MVP operations (locations is split in two methods), plus `getStopDesks`, `listParcels`, and `healthCheck`:
 
 | # | Method | Input | Output |
 |---|--------|-------|--------|
@@ -235,7 +260,8 @@ Five MVP operations (locations is split in two methods), plus `getStopDesks` and
 | 4b | `getCommunes(wilayaId)` | `string \| int` (provider id or code 1–58) | `Location[]` |
 | 5 | `cancelParcel(trackingNumberOrId)` | `string` | `void` |
 | 6 | `getStopDesks(query)` | `StopDeskQuery` | `StopDesk[]` |
-| 7 | `healthCheck()` | — | `HealthCheckResult` = `{ ok: true, provider, latencyMs }` |
+| 7 | `listParcels(query?)` | `ParcelListQuery` | `ParcelListPage` |
+| 8 | `healthCheck()` | — | `HealthCheckResult` = `{ ok: true, provider, latencyMs }` |
 
 ### TypeScript reference
 
@@ -259,6 +285,7 @@ export interface ShippingProvider {
   getWilayas(): Promise<Location[]>;
   getCommunes(wilayaId: string | number): Promise<Location[]>;
   getStopDesks(query: StopDeskQuery): Promise<StopDesk[]>;
+  listParcels(query?: ParcelListQuery): Promise<ParcelListPage>;
   cancelParcel(trackingNumberOrId: string): Promise<void>;
   healthCheck(): Promise<HealthCheckResult>;
 }
@@ -281,6 +308,7 @@ interface ShippingProviderInterface
     public function getCommunes(string|int $wilayaId): array;
     /** @return StopDesk[] */
     public function getStopDesks(StopDeskQuery|array $query): array;
+    public function listParcels(ParcelListQuery|array|null $query = null): ParcelListPage;
     public function cancelParcel(string $trackingNumberOrId): void;
     public function healthCheck(): HealthCheckResult;
 }
@@ -296,7 +324,9 @@ interface ShippingProviderInterface
 
 6. **`getStopDesks`** — Lists the stop desks / pickup points of a wilaya (optionally one commune). Throws `VALIDATION_ERROR` when a carrier needs `communeId` and it is missing, `NOT_SUPPORTED` when the carrier exposes no listing. Carriers MAY throw `NOT_FOUND` with an actionable `details` hint when a commune filter yields no desks but the wilaya still has desks (typical for ZRExpress hubs keyed at wilaya level).
 
-7. **`healthCheck`** — Probes credentials and connectivity with a lightweight authenticated request (the carrier's wilayas listing). **Always hits the network** (bypasses the in-memory wilayas cache). On success returns `{ ok: true, provider, latencyMs }`. On failure throws `ShippingError` (`AUTH_FAILED`, `NETWORK_ERROR`, `RATE_LIMITED`, …) like any other method. Never throws `NOT_SUPPORTED`.
+7. **`listParcels`** — Lists parcels for the authenticated account (paginated), with current unified `status` on each `Parcel`. Does **not** include full `TrackingEvent` history — call `track()` for history. Throws `NOT_SUPPORTED` when the carrier exposes no listing (use webhooks / per-tracking `track` instead). Prefer webhooks over aggressive polling when available.
+
+8. **`healthCheck`** — Probes credentials and connectivity with a lightweight authenticated request (the carrier's wilayas listing). **Always hits the network** (bypasses the in-memory wilayas cache). On success returns `{ ok: true, provider, latencyMs }`. On failure throws `ShippingError` (`AUTH_FAILED`, `NETWORK_ERROR`, `RATE_LIMITED`, …) like any other method. Never throws `NOT_SUPPORTED`.
 
 > **Decision:** `cancelParcel` returns `void` (not `Parcel`) because some carriers answer with `204 No Content`. Call `track()` afterwards if you need the new status.
 
@@ -339,7 +369,7 @@ The following are **intentionally not** part of the contract (see Phase 6 in `TA
 - Parcel updates (address, amount, products), exchanges, refunds
 - Labels / PDF generation, pickup bags
 - Claims, customers, treasury / payments, reports
-- Webhooks / push status
+- Webhooks / push status (recommended for live sync; `listParcels` is the pull alternative)
 
 They MAY be added later as **optional, provider-specific modules** that do not change the `ShippingProvider` interface.
 

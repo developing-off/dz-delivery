@@ -468,6 +468,12 @@ export class EcotrackProvider implements ShippingProvider {
    * `DELETE /delete/order?tracking=`. Ecotrack only deletes orders that are not validated
    * yet; afterwards (error 10001) this throws `VALIDATION_ERROR`.
    */
+  async listParcels(): Promise<never> {
+    throw new ShippingError('NOT_SUPPORTED', 'Ecotrack listParcels is not implemented yet', {
+      provider: PROVIDER,
+    });
+  }
+
   async cancelParcel(trackingNumberOrId: string): Promise<void> {
     const tracking = trackingNumberOrId?.trim();
     if (!tracking) throw new ShippingError('VALIDATION_ERROR', 'trackingNumberOrId is required', { provider: PROVIDER });

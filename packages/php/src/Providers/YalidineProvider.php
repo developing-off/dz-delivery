@@ -303,6 +303,11 @@ final class YalidineProvider implements ShippingProviderInterface
         return $desks;
     }
 
+    public function listParcels(\DzDelivery\Models\ParcelListQuery|array|null $query = null): \DzDelivery\Models\ParcelListPage
+    {
+        throw ShippingError::notSupported('Yalidine listParcels is not implemented yet', self::NAME);
+    }
+
     public function cancelParcel(string $trackingNumberOrId): void
     {
         $response = $this->http->request('DELETE', 'parcels/' . rawurlencode($trackingNumberOrId));

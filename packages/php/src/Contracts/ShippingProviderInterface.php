@@ -10,6 +10,8 @@ use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
+use DzDelivery\Models\ParcelListPage;
+use DzDelivery\Models\ParcelListQuery;
 use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\StopDeskQuery;
 use DzDelivery\Models\TrackResult;
@@ -43,6 +45,13 @@ interface ShippingProviderInterface
      * @return StopDesk[]
      */
     public function getStopDesks(StopDeskQuery|array $query): array;
+
+    /**
+     * Paginated account parcels with current unified status (no event history).
+     *
+     * @param ParcelListQuery|array<string, mixed>|null $query
+     */
+    public function listParcels(ParcelListQuery|array|null $query = null): ParcelListPage;
 
     public function cancelParcel(string $trackingNumberOrId): void;
 

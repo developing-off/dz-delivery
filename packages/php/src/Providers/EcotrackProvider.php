@@ -378,6 +378,11 @@ final class EcotrackProvider implements ShippingProviderInterface
      * DELETE /delete/order?tracking=. Ecotrack only deletes orders that are not validated
      * yet; afterwards (error 10001) this throws VALIDATION_ERROR.
      */
+    public function listParcels(\DzDelivery\Models\ParcelListQuery|array|null $query = null): \DzDelivery\Models\ParcelListPage
+    {
+        throw ShippingError::notSupported('Ecotrack listParcels is not implemented yet', self::NAME);
+    }
+
     public function cancelParcel(string $trackingNumberOrId): void
     {
         $tracking = trim($trackingNumberOrId);

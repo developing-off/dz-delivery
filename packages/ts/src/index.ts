@@ -36,6 +36,8 @@ export type {
   MaystroConfig,
   Parcel,
   ParcelInput,
+  ParcelListPage,
+  ParcelListQuery,
   ParcelStatus,
   ProductItem,
   ProviderConfigMap,

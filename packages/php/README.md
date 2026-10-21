@@ -6,7 +6,7 @@ Unified PHP client for Algerian delivery carriers. Implements the shared contrac
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | MVP (all methods including `getStopDesks` via hubs search) |
+| ZRExpress | `zrexpress` | MVP (all methods including `getStopDesks` + `listParcels`) |
 | Yalidine | `yalidine` | MVP (all methods), checked against the developer docs |
 | Maystro Delivery | `maystro` | createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
 | Ecotrack (DHD, Anderson, World Express, …) | `ecotrack` | all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
@@ -79,6 +79,9 @@ try {
     // Stop desks / pickup points: use $desk->id as 'stopDeskId' with 'isStopDesk' => true.
     // ZRExpress: prefer wilaya-only (commune filter often empty). Maystro: communeId required.
     $desks = $client->getStopDesks(['wilayaId' => 16]);
+
+    // Account parcels + status (ZRExpress). No event history — use track() for that.
+    $page = $client->listParcels(['page' => 1, 'pageSize' => 50]);
 
     // Connectivity / credentials probe (always hits the network)
     $health = $client->healthCheck(); // { ok: true, provider, latencyMs }

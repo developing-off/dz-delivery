@@ -83,6 +83,35 @@ final class ZRExpressProviderTest extends TestCase
         }
     }
 
+    public function testListParcelsMapsStatusesAndPagination(): void
+    {
+        $client = $this->client('zrexpress', self::nativeResponses('zrexpress/listParcels/basic.native.json'));
+
+        $page = $client->listParcels(self::fixture('zrexpress/listParcels/basic.input.json'));
+
+        $expected = self::fixture('zrexpress/listParcels/basic.expected.json')['result'];
+        self::assertSame($expected['page'], $page->page);
+        self::assertSame($expected['pageSize'], $page->pageSize);
+        self::assertSame($expected['totalCount'], $page->totalCount);
+        self::assertSame($expected['hasNext'], $page->hasNext);
+        self::assertSame(
+            $expected['parcels'],
+            array_map(self::parcelToArray(...), $page->parcels),
+        );
+        $this->assertRequests('zrexpress/listParcels/basic.request.json');
+    }
+
+    public function testListParcelsFiltersByOrderId(): void
+    {
+        $client = $this->client('zrexpress', self::nativeResponses('zrexpress/listParcels/by-orderId.native.json'));
+
+        $page = $client->listParcels(self::fixture('zrexpress/listParcels/by-orderId.input.json'));
+
+        self::assertCount(1, $page->parcels);
+        self::assertSame('16-AAA111-ZR', $page->parcels[0]->trackingNumber);
+        $this->assertRequests('zrexpress/listParcels/by-orderId.request.json');
+    }
+
     public function testGetStopDesksListsPickupHubsOfAWilaya(): void
     {
         $client = $this->client('zrexpress', self::nativeResponses('zrexpress/getStopDesks/by-wilaya.native.json'));
