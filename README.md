@@ -109,7 +109,7 @@ Contributions are very welcome — especially new providers. See [`CONTRIBUTING.
 
 ## Site
 
-Landing page (GitHub Pages) : [`index.html`](./index.html) à la racine.  
+Documentation (GitHub Pages) : [`index.html`](./index.html) — install, API unifiée, modèles, erreurs, matrice providers, extras ZRExpress.  
 Activer dans **Settings → Pages → Deploy from a branch → `main` / `/ (root)`**.  
 URL typique : `https://developing-off.github.io/dz-delivery/`.
 

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>dz-delivery — un SDK, tous les transporteurs algériens</title>
-  <meta name="description" content="SDK TypeScript et PHP pour créer, suivre et tarifer des colis avec ZRExpress, Yalidine, Maystro, Ecotrack et plus — une seule interface." />
+  <title>dz-delivery — documentation</title>
+  <meta name="description" content="Documentation complète du SDK dz-delivery : TypeScript et PHP, contrat unifié, transporteurs algériens, extras ZRExpress." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,11 +25,12 @@
       --font-display: "Archivo", system-ui, sans-serif;
       --font-body: "Source Sans 3", system-ui, sans-serif;
       --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-      --max: 1080px;
+      --max: 1180px;
+      --nav-w: 15.5rem;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1.25rem; }
     body {
       margin: 0;
       color: var(--ink);
@@ -51,12 +52,11 @@
       margin-inline: auto;
     }
 
-    /* —— Nav —— */
-    .nav {
+    .topnav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.25rem 0 0;
+      padding: 1.15rem 0 0;
       gap: 1rem;
     }
     .nav-brand {
@@ -70,7 +70,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 1.1rem;
       font-size: 0.95rem;
     }
     .nav-links a {
@@ -80,32 +80,31 @@
     }
     .nav-links a:hover { color: var(--ink); }
 
-    /* —— Hero —— */
     .hero {
       position: relative;
-      padding: 4.5rem 0 5rem;
+      padding: 3.25rem 0 2.75rem;
       overflow: hidden;
     }
     .hero-grid {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      opacity: 0.45;
+      opacity: 0.4;
       background-image:
         linear-gradient(to right, rgba(20, 24, 28, 0.05) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(20, 24, 28, 0.05) 1px, transparent 1px);
       background-size: 48px 48px;
-      mask-image: linear-gradient(180deg, #000 30%, transparent 92%);
+      mask-image: linear-gradient(180deg, #000 25%, transparent 90%);
     }
     .hero-route {
       position: absolute;
-      right: -5%;
-      top: 18%;
-      width: min(52vw, 560px);
-      height: 340px;
+      right: -4%;
+      top: 12%;
+      width: min(48vw, 480px);
+      height: 280px;
       pointer-events: none;
       opacity: 0;
-      animation: fade-in 1.1s ease 0.25s forwards;
+      animation: fade-in 1.1s ease 0.2s forwards;
     }
     .hero-route path {
       fill: none;
@@ -114,72 +113,59 @@
       stroke-dasharray: 8 10;
       opacity: 0.35;
     }
-    .hero-route .dot {
-      fill: var(--accent);
-      opacity: 0.7;
-    }
+    .hero-route .dot { fill: var(--accent); opacity: 0.7; }
     .hero-route .pulse {
       fill: none;
       stroke: var(--accent);
       stroke-width: 1;
       opacity: 0;
-      transform-origin: center;
       animation: pulse-ring 2.8s ease-out 0.8s infinite;
     }
-
     .hero-brand {
       font-family: var(--font-display);
       font-weight: 700;
-      font-size: clamp(2.75rem, 7vw, 4.25rem);
+      font-size: clamp(2.5rem, 6.5vw, 3.75rem);
       letter-spacing: -0.045em;
       line-height: 0.95;
-      margin: 0 0 1.35rem;
-      color: var(--ink);
+      margin: 0 0 1.1rem;
       opacity: 0;
-      transform: translateY(12px);
-      animation: rise 0.7s ease forwards;
+      transform: translateY(10px);
+      animation: rise 0.65s ease forwards;
     }
     .hero-lead {
       max-width: 34rem;
-      margin: 0 0 1.75rem;
-      font-size: 1.2rem;
+      margin: 0 0 1.4rem;
+      font-size: 1.15rem;
       color: var(--ink-soft);
       opacity: 0;
-      transform: translateY(12px);
-      animation: rise 0.7s ease 0.08s forwards;
+      transform: translateY(10px);
+      animation: rise 0.65s ease 0.06s forwards;
     }
     .hero-ctas {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.7rem;
       opacity: 0;
-      transform: translateY(12px);
-      animation: rise 0.7s ease 0.16s forwards;
+      transform: translateY(10px);
+      animation: rise 0.65s ease 0.12s forwards;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.45rem;
-      padding: 0.7rem 1.15rem;
+      gap: 0.4rem;
+      padding: 0.65rem 1.1rem;
       border-radius: var(--radius);
       font-family: var(--font-body);
       font-weight: 600;
       font-size: 0.95rem;
       text-decoration: none;
       border: 1px solid transparent;
-      cursor: pointer;
       transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    .btn-primary {
-      background: var(--ink);
-      color: #f7f8f5;
-    }
-    .btn-primary:hover {
-      background: #000;
-      color: #fff;
-    }
+    .btn-primary { background: var(--ink); color: #f7f8f5; }
+    .btn-primary:hover { background: #000; color: #fff; }
     .btn-ghost {
       background: transparent;
       color: var(--ink);
@@ -190,40 +176,110 @@
       background: rgba(255, 255, 255, 0.55);
     }
 
-    /* —— Sections —— */
-    section {
-      padding: 3.75rem 0;
+    .docs {
+      display: grid;
+      grid-template-columns: var(--nav-w) minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: start;
+      padding-bottom: 3rem;
       border-top: 1px solid var(--line);
     }
+    .docs-toc {
+      position: sticky;
+      top: 1rem;
+      max-height: calc(100vh - 2rem);
+      overflow: auto;
+      padding: 1.75rem 0 2rem;
+      font-size: 0.9rem;
+    }
+    .docs-toc .toc-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+    }
+    .docs-toc ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.15rem;
+    }
+    .docs-toc a {
+      display: block;
+      padding: 0.35rem 0.55rem;
+      border-radius: 4px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-weight: 500;
+      border-left: 2px solid transparent;
+    }
+    .docs-toc a:hover { color: var(--ink); background: rgba(255, 255, 255, 0.55); }
+    .docs-toc a.active {
+      color: var(--accent-ink);
+      border-left-color: var(--accent);
+      background: #e9f0ea;
+    }
+    .docs-toc .toc-sub {
+      padding-left: 0.75rem;
+      font-size: 0.86rem;
+    }
+
+    .docs-main { padding: 1.5rem 0 0; min-width: 0; }
+
+    .doc-section {
+      padding: 2.25rem 0 2.5rem;
+      border-top: 1px solid var(--line);
+      scroll-margin-top: 1rem;
+    }
+    .doc-section:first-child { border-top: none; padding-top: 0.5rem; }
+
     .section-kicker {
       font-family: var(--font-mono);
       font-size: 0.75rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
-      margin: 0 0 0.65rem;
+      margin: 0 0 0.55rem;
     }
     .section-title {
       font-family: var(--font-display);
       font-weight: 650;
-      font-size: clamp(1.55rem, 3vw, 1.9rem);
+      font-size: clamp(1.45rem, 2.8vw, 1.85rem);
       letter-spacing: -0.03em;
-      margin: 0 0 0.6rem;
+      margin: 0 0 0.55rem;
       line-height: 1.2;
     }
     .section-desc {
-      margin: 0 0 2rem;
-      max-width: 36rem;
+      margin: 0 0 1.5rem;
+      max-width: 42rem;
+      color: var(--ink-soft);
+    }
+    h3.sub {
+      font-family: var(--font-display);
+      font-weight: 650;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      margin: 2rem 0 0.75rem;
+    }
+    h4.sub {
+      font-family: var(--font-display);
+      font-weight: 650;
+      font-size: 1rem;
+      margin: 1.5rem 0 0.55rem;
+    }
+    p.prose {
+      margin: 0 0 1rem;
+      max-width: 44rem;
       color: var(--ink-soft);
     }
 
-    /* —— Ops —— */
     .ops {
       list-style: none;
-      margin: 0;
+      margin: 0 0 1.5rem;
       padding: 0;
-      display: grid;
-      gap: 0;
       border-top: 1px solid var(--line);
     }
     .ops li {
@@ -231,41 +287,37 @@
       grid-template-columns: 2.5rem 1fr auto;
       gap: 1rem;
       align-items: baseline;
-      padding: 1rem 0;
+      padding: 0.85rem 0;
       border-bottom: 1px solid var(--line);
     }
     .ops .n {
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
     }
-    .ops .label {
-      font-weight: 600;
-      color: var(--ink);
-    }
+    .ops .label { font-weight: 600; }
     .ops .method {
       font-family: var(--font-mono);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--accent-ink);
       background: var(--code-bg);
-      padding: 0.2rem 0.45rem;
+      padding: 0.18rem 0.4rem;
       border-radius: 4px;
     }
 
-    /* —— Providers —— */
     .providers {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem 0.65rem;
-      margin: 0;
+      gap: 0.45rem 0.55rem;
+      margin: 0 0 1.25rem;
       padding: 0;
       list-style: none;
     }
     .providers li {
       font-family: var(--font-mono);
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 500;
-      padding: 0.45rem 0.7rem;
+      padding: 0.4rem 0.65rem;
       background: var(--bg-elev);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -279,17 +331,11 @@
       box-shadow: none;
     }
 
-    /* —— Install / code —— */
     .install-grid {
       display: grid;
       gap: 1rem;
       grid-template-columns: 1fr 1fr;
-    }
-    @media (max-width: 720px) {
-      .install-grid { grid-template-columns: 1fr; }
-      .ops li { grid-template-columns: 2rem 1fr; }
-      .ops .method { grid-column: 2; margin-top: 0.25rem; }
-      .nav-links .hide-sm { display: none; }
+      margin-bottom: 1.25rem;
     }
 
     .panel {
@@ -304,13 +350,13 @@
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      padding: 0.65rem 0.9rem;
+      padding: 0.6rem 0.9rem;
       border-bottom: 1px solid var(--line);
       background: #fafbf8;
     }
     .panel-head span {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--muted);
     }
     .copy {
@@ -321,7 +367,7 @@
       background: transparent;
       border: 1px solid var(--line);
       border-radius: 4px;
-      padding: 0.25rem 0.55rem;
+      padding: 0.22rem 0.5rem;
       cursor: pointer;
     }
     .copy:hover { color: var(--ink); border-color: var(--ink-soft); }
@@ -329,23 +375,20 @@
 
     pre {
       margin: 0;
-      padding: 1rem 1.1rem 1.15rem;
+      padding: 1rem 1.1rem;
       overflow-x: auto;
       background: var(--code-bg);
       font-family: var(--font-mono);
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       line-height: 1.55;
       color: var(--ink);
     }
     .token-cmd { color: var(--accent-ink); font-weight: 500; }
     .token-pkg { color: var(--ink); }
 
-    .code-block {
-      margin-top: 1.5rem;
-    }
+    .code-block { margin: 1rem 0 1.5rem; }
     .tabs {
       display: flex;
-      gap: 0;
       border-bottom: 1px solid var(--line);
       background: #fafbf8;
     }
@@ -353,7 +396,7 @@
       font-family: var(--font-body);
       font-weight: 600;
       font-size: 0.88rem;
-      padding: 0.7rem 1.1rem;
+      padding: 0.65rem 1rem;
       border: none;
       background: transparent;
       color: var(--muted);
@@ -369,7 +412,6 @@
     .tab-panel pre {
       background: #1c2328;
       color: #e6ebe8;
-      min-height: 12rem;
     }
     .c-key { color: #8fb9a4; }
     .c-str { color: #d4b483; }
@@ -383,14 +425,18 @@
     }
 
     .callout {
-      margin: 0 0 1.5rem;
-      padding: 0.9rem 1rem;
+      margin: 0 0 1.35rem;
+      padding: 0.85rem 1rem;
       border-left: 3px solid var(--accent);
       background: #e9f0ea;
       color: var(--ink-soft);
-      font-size: 0.98rem;
+      font-size: 0.97rem;
     }
     .callout strong { color: var(--ink); font-weight: 600; }
+    .callout.warn {
+      border-left-color: #9a6b2f;
+      background: #f3eee4;
+    }
 
     .doc-table-wrap {
       overflow-x: auto;
@@ -398,15 +444,16 @@
       border-radius: var(--radius);
       background: var(--bg-elev);
       box-shadow: var(--shadow);
+      margin: 0 0 1.35rem;
     }
     .doc-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
     .doc-table th,
     .doc-table td {
-      padding: 0.7rem 0.85rem;
+      padding: 0.65rem 0.8rem;
       text-align: left;
       border-bottom: 1px solid var(--line);
       vertical-align: top;
@@ -414,7 +461,7 @@
     .doc-table th {
       font-family: var(--font-display);
       font-weight: 650;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       letter-spacing: 0.02em;
       text-transform: uppercase;
       color: var(--muted);
@@ -424,56 +471,48 @@
     .doc-table tr:last-child td { border-bottom: none; }
     .doc-table td.ok { color: var(--accent-ink); font-weight: 600; }
     .doc-table td.no { color: var(--muted); }
+    .doc-table td.extra { color: #5a4a2e; font-weight: 600; }
     .doc-table code {
       font-family: var(--font-mono);
       font-size: 0.82em;
       background: var(--code-bg);
-      padding: 0.1rem 0.35rem;
+      padding: 0.08rem 0.3rem;
       border-radius: 3px;
     }
 
-    .steps {
-      list-style: none;
-      margin: 0 0 2rem;
-      padding: 0;
-      display: grid;
-      gap: 0.85rem;
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0 0 1.25rem;
     }
-    .steps li {
-      display: grid;
-      grid-template-columns: 1.75rem 1fr;
-      gap: 0.85rem;
-      align-items: start;
-    }
-    .steps .n {
+    .status-pill {
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
+      padding: 0.3rem 0.55rem;
+      background: var(--code-bg);
+      border-radius: 4px;
       color: var(--accent-ink);
-      font-weight: 500;
-      line-height: 1.55;
     }
-    .steps p { margin: 0; color: var(--ink-soft); }
-    .steps strong { color: var(--ink); font-weight: 600; }
 
     .doc-links {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.6rem;
+      gap: 0.55rem;
       margin: 0;
       padding: 0;
       list-style: none;
     }
     .doc-links a {
       display: inline-flex;
-      align-items: center;
-      padding: 0.55rem 0.85rem;
+      padding: 0.5rem 0.8rem;
       background: var(--bg-elev);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       text-decoration: none;
       color: var(--ink);
       font-weight: 600;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       box-shadow: var(--shadow);
     }
     .doc-links a:hover {
@@ -481,9 +520,8 @@
       color: var(--accent-ink);
     }
 
-    /* —— Foot —— */
     footer {
-      padding: 2.5rem 0 3rem;
+      padding: 2.25rem 0 3rem;
       border-top: 1px solid var(--line);
       color: var(--muted);
       font-size: 0.92rem;
@@ -493,7 +531,6 @@
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 1rem;
-      align-items: baseline;
     }
     footer strong {
       font-family: var(--font-display);
@@ -502,6 +539,22 @@
     }
     footer a { color: var(--ink-soft); text-decoration: none; font-weight: 500; }
     footer a:hover { color: var(--ink); }
+
+    .toc-toggle {
+      display: none;
+      width: 100%;
+      margin: 0 0 1rem;
+      padding: 0.65rem 0.9rem;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.92rem;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+    }
 
     @keyframes rise {
       to { opacity: 1; transform: none; }
@@ -512,6 +565,22 @@
     @keyframes pulse-ring {
       0% { opacity: 0.55; r: 6; }
       100% { opacity: 0; r: 22; }
+    }
+
+    @media (max-width: 900px) {
+      .docs { grid-template-columns: 1fr; gap: 0; }
+      .docs-toc {
+        position: static;
+        max-height: none;
+        padding: 0;
+        display: none;
+      }
+      .docs-toc.open { display: block; padding-bottom: 1rem; }
+      .toc-toggle { display: block; }
+      .install-grid { grid-template-columns: 1fr; }
+      .ops li { grid-template-columns: 2rem 1fr; }
+      .ops .method { grid-column: 2; margin-top: 0.2rem; }
+      .nav-links .hide-sm { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -525,121 +594,99 @@
 </head>
 <body>
   <div class="wrap">
-    <header class="nav">
+    <header class="topnav">
       <a class="nav-brand" href="./">dz-delivery</a>
       <nav class="nav-links" aria-label="Principal">
         <a class="hide-sm" href="#install">Installer</a>
-        <a class="hide-sm" href="#usage">Usage</a>
-        <a class="hide-sm" href="#matrix">Support</a>
+        <a class="hide-sm" href="#api">API</a>
+        <a class="hide-sm" href="#zrexpress">ZR extras</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
       </nav>
     </header>
 
-    <main>
-      <section class="hero" aria-labelledby="brand">
-        <div class="hero-grid" aria-hidden="true"></div>
-        <svg class="hero-route" viewBox="0 0 560 340" aria-hidden="true">
-          <path d="M40 260 C120 240, 160 120, 250 140 S380 220, 420 100 S500 60, 520 90" />
-          <circle class="dot" cx="40" cy="260" r="4.5" />
-          <circle class="dot" cx="250" cy="140" r="4.5" />
-          <circle class="dot" cx="420" cy="100" r="5" />
-          <circle class="pulse" cx="420" cy="100" r="6" />
-        </svg>
+    <section class="hero" aria-labelledby="brand">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <svg class="hero-route" viewBox="0 0 560 340" aria-hidden="true">
+        <path d="M40 260 C120 240, 160 120, 250 140 S380 220, 420 100 S500 60, 520 90" />
+        <circle class="dot" cx="40" cy="260" r="4.5" />
+        <circle class="dot" cx="250" cy="140" r="4.5" />
+        <circle class="dot" cx="420" cy="100" r="5" />
+        <circle class="pulse" cx="420" cy="100" r="6" />
+      </svg>
+      <h1 class="hero-brand" id="brand">dz-delivery</h1>
+      <p class="hero-lead">
+        Documentation du SDK unifié pour les transporteurs algériens — TypeScript et PHP, même contrat.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#install">Installer</a>
+        <a class="btn btn-ghost" href="#quickstart">Quickstart</a>
+      </div>
+    </section>
 
-        <h1 class="hero-brand" id="brand">dz-delivery</h1>
-        <p class="hero-lead">
-          Un seul SDK pour créer, suivre et tarifer des colis avec les transporteurs algériens — TypeScript et PHP, même contrat.
-        </p>
-        <div class="hero-ctas">
-          <a class="btn btn-primary" href="#install">Installer</a>
-          <a class="btn btn-ghost" href="#usage">Voir l’usage</a>
-        </div>
-      </section>
-
-      <section id="api" aria-labelledby="api-title">
-        <p class="section-kicker">Interface unifiée</p>
-        <h2 class="section-title" id="api-title">Cinq opérations. Tous les transporteurs.</h2>
-        <p class="section-desc">
-          Pas un wrapper 1:1 de chaque API — juste ce dont une boutique a besoin, avec les mêmes noms en TS et en PHP.
-        </p>
-        <ol class="ops">
-          <li>
-            <span class="n">01</span>
-            <span class="label">Créer un colis</span>
-            <code class="method">createParcel</code>
-          </li>
-          <li>
-            <span class="n">02</span>
-            <span class="label">Suivre un envoi</span>
-            <code class="method">track</code>
-          </li>
-          <li>
-            <span class="n">03</span>
-            <span class="label">Coter les frais</span>
-            <code class="method">getFees</code>
-          </li>
-          <li>
-            <span class="n">04</span>
-            <span class="label">Wilayas, communes, stop desks</span>
-            <code class="method">getWilayas · getCommunes · getStopDesks</code>
-          </li>
-          <li>
-            <span class="n">05</span>
-            <span class="label">Annuler un colis</span>
-            <code class="method">cancelParcel</code>
-          </li>
-        </ol>
-      </section>
-
-      <section id="providers" aria-labelledby="providers-title">
-        <p class="section-kicker">Transporteurs</p>
-        <h2 class="section-title" id="providers-title">Déjà branchés</h2>
-        <p class="section-desc">
-          Statuts normalisés (<code style="font-family:var(--font-mono);font-size:0.9em">pending</code> → <code style="font-family:var(--font-mono);font-size:0.9em">delivered</code>). Le champ <code style="font-family:var(--font-mono);font-size:0.9em">raw</code> garde la réponse native si besoin.
-        </p>
-        <ul class="providers">
-          <li>ZRExpress</li>
-          <li>Yalidine</li>
-          <li>GuepEx</li>
-          <li>Maystro</li>
-          <li>Ecotrack · DHD</li>
-          <li>World Express</li>
-          <li>Anderson</li>
-          <li>48Hr Express</li>
-          <li>EcoRapid</li>
-          <li class="soon">Ecom · MDM · NoEST…</li>
+    <div class="docs">
+      <button type="button" class="toc-toggle" id="toc-toggle" aria-expanded="false">Sommaire</button>
+      <aside class="docs-toc" id="docs-toc" aria-label="Sommaire">
+        <p class="toc-label">Sommaire</p>
+        <ul>
+          <li><a href="#install">Installer</a></li>
+          <li><a href="#quickstart">Quickstart</a></li>
+          <li><a href="#clients">Clients & credentials</a></li>
+          <li><a href="#api">API unifiée</a></li>
+          <li class="toc-sub"><a href="#createParcel">createParcel</a></li>
+          <li class="toc-sub"><a href="#track">track</a></li>
+          <li class="toc-sub"><a href="#getFees">getFees</a></li>
+          <li class="toc-sub"><a href="#locations">Lieux & stop desks</a></li>
+          <li class="toc-sub"><a href="#listParcels">listParcels</a></li>
+          <li class="toc-sub"><a href="#cancel">cancel & health</a></li>
+          <li><a href="#models">Modèles</a></li>
+          <li><a href="#statuses">Statuts</a></li>
+          <li><a href="#errors">Erreurs</a></li>
+          <li><a href="#matrix">Compatibilité</a></li>
+          <li><a href="#zrexpress">ZRExpress extras</a></li>
+          <li><a href="#providers-notes">Notes par transporteur</a></li>
+          <li><a href="#refs">Références</a></li>
         </ul>
-      </section>
+      </aside>
 
-      <section id="install" aria-labelledby="install-title">
-        <p class="section-kicker">Démarrage</p>
-        <h2 class="section-title" id="install-title">Installer</h2>
-        <p class="section-desc">Packages publiés sur npm et Packagist.</p>
-
-        <div class="install-grid">
-          <div class="panel">
-            <div class="panel-head">
-              <span>TypeScript · npm</span>
-              <button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button>
+      <div class="docs-main">
+        <article class="doc-section" id="install">
+          <p class="section-kicker">Démarrage</p>
+          <h2 class="section-title">Installer</h2>
+          <p class="section-desc">Packages publics · npm <code class="mono">@dz-delivery/core</code> · Composer <code class="mono">dz-delivery/sdk</code>.</p>
+          <div class="install-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <span>TypeScript · Node ≥ 18</span>
+                <button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button>
+              </div>
+              <pre><span class="token-cmd">npm install</span> <span class="token-pkg">@dz-delivery/core</span></pre>
             </div>
-            <pre><span class="token-cmd">npm install</span> <span class="token-pkg">@dz-delivery/core</span></pre>
-          </div>
-          <div class="panel">
-            <div class="panel-head">
-              <span>PHP · Composer</span>
-              <button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button>
+            <div class="panel">
+              <div class="panel-head">
+                <span>PHP ≥ 8.2 · Guzzle 7</span>
+                <button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button>
+              </div>
+              <pre><span class="token-cmd">composer require</span> <span class="token-pkg">dz-delivery/sdk</span></pre>
             </div>
-            <pre><span class="token-cmd">composer require</span> <span class="token-pkg">dz-delivery/sdk</span></pre>
           </div>
-        </div>
+          <p class="callout">
+            Zéro dépendance runtime côté TypeScript (fetch natif). PHP : Guzzle uniquement.
+            Source de vérité : <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">CONTRACT.md</a>.
+          </p>
+        </article>
 
-        <div class="panel code-block" data-tabs>
-          <div class="tabs" role="tablist" aria-label="Créer un colis">
-            <button type="button" class="tab" role="tab" aria-controls="panel-create-ts" aria-selected="true">TypeScript</button>
-            <button type="button" class="tab" role="tab" aria-controls="panel-create-php" aria-selected="false">PHP</button>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-create-ts">
-            <pre><span class="c-cmt">import { createClient } from '@dz-delivery/core';</span>
+        <article class="doc-section" id="quickstart">
+          <p class="section-kicker">Premier colis</p>
+          <h2 class="section-title">Quickstart</h2>
+          <p class="section-desc">Créer un colis ZRExpress en quelques lignes.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="Quickstart">
+              <button type="button" class="tab" role="tab" aria-controls="qs-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="qs-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="qs-ts">
+              <pre><span class="c-cmt">import { createClient } from '@dz-delivery/core';</span>
 
 <span class="c-key">const</span> shipping = <span class="c-fn">createClient</span>(<span class="c-str">'zrexpress'</span>, {
   apiKey: process.env.ZREXPRESS_API_KEY!,
@@ -655,10 +702,11 @@
   productName: <span class="c-str">'T-shirt'</span>,
   price: <span class="c-num">2500</span>,
 });
-<span class="c-cmt">// parcel.trackingNumber · parcel.status · parcel.id</span></pre>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-create-php" hidden>
-            <pre><span class="c-cmt">use DzDelivery\ClientFactory;</span>
+
+<span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> shipping.<span class="c-fn">track</span>(parcel.trackingNumber);</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="qs-php" hidden>
+              <pre><span class="c-cmt">use DzDelivery\ClientFactory;</span>
 
 $shipping = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [
     <span class="c-str">'apiKey'</span> => getenv(<span class="c-str">'ZREXPRESS_API_KEY'</span>),
@@ -674,352 +722,564 @@ $parcel = $shipping-><span class="c-fn">createParcel</span>([
     <span class="c-str">'productName'</span>   => <span class="c-str">'T-shirt'</span>,
     <span class="c-str">'price'</span>         => <span class="c-num">2500</span>,
 ]);
-<span class="c-cmt">// $parcel->trackingNumber · $parcel->status</span></pre>
+
+$result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);</pre>
+            </div>
           </div>
-        </div>
-      </section>
+        </article>
 
-      <section id="usage" aria-labelledby="usage-title">
-        <p class="section-kicker">Guide rapide</p>
-        <h2 class="section-title" id="usage-title">Comment bien l’utiliser</h2>
-        <p class="section-desc">
-          Le flux type d’une boutique : configurer le client, résoudre les lieux, coter, créer, suivre.
-        </p>
+        <article class="doc-section" id="clients">
+          <p class="section-kicker">Configuration</p>
+          <h2 class="section-title">Clients & credentials</h2>
+          <p class="section-desc">Un client par transporteur. Options communes : <span class="mono">baseUrl</span>, <span class="mono">timeoutMs</span> (15s), <span class="mono">includeRaw</span> (true).</p>
 
-        <ol class="steps">
-          <li>
-            <span class="n">1</span>
-            <p><strong>Un client par transporteur.</strong> Passe les credentials du compte marchand. Options communes : <span class="mono">timeoutMs</span>, <span class="mono">includeRaw</span>, <span class="mono">baseUrl</span>.</p>
-          </li>
-          <li>
-            <span class="n">2</span>
-            <p><strong>Wilaya / commune.</strong> Tu peux envoyer le code officiel <span class="mono">1–58</span>, un id transporteur, ou un nom. Le SDK résout avant l’appel HTTP.</p>
-          </li>
-          <li>
-            <span class="n">3</span>
-            <p><strong>Stop desk.</strong> Liste avec <span class="mono">getStopDesks</span>, puis <span class="mono">isStopDesk: true</span> + <span class="mono">stopDeskId</span> (l’<span class="mono">id</span> renvoyé).</p>
-          </li>
-          <li>
-            <span class="n">4</span>
-            <p><strong>Stocke le tracking.</strong> Garde <span class="mono">trackingNumber</span> (et <span class="mono">id</span> si besoin d’annuler chez ZRExpress).</p>
-          </li>
-          <li>
-            <span class="n">5</span>
-            <p><strong>Attrape <span class="mono">ShippingError</span>.</strong> Codes unifiés : auth, validation, not found, rate limit, not supported…</p>
-          </li>
-        </ol>
-
-        <p class="callout">
-          <strong>Yalidine / GuepEx</strong> exigent une wilaya d’origine : <span class="mono">fromWilayaId</span> (ou <span class="mono">fromWilayaName</span>) au client.
-          <strong>Maystro</strong> : pas de <span class="mono">track</span> / <span class="mono">cancelParcel</span> (webhooks). <strong>Ecotrack</strong> : <span class="mono">courier</span> ou <span class="mono">baseUrl</span> HTTPS.
-        </p>
-
-        <h3 class="section-title" style="font-size:1.25rem;margin-top:2rem">Credentials par transporteur</h3>
-        <div class="doc-table-wrap" style="margin-bottom:2rem">
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th>Clé</th>
-                <th>Config</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>zrexpress</code></td>
-                <td><code>apiKey</code>, <code>tenant</code></td>
-                <td>Headers <code>X-Api-Key</code> / <code>X-Tenant</code></td>
-              </tr>
-              <tr>
-                <td><code>yalidine</code></td>
-                <td><code>apiId</code>, <code>apiToken</code>, <code>fromWilayaId</code></td>
-                <td>GuepEx : même provider + <code>baseUrl</code> GuepEx</td>
-              </tr>
-              <tr>
-                <td><code>maystro</code></td>
-                <td><code>apiToken</code></td>
-                <td><code>Authorization: Token …</code></td>
-              </tr>
-              <tr>
-                <td><code>ecotrack</code></td>
-                <td><code>token</code> + <code>courier</code> ou <code>baseUrl</code></td>
-                <td>ex. <code>dhd</code>, <code>anderson</code>, <code>worldexpress</code></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="panel code-block" data-tabs>
-          <div class="tabs" role="tablist" aria-label="Configurer les clients">
-            <button type="button" class="tab" role="tab" aria-controls="panel-clients-ts" aria-selected="true">TypeScript</button>
-            <button type="button" class="tab" role="tab" aria-controls="panel-clients-php" aria-selected="false">PHP</button>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead>
+                <tr><th>Clé</th><th>Config</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>zrexpress</code></td>
+                  <td><code>apiKey</code>, <code>tenant</code></td>
+                  <td><code>X-Api-Key</code> + <code>X-Tenant</code>. Extras : <code>createZRExpress</code></td>
+                </tr>
+                <tr>
+                  <td><code>yalidine</code></td>
+                  <td><code>apiId</code>, <code>apiToken</code>, <code>fromWilayaId</code></td>
+                  <td>GuepEx : même provider + <code>baseUrl</code> GuepEx</td>
+                </tr>
+                <tr>
+                  <td><code>maystro</code></td>
+                  <td><code>apiToken</code></td>
+                  <td><code>Authorization: Token …</code> — pas de track/cancel</td>
+                </tr>
+                <tr>
+                  <td><code>ecotrack</code></td>
+                  <td><code>token</code> + <code>courier</code> ou <code>baseUrl</code></td>
+                  <td>DHD, Anderson, World Express, 48Hr, EcoRapid, Conexlog…</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="tab-panel" role="tabpanel" id="panel-clients-ts">
-            <pre><span class="c-cmt">import { createClient, GUEPEX_DEFAULT_BASE_URL } from '@dz-delivery/core';</span>
 
-<span class="c-key">const</span> zr = <span class="c-fn">createClient</span>(<span class="c-str">'zrexpress'</span>, {
-  apiKey: process.env.ZREXPRESS_API_KEY!,
-  tenant: process.env.ZREXPRESS_TENANT!,
-});
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="Clients">
+              <button type="button" class="tab" role="tab" aria-controls="cli-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="cli-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="cli-ts">
+              <pre><span class="c-cmt">import { createClient, createZRExpress, GUEPEX_DEFAULT_BASE_URL } from '@dz-delivery/core';</span>
+
+<span class="c-key">const</span> zr = <span class="c-fn">createClient</span>(<span class="c-str">'zrexpress'</span>, { apiKey, tenant });
+<span class="c-key">const</span> zrExtra = <span class="c-fn">createZRExpress</span>({ apiKey, tenant }); <span class="c-cmt">// bulk / labels typés</span>
 
 <span class="c-key">const</span> yalidine = <span class="c-fn">createClient</span>(<span class="c-str">'yalidine'</span>, {
-  apiId: process.env.YALIDINE_API_ID!,
-  apiToken: process.env.YALIDINE_API_TOKEN!,
-  fromWilayaId: <span class="c-num">16</span>,
+  apiId, apiToken, fromWilayaId: <span class="c-num">16</span>,
 });
-
-<span class="c-cmt">// GuepEx = même API Yalidine, autre host</span>
 <span class="c-key">const</span> guepex = <span class="c-fn">createClient</span>(<span class="c-str">'yalidine'</span>, {
-  apiId: process.env.GUEPEX_API_ID!,
-  apiToken: process.env.GUEPEX_API_TOKEN!,
-  fromWilayaId: <span class="c-num">16</span>,
-  baseUrl: GUEPEX_DEFAULT_BASE_URL,
+  apiId, apiToken, fromWilayaId: <span class="c-num">16</span>, baseUrl: GUEPEX_DEFAULT_BASE_URL,
 });
-
-<span class="c-key">const</span> maystro = <span class="c-fn">createClient</span>(<span class="c-str">'maystro'</span>, {
-  apiToken: process.env.MAYSTRO_API_TOKEN!,
-});
-
-<span class="c-key">const</span> dhd = <span class="c-fn">createClient</span>(<span class="c-str">'ecotrack'</span>, {
-  token: process.env.ECOTRACK_TOKEN!,
-  courier: <span class="c-str">'dhd'</span>,
-  <span class="c-cmt">// autoValidate: true,</span>
-});</pre>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-clients-php" hidden>
-            <pre><span class="c-cmt">use DzDelivery\ClientFactory;
+<span class="c-key">const</span> maystro = <span class="c-fn">createClient</span>(<span class="c-str">'maystro'</span>, { apiToken });
+<span class="c-key">const</span> dhd = <span class="c-fn">createClient</span>(<span class="c-str">'ecotrack'</span>, { token, courier: <span class="c-str">'dhd'</span> });</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="cli-php" hidden>
+              <pre><span class="c-cmt">use DzDelivery\ClientFactory;
+use DzDelivery\Providers\ZRExpressProvider;
 use DzDelivery\Providers\YalidineProvider;</span>
 
-$zr = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [
-    <span class="c-str">'apiKey'</span> => getenv(<span class="c-str">'ZREXPRESS_API_KEY'</span>),
-    <span class="c-str">'tenant'</span> => getenv(<span class="c-str">'ZREXPRESS_TENANT'</span>),
-]);
+$zr = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [<span class="c-str">'apiKey'</span> => $key, <span class="c-str">'tenant'</span> => $tenant]);
+$zrExtra = <span class="c-key">new</span> ZRExpressProvider([<span class="c-str">'apiKey'</span> => $key, <span class="c-str">'tenant'</span> => $tenant]);
 
 $yalidine = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'yalidine'</span>, [
-    <span class="c-str">'apiId'</span> => getenv(<span class="c-str">'YALIDINE_API_ID'</span>),
-    <span class="c-str">'apiToken'</span> => getenv(<span class="c-str">'YALIDINE_API_TOKEN'</span>),
-    <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
+    <span class="c-str">'apiId'</span> => $id, <span class="c-str">'apiToken'</span> => $token, <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
 ]);
-
 $guepex = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'yalidine'</span>, [
-    <span class="c-str">'apiId'</span> => getenv(<span class="c-str">'GUEPEX_API_ID'</span>),
-    <span class="c-str">'apiToken'</span> => getenv(<span class="c-str">'GUEPEX_API_TOKEN'</span>),
-    <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
+    <span class="c-str">'apiId'</span> => $id, <span class="c-str">'apiToken'</span> => $token, <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
     <span class="c-str">'baseUrl'</span> => YalidineProvider::GUEPEX_DEFAULT_BASE_URL,
-]);
-
-$maystro = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'maystro'</span>, [
-    <span class="c-str">'apiToken'</span> => getenv(<span class="c-str">'MAYSTRO_API_TOKEN'</span>),
-]);
-
-$dhd = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'ecotrack'</span>, [
-    <span class="c-str">'token'</span> => getenv(<span class="c-str">'ECOTRACK_TOKEN'</span>),
-    <span class="c-str">'courier'</span> => <span class="c-str">'dhd'</span>,
 ]);</pre>
+            </div>
           </div>
-        </div>
+        </article>
 
-        <h3 class="section-title" style="font-size:1.25rem;margin-top:2.5rem">Tarifs, stop desks, suivi</h3>
-        <p class="section-desc" style="margin-bottom:1rem">
-          Même surface pour tous les providers supportés.
-        </p>
-        <div class="panel code-block" data-tabs>
-          <div class="tabs" role="tablist" aria-label="Opérations courantes">
-            <button type="button" class="tab" role="tab" aria-controls="panel-ops-ts" aria-selected="true">TypeScript</button>
-            <button type="button" class="tab" role="tab" aria-controls="panel-ops-php" aria-selected="false">PHP</button>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-ops-ts">
-            <pre><span class="c-cmt">// Lieux (mis en cache sur le client)</span>
-<span class="c-key">const</span> wilayas = <span class="c-key">await</span> shipping.<span class="c-fn">getWilayas</span>();
-<span class="c-key">const</span> communes = <span class="c-key">await</span> shipping.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+        <article class="doc-section" id="api">
+          <p class="section-kicker">ShippingProvider</p>
+          <h2 class="section-title">API unifiée</h2>
+          <p class="section-desc">Même interface pour tous les transporteurs. Pas un wrapper 1:1 — les opérations dont une boutique a besoin.</p>
+          <ol class="ops">
+            <li><span class="n">01</span><span class="label">Créer</span><code class="method">createParcel</code></li>
+            <li><span class="n">02</span><span class="label">Suivre</span><code class="method">track</code></li>
+            <li><span class="n">03</span><span class="label">Tarifer</span><code class="method">getFees</code></li>
+            <li><span class="n">04</span><span class="label">Lieux</span><code class="method">getWilayas · getCommunes · getStopDesks</code></li>
+            <li><span class="n">05</span><span class="label">Lister (compte)</span><code class="method">listParcels</code></li>
+            <li><span class="n">06</span><span class="label">Annuler</span><code class="method">cancelParcel</code></li>
+            <li><span class="n">07</span><span class="label">Santé</span><code class="method">healthCheck</code></li>
+          </ol>
 
-<span class="c-cmt">// Tarifs — Yalidine utilise fromWilayaId du client</span>
-<span class="c-key">const</span> quote = <span class="c-key">await</span> shipping.<span class="c-fn">getFees</span>({
-  toWilayaId: <span class="c-num">16</span>,
-  toCommuneId: <span class="c-str">'1630'</span>, <span class="c-cmt">// recommandé Maystro / Yalidine</span>
+          <h3 class="sub" id="createParcel">createParcel</h3>
+          <p class="prose">Valide côté client avant HTTP. Accepte codes wilaya <span class="mono">1–58</span>, ids transporteur, ou noms. <span class="mono">price</span> = montant COD en DZD.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="createParcel">
+              <button type="button" class="tab" role="tab" aria-controls="cp-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="cp-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="cp-ts">
+              <pre><span class="c-key">const</span> parcel = <span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>({
+  recipientName: <span class="c-str">'Client'</span>,
+  phone: <span class="c-str">'0550123456'</span>,       <span class="c-cmt">// normalisé par carrier</span>
+  phone2: <span class="c-str">'0770000000'</span>,
+  address: <span class="c-str">'Cité 221 lots'</span>,
+  wilayaName: <span class="c-str">'Alger'</span>,        <span class="c-cmt">// ou wilayaId: 16</span>
+  communeName: <span class="c-str">'Bab Ezzouar'</span>,
+  productName: <span class="c-str">'T-shirt'</span>,     <span class="c-cmt">// ou productList: [{ name, quantity }]</span>
+  price: <span class="c-num">2500</span>,
+  weight: <span class="c-num">0.5</span>,
+  orderId: <span class="c-str">'ORD-1001'</span>,
+  remark: <span class="c-str">'fragile'</span>,
   isStopDesk: <span class="c-key">false</span>,
+  <span class="c-cmt">// stockType: 'none' | 'local' | 'warehouse'  (ZRExpress)</span>
 });
-
-<span class="c-cmt">// Points relais — Maystro : communeId obligatoire</span>
-<span class="c-key">const</span> desks = <span class="c-key">await</span> shipping.<span class="c-fn">getStopDesks</span>({
-  wilayaId: <span class="c-num">16</span>,
-  communeId: <span class="c-str">'1630'</span>,
-});
-
-<span class="c-key">const</span> stopDeskParcel = <span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>({
-  <span class="c-cmt">/* … champs obligatoires … */</span>
-  isStopDesk: <span class="c-key">true</span>,
-  stopDeskId: desks[<span class="c-num">0</span>].id,
-});
-
-<span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> shipping.<span class="c-fn">track</span>(stopDeskParcel.trackingNumber);
-<span class="c-key">await</span> shipping.<span class="c-fn">cancelParcel</span>(stopDeskParcel.trackingNumber);
-
-<span class="c-key">await</span> shipping.<span class="c-fn">healthCheck</span>(); <span class="c-cmt">// { ok, provider, latencyMs }</span></pre>
+<span class="c-cmt">// → { id, trackingNumber, status, provider, raw? }</span></pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="cp-php" hidden>
+              <pre>$parcel = $shipping-><span class="c-fn">createParcel</span>([
+    <span class="c-str">'recipientName'</span> => <span class="c-str">'Client'</span>,
+    <span class="c-str">'phone'</span>         => <span class="c-str">'0550123456'</span>,
+    <span class="c-str">'address'</span>       => <span class="c-str">'Cité 221 lots'</span>,
+    <span class="c-str">'wilayaId'</span>      => <span class="c-num">16</span>,
+    <span class="c-str">'communeName'</span>   => <span class="c-str">'Bab Ezzouar'</span>,
+    <span class="c-str">'productName'</span>   => <span class="c-str">'T-shirt'</span>,
+    <span class="c-str">'price'</span>         => <span class="c-num">2500</span>,
+    <span class="c-str">'orderId'</span>       => <span class="c-str">'ORD-1001'</span>,
+]);
+<span class="c-cmt">// $parcel->id · trackingNumber · status · provider</span></pre>
+            </div>
           </div>
-          <div class="tab-panel" role="tabpanel" id="panel-ops-php" hidden>
-            <pre>$wilayas = $shipping-><span class="c-fn">getWilayas</span>();
-$communes = $shipping-><span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
 
-$quote = $shipping-><span class="c-fn">getFees</span>([
+          <h3 class="sub" id="track">track</h3>
+          <p class="prose">Retourne le colis courant + historique d’événements (plus ancien → plus récent). Maystro : <span class="mono">NOT_SUPPORTED</span> (webhooks).</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="track">
+              <button type="button" class="tab" role="tab" aria-controls="tr-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="tr-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="tr-ts">
+              <pre><span class="c-key">const</span> { parcel, events } = <span class="c-key">await</span> shipping.<span class="c-fn">track</span>(trackingNumber);
+<span class="c-cmt">// events: [{ status, label, at, raw? }, …]</span></pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="tr-php" hidden>
+              <pre>$result = $shipping-><span class="c-fn">track</span>($trackingNumber);
+<span class="c-key">foreach</span> ($result->events <span class="c-key">as</span> $event) {
+    echo <span class="c-str">"$event->at $event->status $event->label\n"</span>;
+}</pre>
+            </div>
+          </div>
+
+          <h3 class="sub" id="getFees">getFees</h3>
+          <p class="prose">Une cotation pour destination + mode. Yalidine utilise <span class="mono">fromWilayaId</span> du client.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="getFees">
+              <button type="button" class="tab" role="tab" aria-controls="fee-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="fee-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="fee-ts">
+              <pre><span class="c-key">const</span> quote = <span class="c-key">await</span> shipping.<span class="c-fn">getFees</span>({
+  toWilayaId: <span class="c-num">16</span>,
+  toCommuneId: <span class="c-str">'1630'</span>, <span class="c-cmt">// utile Maystro / Yalidine</span>
+  isStopDesk: <span class="c-key">false</span>,
+  weight: <span class="c-num">2</span>,
+});
+<span class="c-cmt">// { deliveryFee, stopDeskFee?, returnFee?, currency: 'DZD' }</span></pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="fee-php" hidden>
+              <pre>$quote = $shipping-><span class="c-fn">getFees</span>([
     <span class="c-str">'toWilayaId'</span>  => <span class="c-num">16</span>,
     <span class="c-str">'toCommuneId'</span> => <span class="c-num">1630</span>,
     <span class="c-str">'isStopDesk'</span>  => <span class="c-key">false</span>,
-]);
+    <span class="c-str">'weight'</span>      => <span class="c-num">2</span>,
+]);</pre>
+            </div>
+          </div>
 
-$desks = $shipping-><span class="c-fn">getStopDesks</span>([
-    <span class="c-str">'wilayaId'</span>  => <span class="c-num">16</span>,
-    <span class="c-str">'communeId'</span> => <span class="c-num">1630</span>,
-]);
+          <h3 class="sub" id="locations">getWilayas · getCommunes · getStopDesks</h3>
+          <p class="prose">Lieux mis en cache sur la durée de vie du client. Stop desks : passer <span class="mono">desk.id</span> comme <span class="mono">stopDeskId</span>.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="locations">
+              <button type="button" class="tab" role="tab" aria-controls="loc-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="loc-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="loc-ts">
+              <pre><span class="c-key">const</span> wilayas = <span class="c-key">await</span> shipping.<span class="c-fn">getWilayas</span>();
+<span class="c-key">const</span> communes = <span class="c-key">await</span> shipping.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
 
-$parcel = $shipping-><span class="c-fn">createParcel</span>([
-    <span class="c-cmt">/* … */</span>
-    <span class="c-str">'isStopDesk'</span> => <span class="c-key">true</span>,
-    <span class="c-str">'stopDeskId'</span> => $desks[<span class="c-num">0</span>]->id,
-]);
+<span class="c-cmt">// ZRExpress : préférer wilaya seule (filtre commune souvent vide)</span>
+<span class="c-key">const</span> desks = <span class="c-key">await</span> shipping.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+<span class="c-cmt">// Maystro : communeId obligatoire</span>
 
-$result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);
-$shipping-><span class="c-fn">cancelParcel</span>($parcel->trackingNumber);
+<span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>({
+  <span class="c-cmt">/* … */</span>
+  isStopDesk: <span class="c-key">true</span>,
+  stopDeskId: desks[<span class="c-num">0</span>].id,
+});</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="loc-php" hidden>
+              <pre>$wilayas = $shipping-><span class="c-fn">getWilayas</span>();
+$communes = $shipping-><span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+$desks = $shipping-><span class="c-fn">getStopDesks</span>([<span class="c-str">'wilayaId'</span> => <span class="c-num">16</span>]);</pre>
+            </div>
+          </div>
+
+          <h3 class="sub" id="listParcels">listParcels</h3>
+          <p class="prose">Liste paginée des colis du compte + statut unifié. Pas d’historique d’événements — utiliser <span class="mono">track()</span>. ZRExpress via <span class="mono">parcels/search</span> ; autres : <span class="mono">NOT_SUPPORTED</span> pour l’instant. Préférer les webhooks en production.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="listParcels">
+              <button type="button" class="tab" role="tab" aria-controls="lp-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="lp-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="lp-ts">
+              <pre><span class="c-key">const</span> page = <span class="c-key">await</span> zr.<span class="c-fn">listParcels</span>({ page: <span class="c-num">1</span>, pageSize: <span class="c-num">50</span> });
+<span class="c-cmt">// page.parcels · page.hasNext · page.totalCount</span>
+
+<span class="c-key">await</span> zr.<span class="c-fn">listParcels</span>({ orderId: <span class="c-str">'ORD-1001'</span> });
+<span class="c-key">await</span> zr.<span class="c-fn">listParcels</span>({ keyword: <span class="c-str">'0550'</span>, status: <span class="c-str">'pending'</span> });
+<span class="c-key">await</span> zr.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-str">'2026-10-01T00:00:00+00:00'</span>, allPages: <span class="c-key">true</span> });</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="lp-php" hidden>
+              <pre>$page = $zr-><span class="c-fn">listParcels</span>([<span class="c-str">'page'</span> => <span class="c-num">1</span>, <span class="c-str">'pageSize'</span> => <span class="c-num">50</span>]);
+$zr-><span class="c-fn">listParcels</span>([<span class="c-str">'orderId'</span> => <span class="c-str">'ORD-1001'</span>]);</pre>
+            </div>
+          </div>
+
+          <h3 class="sub" id="cancel">cancelParcel · healthCheck</h3>
+          <p class="prose"><span class="mono">cancelParcel</span> accepte tracking ou id interne. <span class="mono">healthCheck</span> sonde les credentials (wilayas, hors cache) → <span class="mono">{ ok, provider, latencyMs }</span>.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="cancel health">
+              <button type="button" class="tab" role="tab" aria-controls="ch-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="ch-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="ch-ts">
+              <pre><span class="c-key">await</span> shipping.<span class="c-fn">cancelParcel</span>(parcel.trackingNumber);
+<span class="c-key">const</span> health = <span class="c-key">await</span> shipping.<span class="c-fn">healthCheck</span>();</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="ch-php" hidden>
+              <pre>$shipping-><span class="c-fn">cancelParcel</span>($parcel->trackingNumber);
 $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
+            </div>
           </div>
-        </div>
+        </article>
 
-        <h3 class="section-title" style="font-size:1.25rem;margin-top:2.5rem">Erreurs</h3>
-        <p class="section-desc">
-          Toute échec lève <span class="mono">ShippingError</span> (TS : <span class="mono">isShippingError</span>). Ne catch pas les erreurs génériques sans lire <span class="mono">code</span>.
-        </p>
-        <div class="panel code-block" data-tabs style="margin-bottom:1.5rem">
-          <div class="tabs" role="tablist" aria-label="Gestion des erreurs">
-            <button type="button" class="tab" role="tab" aria-controls="panel-err-ts" aria-selected="true">TypeScript</button>
-            <button type="button" class="tab" role="tab" aria-controls="panel-err-php" aria-selected="false">PHP</button>
+        <article class="doc-section" id="models">
+          <p class="section-kicker">Contrat</p>
+          <h2 class="section-title">Modèles principaux</h2>
+          <p class="section-desc">Champs camelCase en TS et PHP. Montants en DZD, poids en kg, dates ISO 8601.</p>
+
+          <h3 class="sub">ParcelInput (création)</h3>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Champ</th><th>Requis</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>recipientName</code>, <code>phone</code>, <code>address</code>, <code>price</code></td><td>oui</td><td>Identité + COD</td></tr>
+                <tr><td><code>wilayaId</code> <em>ou</em> <code>wilayaName</code></td><td>un des deux</td><td>Code 1–58, id, ou nom</td></tr>
+                <tr><td><code>communeId</code> <em>ou</em> <code>communeName</code></td><td>un des deux</td><td>Id ou nom dans la wilaya</td></tr>
+                <tr><td><code>productName</code> <em>ou</em> <code>productList</code></td><td>un des deux</td><td>Description produit(s)</td></tr>
+                <tr><td><code>isStopDesk</code> + <code>stopDeskId</code></td><td>si relais</td><td><code>stopDeskId</code> = id de <code>getStopDesks</code></td></tr>
+                <tr><td><code>orderId</code>, <code>remark</code>, <code>weight</code>, dims</td><td>non</td><td>Réf. marchand, note, kg/cm</td></tr>
+                <tr><td><code>stockType</code></td><td>non</td><td>ZRExpress : <code>none</code> (défaut) / <code>local</code> / <code>warehouse</code></td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="tab-panel" role="tabpanel" id="panel-err-ts">
-            <pre><span class="c-cmt">import { isShippingError } from '@dz-delivery/core';</span>
+
+          <h3 class="sub">Parcel · TrackingEvent</h3>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Modèle</th><th>Champs</th></tr></thead>
+              <tbody>
+                <tr><td><code>Parcel</code></td><td><code>id</code>, <code>trackingNumber</code>, <code>status</code>, <code>provider</code>, <code>raw?</code></td></tr>
+                <tr><td><code>TrackingEvent</code></td><td><code>status</code>, <code>label</code>, <code>at</code>, <code>raw?</code></td></tr>
+                <tr><td><code>FeeQuote</code></td><td><code>deliveryFee</code>, <code>stopDeskFee?</code>, <code>returnFee?</code>, <code>currency: 'DZD'</code></td></tr>
+                <tr><td><code>Location</code></td><td><code>id</code>, <code>name</code>, <code>parentId?</code>, <code>code?</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="doc-section" id="statuses">
+          <p class="section-kicker">Normalisation</p>
+          <h2 class="section-title">Statuts unifiés</h2>
+          <p class="section-desc">Un statut natif inconnu → <span class="mono">unknown</span> (jamais une erreur). Le libellé natif reste dans <span class="mono">label</span> / <span class="mono">raw</span>.</p>
+          <div class="status-row">
+            <span class="status-pill">pending</span>
+            <span class="status-pill">created</span>
+            <span class="status-pill">in_transit</span>
+            <span class="status-pill">delivered</span>
+            <span class="status-pill">returned</span>
+            <span class="status-pill">cancelled</span>
+            <span class="status-pill">unknown</span>
+          </div>
+          <p class="prose">Mappers exportés : <span class="mono">mapZRExpressStatus</span>, <span class="mono">mapYalidineStatus</span>, <span class="mono">mapMaystroStatus</span>, <span class="mono">mapEcotrackStatus</span> (PHP : <span class="mono">StatusMapper</span>).</p>
+        </article>
+
+        <article class="doc-section" id="errors">
+          <p class="section-kicker">ShippingError</p>
+          <h2 class="section-title">Erreurs</h2>
+          <p class="section-desc">Toute échec lève <span class="mono">ShippingError</span>. Ne catch pas sans lire <span class="mono">code</span>.</p>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Code</th><th>Quand</th></tr></thead>
+              <tbody>
+                <tr><td><code>VALIDATION_ERROR</code></td><td>Input invalide (souvent avant HTTP) ou 400/422</td></tr>
+                <tr><td><code>AUTH_FAILED</code></td><td>401 / 403</td></tr>
+                <tr><td><code>NOT_FOUND</code></td><td>404, wilaya/commune inconnue, colis absent</td></tr>
+                <tr><td><code>RATE_LIMITED</code></td><td>429 — voir <code>retryAfter</code></td></tr>
+                <tr><td><code>NOT_SUPPORTED</code></td><td>Opération absente chez le carrier</td></tr>
+                <tr><td><code>PROVIDER_ERROR</code></td><td>5xx / réponse inattendue</td></tr>
+                <tr><td><code>NETWORK_ERROR</code></td><td>Timeout, DNS, abort</td></tr>
+                <tr><td><code>UNKNOWN</code></td><td>Autres</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="errors">
+              <button type="button" class="tab" role="tab" aria-controls="err-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="err-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="err-ts">
+              <pre><span class="c-cmt">import { isShippingError } from '@dz-delivery/core';</span>
 
 <span class="c-key">try</span> {
   <span class="c-key">await</span> shipping.<span class="c-fn">createParcel</span>(input);
 } <span class="c-key">catch</span> (err) {
   <span class="c-key">if</span> (<span class="c-fn">isShippingError</span>(err)) {
-    <span class="c-cmt">// AUTH_FAILED | VALIDATION_ERROR | NOT_FOUND | RATE_LIMITED</span>
-    <span class="c-cmt">// NOT_SUPPORTED | PROVIDER_ERROR | NETWORK_ERROR | UNKNOWN</span>
     console.error(err.code, err.message, err.httpStatus, err.details);
-    <span class="c-key">if</span> (err.code === <span class="c-str">'RATE_LIMITED'</span> && err.retryAfter) {
-      <span class="c-cmt">// attendre retryAfter secondes</span>
-    }
   }
   <span class="c-key">throw</span> err;
 }</pre>
-          </div>
-          <div class="tab-panel" role="tabpanel" id="panel-err-php" hidden>
-            <pre><span class="c-cmt">use DzDelivery\Errors\ShippingError;</span>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="err-php" hidden>
+              <pre><span class="c-cmt">use DzDelivery\Errors\ShippingError;</span>
 
 <span class="c-key">try</span> {
     $shipping-><span class="c-fn">createParcel</span>($input);
 } <span class="c-key">catch</span> (ShippingError $e) {
-    <span class="c-cmt">// $e->code · $e->httpStatus · $e->details · $e->retryAfter</span>
     echo $e->code . <span class="c-str">': '</span> . $e-><span class="c-fn">getMessage</span>();
 }</pre>
+            </div>
           </div>
-        </div>
-      </section>
+        </article>
 
-      <section id="matrix" aria-labelledby="matrix-title">
-        <p class="section-kicker">Compatibilité</p>
-        <h2 class="section-title" id="matrix-title">Ce que chaque transporteur expose</h2>
-        <p class="section-desc">
-          <span class="mono">NOT_SUPPORTED</span> = l’opération n’existe pas chez le carrier (pas un bug SDK).
-        </p>
-        <div class="doc-table-wrap">
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th>Méthode</th>
-                <th>ZRExpress</th>
-                <th>Yalidine</th>
-                <th>Maystro</th>
-                <th>Ecotrack</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>createParcel</code></td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-              </tr>
-              <tr>
-                <td><code>track</code></td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="no">webhooks</td>
-                <td class="ok">oui</td>
-              </tr>
-              <tr>
-                <td><code>getFees</code></td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-              </tr>
-              <tr>
-                <td><code>getWilayas</code> / <code>getCommunes</code></td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-              </tr>
-              <tr>
-                <td><code>getStopDesks</code></td>
-                <td class="ok">hubs</td>
-                <td class="ok">centers</td>
-                <td class="ok">communeId requis</td>
-                <td class="ok">oui</td>
-              </tr>
-              <tr>
-                <td><code>cancelParcel</code></td>
-                <td class="ok">oui</td>
-                <td class="ok">si En prép.</td>
-                <td class="no">non</td>
-                <td class="ok">si non validé</td>
-              </tr>
-              <tr>
-                <td><code>healthCheck</code></td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-                <td class="ok">oui</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+        <article class="doc-section" id="matrix">
+          <p class="section-kicker">Compatibilité</p>
+          <h2 class="section-title">Ce que chaque transporteur expose</h2>
+          <p class="section-desc"><span class="mono">NOT_SUPPORTED</span> = l’API carrier n’a pas l’opération (pas un bug SDK).</p>
+          <ul class="providers">
+            <li>ZRExpress</li>
+            <li>Yalidine</li>
+            <li>GuepEx</li>
+            <li>Maystro</li>
+            <li>Ecotrack · DHD</li>
+            <li>World Express</li>
+            <li>Anderson</li>
+            <li>48Hr · EcoRapid · Conexlog…</li>
+            <li class="soon">Ecom · MDM · NoEST…</li>
+          </ul>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th>Méthode</th>
+                  <th>ZRExpress</th>
+                  <th>Yalidine</th>
+                  <th>Maystro</th>
+                  <th>Ecotrack</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>createParcel</code></td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                </tr>
+                <tr>
+                  <td><code>track</code></td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="no">webhooks</td><td class="ok">oui</td>
+                </tr>
+                <tr>
+                  <td><code>getFees</code></td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                </tr>
+                <tr>
+                  <td><code>getWilayas</code> / <code>getCommunes</code></td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                </tr>
+                <tr>
+                  <td><code>getStopDesks</code></td>
+                  <td class="ok">hubs</td><td class="ok">centers</td><td class="ok">communeId</td><td class="ok">oui</td>
+                </tr>
+                <tr>
+                  <td><code>listParcels</code></td>
+                  <td class="ok">oui</td><td class="no">bientôt</td><td class="no">webhooks</td><td class="no">bientôt</td>
+                </tr>
+                <tr>
+                  <td><code>cancelParcel</code></td>
+                  <td class="ok">oui</td><td class="ok">si En prép.</td><td class="no">non</td><td class="ok">si non validé</td>
+                </tr>
+                <tr>
+                  <td><code>healthCheck</code></td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                </tr>
+                <tr>
+                  <td>bulk / labels / webhooks verify</td>
+                  <td class="extra">extras</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
 
-      <section id="docs" aria-labelledby="docs-title">
-        <p class="section-kicker">Documentation</p>
-        <h2 class="section-title" id="docs-title">Aller plus loin</h2>
-        <p class="section-desc">
-          Le détail des champs, statuts et mappings natifs est dans le dépôt.
-        </p>
-        <ul class="doc-links">
-          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat unifié</a></li>
-          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">Mapping providers</a></li>
-          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZRExpress extras</a></li>
-          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">Guide PHP complet</a></li>
-          <li><a href="https://github.com/developing-off/dz-delivery/blob/main/packages/ts/README.md">README TypeScript</a></li>
-          <li><a href="https://www.npmjs.com/package/@dz-delivery/core">npm · @dz-delivery/core</a></li>
-          <li><a href="https://packagist.org/packages/dz-delivery/sdk">Packagist · dz-delivery/sdk</a></li>
-        </ul>
-      </section>
-    </main>
+        <article class="doc-section" id="zrexpress">
+          <p class="section-kicker">ZR-only · 0.1.7+</p>
+          <h2 class="section-title">ZRExpress extras</h2>
+          <p class="section-desc">Hors contrat unifié : méthodes sur <span class="mono">ZRExpressProvider</span> + helpers webhooks. <span class="mono">createClient('zrexpress')</span> reste l’interface simple.</p>
+          <p class="callout">
+            Matrice complète et backlog :
+            <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">docs/ZREXPRESS.md</a>.
+          </p>
+
+          <h3 class="sub">Webhooks (receive)</h3>
+          <p class="prose">Svix / Standard Webhooks — <strong>corps brut obligatoire</strong> (avant JSON.parse). Headers <span class="mono">svix-id</span> / <span class="mono">svix-timestamp</span> / <span class="mono">svix-signature</span> (aliases <span class="mono">webhook-*</span>). Fenêtre ~5 min.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="webhooks">
+              <button type="button" class="tab" role="tab" aria-controls="wh-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="wh-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="wh-ts">
+              <pre><span class="c-cmt">import { verifyZRExpressWebhook } from '@dz-delivery/core';</span>
+
+app.post(<span class="c-str">'/webhooks/zrexpress'</span>, express.raw({ type: <span class="c-str">'*/*'</span> }), (req, res) => {
+  <span class="c-key">const</span> event = <span class="c-fn">verifyZRExpressWebhook</span>(
+    req.body, req.headers, process.env.ZREXPRESS_WEBHOOK_SECRET!,
+  );
+  <span class="c-cmt">// event.type · parcelId · trackingNumber · status · raw</span>
+  res.sendStatus(<span class="c-num">200</span>);
+});</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="wh-php" hidden>
+              <pre><span class="c-cmt">use DzDelivery\Providers\ZRExpress\Webhook;</span>
+
+$raw = file_get_contents(<span class="c-str">'php://input'</span>); <span class="c-cmt">// pas Request::json()</span>
+$event = Webhook::<span class="c-fn">verify</span>($raw, getallheaders(), getenv(<span class="c-str">'ZREXPRESS_WEBHOOK_SECRET'</span>));</pre>
+            </div>
+          </div>
+
+          <h3 class="sub">Labels</h3>
+          <p class="prose">HTML via URL SAS. Auth : <span class="mono">X-Api-Key</span> + <span class="mono">X-Tenant</span> (comme le reste du SDK).</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="labels">
+              <button type="button" class="tab" role="tab" aria-controls="lb-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="lb-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="lb-ts">
+              <pre><span class="c-key">const</span> multi = <span class="c-key">await</span> zr.<span class="c-fn">generateLabels</span>([<span class="c-str">'16-AAA111-ZR'</span>, <span class="c-str">'16-BBB222-ZR'</span>]);
+<span class="c-cmt">// { fileUrl, failedTrackingNumbers } — max 250</span>
+
+<span class="c-key">const</span> one = <span class="c-key">await</span> zr.<span class="c-fn">generateLabels</span>([<span class="c-str">'16-AAA111-ZR'</span>], { mode: <span class="c-str">'individual'</span> });
+<span class="c-cmt">// { labels: [{ trackingNumber, fileUrl }], failedTrackingNumbers } — max 100</span></pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="lb-php" hidden>
+              <pre>$multi = $zr-><span class="c-fn">generateLabels</span>([<span class="c-str">'16-AAA111-ZR'</span>]);
+$one = $zr-><span class="c-fn">generateLabels</span>([<span class="c-str">'16-AAA111-ZR'</span>], [<span class="c-str">'mode'</span> => <span class="c-str">'individual'</span>]);</pre>
+            </div>
+          </div>
+
+          <h3 class="sub">Bulk create / delete</h3>
+          <p class="prose">Création : max 100, <span class="mono">orderId</span> obligatoire par item. Suppression : max 200, UUID ou tracking (détection auto). Réponses 200 / 207 / 400 → résultat structuré, pas d’exception si le corps est un rapport bulk.</p>
+          <div class="panel code-block" data-tabs>
+            <div class="tabs" role="tablist" aria-label="bulk">
+              <button type="button" class="tab" role="tab" aria-controls="bk-ts" aria-selected="true">TypeScript</button>
+              <button type="button" class="tab" role="tab" aria-controls="bk-php" aria-selected="false">PHP</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="bk-ts">
+              <pre><span class="c-key">const</span> created = <span class="c-key">await</span> zr.<span class="c-fn">createParcelsBulk</span>([
+  { ...input, orderId: <span class="c-str">'ORD-1'</span> },
+  { ...input, orderId: <span class="c-str">'ORD-2'</span> },
+]);
+<span class="c-cmt">// { successes: Parcel[], failures: [{ index, orderId?, error }] }</span>
+
+<span class="c-key">const</span> deleted = <span class="c-key">await</span> zr.<span class="c-fn">deleteParcelsBulk</span>([
+  <span class="c-str">'8c1a4c53-0000-4000-8000-000000000001'</span>, <span class="c-cmt">// UUID</span>
+  <span class="c-str">'16-AAA111-ZR'</span>,                             <span class="c-cmt">// tracking</span>
+]);</pre>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="bk-php" hidden>
+              <pre>$created = $zr-><span class="c-fn">createParcelsBulk</span>([
+    array_merge($input, [<span class="c-str">'orderId'</span> => <span class="c-str">'ORD-1'</span>]),
+]);
+$deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class="c-str">'16-AAA111-ZR'</span>]);</pre>
+            </div>
+          </div>
+
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Domaine</th><th>SDK</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td>create / track / fees / lieux / list / cancel / health</td><td class="ok">contrat</td><td>ShippingProvider</td></tr>
+                <tr><td>Webhooks receive</td><td class="extra">helpers</td><td>verify + parse</td></tr>
+                <tr><td>Labels</td><td class="extra">generateLabels</td><td>multiple / individual</td></tr>
+                <tr><td>Bulk create / delete</td><td class="extra">createParcelsBulk / deleteParcelsBulk</td><td>orderId requis en create</td></tr>
+                <tr><td>Update / pickup bags / catalog / claims</td><td class="no">backlog</td><td>prochain lot</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="doc-section" id="providers-notes">
+          <p class="section-kicker">Particularités</p>
+          <h2 class="section-title">Notes par transporteur</h2>
+
+          <h3 class="sub">ZRExpress</h3>
+          <p class="prose">Montant ≤ 150 000 DZD (frais inclus). Téléphones en international (<span class="mono">+213…</span>). Stop desks = hubs ; préfère wilaya seule. Sans <span class="mono">stateId</span>, le colis reste en <span class="mono">OrderReceived</span> jusqu’à passage « prêt à expédier » côté portail.</p>
+
+          <h3 class="sub">Yalidine / GuepEx</h3>
+          <p class="prose"><span class="mono">fromWilayaId</span> obligatoire à la construction. Annulation seulement en « En préparation ». GuepEx = même API, autre <span class="mono">baseUrl</span>.</p>
+
+          <h3 class="sub">Maystro</h3>
+          <p class="prose">Pas d’API track/cancel — configurer les webhooks Maystro et mapper avec <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> exige <span class="mono">communeId</span>.</p>
+
+          <h3 class="sub">Ecotrack</h3>
+          <p class="prose">Un provider, plusieurs coursiers via <span class="mono">courier</span> (<span class="mono">dhd</span>, <span class="mono">anderson</span>, <span class="mono">worldexpress</span>…) ou <span class="mono">baseUrl</span> HTTPS du tenant. Option <span class="mono">autoValidate</span> pour valider juste après création.</p>
+
+          <p class="callout warn">
+            Mapping natif détaillé :
+            <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>.
+            Guide PHP (Laravel, Maystro webhooks) :
+            <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.
+          </p>
+        </article>
+
+        <article class="doc-section" id="refs">
+          <p class="section-kicker">Aller plus loin</p>
+          <h2 class="section-title">Références</h2>
+          <p class="section-desc">Sources dans le dépôt et packages publiés.</p>
+          <ul class="doc-links">
+            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat unifié</a></li>
+            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">Mapping providers</a></li>
+            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZRExpress extras</a></li>
+            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">Guide PHP</a></li>
+            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/packages/ts/README.md">README TypeScript</a></li>
+            <li><a href="https://www.npmjs.com/package/@dz-delivery/core">npm · @dz-delivery/core</a></li>
+            <li><a href="https://packagist.org/packages/dz-delivery/sdk">Packagist · dz-delivery/sdk</a></li>
+            <li><a href="https://github.com/developing-off/dz-delivery">GitHub</a></li>
+          </ul>
+        </article>
+      </div>
+    </div>
 
     <footer>
       <div class="row">
         <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
         <div>
-          <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat</a>
+          <a href="#api">API</a>
           ·
-          <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">Guide PHP</a>
+          <a href="#zrexpress">ZR extras</a>
           ·
           <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
         </div>
@@ -1064,6 +1324,45 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
           }
         });
       });
+
+      var toc = document.getElementById("docs-toc");
+      var toggle = document.getElementById("toc-toggle");
+      if (toggle && toc) {
+        toggle.addEventListener("click", function () {
+          var open = toc.classList.toggle("open");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        toc.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", function () {
+            if (window.matchMedia("(max-width: 900px)").matches) {
+              toc.classList.remove("open");
+              toggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        });
+      }
+
+      var links = Array.prototype.slice.call(document.querySelectorAll(".docs-toc a"));
+      var sections = links
+        .map(function (a) {
+          var id = (a.getAttribute("href") || "").slice(1);
+          return document.getElementById(id);
+        })
+        .filter(Boolean);
+
+      function setActive() {
+        var y = window.scrollY + 120;
+        var current = sections[0];
+        for (var i = 0; i < sections.length; i++) {
+          if (sections[i].offsetTop <= y) current = sections[i];
+        }
+        links.forEach(function (a) {
+          var on = current && a.getAttribute("href") === "#" + current.id;
+          a.classList.toggle("active", !!on);
+        });
+      }
+      window.addEventListener("scroll", setActive, { passive: true });
+      setActive();
     })();
   </script>
 </body>
