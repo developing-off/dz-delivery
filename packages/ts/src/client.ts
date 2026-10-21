@@ -37,3 +37,8 @@ export function createClient(provider: ProviderName, config: ProviderConfigMap[P
       );
   }
 }
+
+/** Typed ZRExpress client (extras: bulk, labels). Prefer over `createClient` when you need `ZRExpressProvider`. */
+export function createZRExpress(config: ZRExpressConfig): ZRExpressProvider {
+  return new ZRExpressProvider(config);
+}

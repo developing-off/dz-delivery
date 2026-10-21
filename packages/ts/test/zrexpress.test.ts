@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createClient, ShippingError } from '../src';
-import { mockFetch } from './helpers';
+import { createClient, createZRExpress, ShippingError } from '../src';
+import { mockFetch, readJson } from './helpers';
+import type { ZRExpressProvider } from '../src/providers/zrexpress';
 
 const WILAYA = '11111111-1111-4111-8111-000000000016';
 const COMMUNE = '22222222-2222-4222-8222-000000016001';
@@ -9,6 +10,12 @@ const PARCEL = '8c1a4c53-0000-4000-8000-000000000001';
 function client(responses: Parameters<typeof mockFetch>[0], extra: Record<string, unknown> = {}) {
   const mock = mockFetch(responses);
   const c = createClient('zrexpress', { apiKey: 'k', tenant: 't', fetch: mock.fetch, ...extra });
+  return { c, mock };
+}
+
+function zrClient(responses: Parameters<typeof mockFetch>[0], extra: Record<string, unknown> = {}) {
+  const mock = mockFetch(responses);
+  const c = createZRExpress({ apiKey: 'k', tenant: 't', fetch: mock.fetch, ...extra });
   return { c, mock };
 }
 
@@ -304,5 +311,115 @@ describe('ZRExpress getStopDesks', () => {
       details: [{ field: 'communeId', code: 'EMPTY_COMMUNE_HUBS' }],
     });
     expect(mock.calls).toHaveLength(3);
+  });
+});
+
+describe('ZRExpress extras — labels', () => {
+  it('generateLabels multiple returns fileUrl', async () => {
+    const native = readJson<Parameters<typeof mockFetch>[0]>('zrexpress/generateLabels/multiple.native.json');
+    const { c, mock } = zrClient(native);
+    const result = await c.generateLabels(['16-AAA111-ZR', '16-MISSING-ZR']);
+    expect(result.fileUrl).toContain('bordereaux_multiple');
+    expect(result.failedTrackingNumbers).toEqual(['16-MISSING-ZR']);
+    expect(mock.calls[0]!.url.pathname).toBe('/api/v1/parcels/labels/multiple');
+    expect(mock.calls[0]!.headers['x-api-key']).toBe('k');
+  });
+
+  it('generateLabels individual returns per-tracking URLs', async () => {
+    const native = readJson<Parameters<typeof mockFetch>[0]>('zrexpress/generateLabels/individual.native.json');
+    const { c, mock } = zrClient(native);
+    const result = await c.generateLabels(['16-AAA111-ZR'], { mode: 'individual' });
+    expect(result.labels).toEqual([
+      {
+        trackingNumber: '16-AAA111-ZR',
+        fileUrl: 'https://zrexpressstorage.blob.core.windows.net/labels/bordereau_16-AAA111-ZR.html?sv=demo',
+      },
+    ]);
+    expect(mock.calls[0]!.url.pathname).toBe('/api/v1/parcels/labels/individual');
+  });
+});
+
+describe('ZRExpress extras — bulk', () => {
+  const bulkInput = {
+    ...baseInput,
+    orderId: 'ORD-BULK-1',
+  };
+
+  it('createParcelsBulk maps partial success (207)', async () => {
+    const native = readJson<Parameters<typeof mockFetch>[0]>('zrexpress/createParcelsBulk/partial.native.json');
+    const { c, mock } = zrClient(native);
+    const result = await c.createParcelsBulk([
+      { ...bulkInput, orderId: 'ORD-BULK-1' },
+      { ...bulkInput, orderId: 'ORD-BULK-2' },
+    ]);
+    expect(result.successes).toHaveLength(1);
+    expect(result.successes[0]).toMatchObject({
+      id: PARCEL,
+      trackingNumber: '16-BULK001-ZR',
+      status: 'pending',
+      provider: 'zrexpress',
+    });
+    expect(result.failures).toEqual([
+      {
+        index: 1,
+        orderId: 'ORD-BULK-2',
+        error: {
+          code: 'PROVIDER_ERROR',
+          message: 'externalId already exists',
+          errorCode: 'ParcelErrors.DuplicateExternalId',
+        },
+      },
+    ]);
+    expect(mock.calls[0]!.url.pathname).toBe('/api/v1/parcels/bulk');
+    expect((mock.calls[0]!.body as { parcels: unknown[] }).parcels).toHaveLength(2);
+  });
+
+  it('createParcelsBulk returns failures on HTTP 400 report without throwing', async () => {
+    const native = readJson<Parameters<typeof mockFetch>[0]>('zrexpress/createParcelsBulk/all-failed.native.json');
+    const { c } = zrClient(native);
+    const result = await c.createParcelsBulk([{ ...bulkInput, orderId: 'ORD-FAIL' }]);
+    expect(result.successes).toEqual([]);
+    expect(result.failures[0]).toMatchObject({
+      index: 0,
+      orderId: 'ORD-FAIL',
+      error: { errorCode: 'ParcelErrors.Validation' },
+    });
+  });
+
+  it('createParcelsBulk requires orderId before HTTP', async () => {
+    const { c, mock } = zrClient([]);
+    await expect(c.createParcelsBulk([baseInput])).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      details: [{ field: 'inputs[0].orderId' }],
+    });
+    expect(mock.calls).toHaveLength(0);
+  });
+
+  it('deleteParcelsBulk splits UUID vs tracking and remaps indices', async () => {
+    const native = readJson<Parameters<typeof mockFetch>[0]>('zrexpress/deleteParcelsBulk/mixed.native.json');
+    const { c, mock } = zrClient(native);
+    const result = await c.deleteParcelsBulk([PARCEL, '16-MISSING-ZR']);
+    expect(result.successes).toEqual([
+      { index: 0, parcelId: PARCEL, trackingNumber: '16-DEL001-ZR' },
+    ]);
+    expect(result.failures).toEqual([
+      {
+        index: 1,
+        error: {
+          code: 'PROVIDER_ERROR',
+          message: "Parcel with tracking number '16-MISSING-ZR' was not found",
+          errorCode: 'ParcelErrors.NotFound',
+        },
+      },
+    ]);
+    expect(mock.calls[0]!.method).toBe('DELETE');
+    expect(mock.calls[0]!.url.pathname).toBe('/api/v1/parcels/bulk');
+    expect(mock.calls[1]!.url.pathname).toBe('/api/v1/parcels/bulk/by-tracking-number');
+  });
+
+  it('createZRExpress returns ZRExpressProvider', () => {
+    const c = createZRExpress({ apiKey: 'k', tenant: 't', fetch: mockFetch([]).fetch });
+    expect(c.name).toBe('zrexpress');
+    expect(typeof (c as ZRExpressProvider).generateLabels).toBe('function');
   });
 });

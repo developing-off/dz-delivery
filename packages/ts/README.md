@@ -6,10 +6,10 @@ One API for Algerian delivery carriers. Implements the shared contract in
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | ✅ all 7 methods |
-| Yalidine | `yalidine` | ✅ all 7 methods (mapping checked against the developer docs, see PROVIDERS.md) |
+| ZRExpress | `zrexpress` | ✅ contrat unifié (create, track, fees, locations, stop desks, list, cancel, health) + [extras](../../docs/ZREXPRESS.md) (bulk, labels, webhooks) |
+| Yalidine | `yalidine` | ✅ contrat unifié (mapping checked against the developer docs, see PROVIDERS.md) |
 | Maystro Delivery | `maystro` | ✅ createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
-| Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
+| Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
 
 - ESM + CommonJS, bundled type definitions
 - Node.js ≥ 18 (uses global `fetch`), no runtime dependencies
@@ -23,12 +23,14 @@ npm install @dz-delivery/core
 ## Usage
 
 ```ts
-import { createClient, isShippingError } from '@dz-delivery/core';
+import { createClient, createZRExpress, isShippingError } from '@dz-delivery/core';
 
 const zr = createClient('zrexpress', {
   apiKey: process.env.ZREXPRESS_API_KEY!,
   tenant: process.env.ZREXPRESS_TENANT!,
 });
+// Extras ZR (bulk / labels / typed provider): createZRExpress({ apiKey, tenant })
+// Webhooks: verifyZRExpressWebhook(rawBody, headers, secret) — see docs/ZREXPRESS.md
 
 const yalidine = createClient('yalidine', {
   apiId: process.env.YALIDINE_API_ID!,

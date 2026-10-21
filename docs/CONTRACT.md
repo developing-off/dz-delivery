@@ -362,16 +362,29 @@ Provider-specific credentials:
 
 ## 7. Out of MVP scope
 
-The following are **intentionally not** part of the contract (see Phase 6 in `TASKS.md`):
+The following are **intentionally not** part of the unified `ShippingProvider` contract (see Phase 6 in `TASKS.md`):
 
 - Catalog endpoints (ZRExpress *create product*, categories, stock, receipts)
-- Bulk create / bulk delete
 - Parcel updates (address, amount, products), exchanges, refunds
-- Labels / PDF generation, pickup bags
+- Pickup bags
 - Claims, customers, treasury / payments, reports
-- Webhooks / push status (recommended for live sync; `listParcels` is the pull alternative)
+- Webhooks **endpoint management** (CRUD)
 
 They MAY be added later as **optional, provider-specific modules** that do not change the `ShippingProvider` interface.
+
+### Provider-specific extras (not the unified contract)
+
+Some carriers expose richer native APIs. Those MAY ship as **extras on the concrete provider class** (e.g. `ZRExpressProvider`) and standalone helpers, without extending `ShippingProvider` / `ShippingProviderInterface`.
+
+For ZRExpress (see [`ZREXPRESS.md`](./ZREXPRESS.md)):
+
+| Extra | Surface | Notes |
+|-------|---------|-------|
+| Bulk create / bulk delete | `ZRExpressProvider.createParcelsBulk` / `deleteParcelsBulk` | Not on the unified interface |
+| Labels (HTML URL) | `ZRExpressProvider.generateLabels` | Not on the unified interface |
+| Webhooks **receive** (verify + parse) | `verifyZRExpressWebhook` / PHP `Webhook::verify` | Helpers only; raw body required |
+
+`listParcels` remains the pull alternative for status sync; prefer webhooks in production when available.
 
 ---
 

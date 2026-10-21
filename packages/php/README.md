@@ -6,10 +6,10 @@ Unified PHP client for Algerian delivery carriers. Implements the shared contrac
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | MVP (all methods including `getStopDesks` + `listParcels`) |
-| Yalidine | `yalidine` | MVP (all methods), checked against the developer docs |
+| ZRExpress | `zrexpress` | contrat unifié (`getStopDesks`, `listParcels`, …) + [extras](https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md) (bulk, labels, webhooks) |
+| Yalidine | `yalidine` | contrat unifié, checked against the developer docs |
 | Maystro Delivery | `maystro` | createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
-| Ecotrack (DHD, Anderson, World Express, …) | `ecotrack` | all 7 methods — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
+| Ecotrack (DHD, Anderson, World Express, …) | `ecotrack` | contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
 
 Requires PHP ≥ 8.2 and Guzzle 7.
 
@@ -41,6 +41,9 @@ $client = ClientFactory::create('zrexpress', [
     'tenant' => getenv('ZREXPRESS_TENANT'),
     // 'baseUrl' => ..., 'timeoutMs' => 15000, 'includeRaw' => true,
 ]);
+// Extras ZR (bulk / labels): new \DzDelivery\Providers\ZRExpressProvider([...])
+// Webhooks: \DzDelivery\Providers\ZRExpress\Webhook::verify($rawBody, $headers, $secret)
+// → docs/ZREXPRESS.md
 
 // Yalidine also needs the origin wilaya (for createParcel and getFees):
 // ClientFactory::create('yalidine', ['apiId' => ..., 'apiToken' => ..., 'fromWilayaId' => 16]);

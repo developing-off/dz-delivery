@@ -5,7 +5,7 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | mapping drafted, implemented in PHP and TS |
+| ZRExpress | `zrexpress` | mapping drafted, implemented in PHP and TS — extras: [`ZREXPRESS.md`](./ZREXPRESS.md) |
 | Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
 | Maystro Delivery | `maystro` | built from the public API docs (2026-10-20), implemented in PHP and TS; `track` / `cancelParcel` not supported |
 | Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
@@ -50,7 +50,9 @@ Every request sends ([Authentication guide](https://docs.zrexpress.app/docs/auth
 | `cancelParcel` | `DELETE /api/v1/parcels/{id}` | [Delete a parcel](https://docs.zrexpress.app/reference/deleteparcelendpoint) | Requires the parcel **UUID**. If given a tracking number, resolve it first. |
 | `healthCheck` | `POST /api/v1/territories/search` (wilayas) | [Search territories](https://docs.zrexpress.app/reference/searchterritoriesendpoint) | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
-**Out of MVP** (documented natively, not on `ShippingProvider`): catalog ([create product](https://docs.zrexpress.app/reference/createproductendpoint), categories, stock), bulk create/delete, exchanges/refunds, labels, pickup bags, claims, treasury, [webhooks](https://docs.zrexpress.app/docs/webhooks) (prefer for live status push; `listParcels` is the pull alternative). See `CONTRACT.md` §7.
+**ZRExpress extras** (on `ZRExpressProvider` + helpers, **not** on `ShippingProvider`): bulk create/delete, labels, webhook verify/parse — full matrix in [`ZREXPRESS.md`](./ZREXPRESS.md).
+
+**Still out of MVP / backlog**: catalog ([create product](https://docs.zrexpress.app/reference/createproductendpoint), categories, stock), exchanges/refunds, pickup bags, claims, treasury, webhook endpoint CRUD. Prefer [webhooks](https://docs.zrexpress.app/docs/webhooks) for live status push; `listParcels` is the pull alternative. See `CONTRACT.md` §7.
 
 ### `ParcelInput` → `POST /parcels` body
 

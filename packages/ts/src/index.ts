@@ -1,11 +1,29 @@
-export { createClient, SUPPORTED_PROVIDERS } from './client';
+export { createClient, createZRExpress, SUPPORTED_PROVIDERS } from './client';
 export { ShippingError, isShippingError, codeFromHttpStatus } from './errors';
 export type { ShippingErrorOptions } from './errors';
 export { createStatusMapper, normalizeStatusKey } from './status';
 export type { StatusMapper, StatusMapperOptions } from './status';
 export { normalizeAlgerianPhone } from './utils';
 export type { ShippingProvider } from './providers/types';
-export { ZRExpressProvider, mapZRExpressStatus, ZREXPRESS_DEFAULT_BASE_URL } from './providers/zrexpress';
+export {
+  ZRExpressProvider,
+  mapZRExpressStatus,
+  ZREXPRESS_DEFAULT_BASE_URL,
+} from './providers/zrexpress';
+export type {
+  LabelResult,
+  BulkCreateResult,
+  BulkCreateFailure,
+  BulkDeleteResult,
+  BulkDeleteSuccess,
+  BulkDeleteFailure,
+} from './providers/zrexpress';
+export {
+  verifyZRExpressWebhook,
+  parseZRExpressWebhook,
+  ZREXPRESS_WEBHOOK_TOLERANCE_SEC,
+} from './providers/zrexpress-webhooks';
+export type { ZRExpressWebhookEvent, ZRExpressWebhookHeaders } from './providers/zrexpress-webhooks';
 export {
   YalidineProvider,
   mapYalidineStatus,

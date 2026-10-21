@@ -1,4 +1,4 @@
-import { ShippingError } from '../errors';
+import { ShippingError, isShippingError } from '../errors';
 import { HttpClient, type ErrorBodyParser } from '../http';
 import { createStatusMapper } from '../status';
 import {
@@ -46,6 +46,47 @@ const LIST_DEFAULT_PAGE_SIZE = 50;
 const LIST_MAX_PAGE_SIZE = 1000;
 /** Safety cap when `allPages: true` (pages × pageSize). */
 const LIST_MAX_PAGES = 100;
+const BULK_CREATE_MAX = 100;
+const BULK_DELETE_MAX = 200;
+const LABELS_MULTIPLE_MAX = 250;
+const LABELS_INDIVIDUAL_MAX = 100;
+
+/** ZRExpress-only: HTML label download (SAS URL). */
+export interface LabelResult {
+  fileUrl?: string;
+  labels?: Array<{ trackingNumber: string; fileUrl: string }>;
+  failedTrackingNumbers: string[];
+  raw?: unknown;
+}
+
+export interface BulkCreateFailure {
+  index: number;
+  orderId?: string;
+  error: { code: string; message: string; errorCode?: string };
+}
+
+export interface BulkCreateResult {
+  successes: Parcel[];
+  failures: BulkCreateFailure[];
+  raw?: unknown;
+}
+
+export interface BulkDeleteSuccess {
+  index: number;
+  parcelId?: string;
+  trackingNumber?: string;
+}
+
+export interface BulkDeleteFailure {
+  index: number;
+  error: { code: string; message: string; errorCode?: string };
+}
+
+export interface BulkDeleteResult {
+  successes: BulkDeleteSuccess[];
+  failures: BulkDeleteFailure[];
+  raw?: unknown;
+}
 
 /**
  * Native state → unified status. Matching is case-, accent- and separator-insensitive
@@ -208,56 +249,7 @@ export class ZRExpressProvider implements ShippingProvider {
   }
 
   async createParcel(input: ParcelInput): Promise<Parcel> {
-    validateParcelInput(input, PROVIDER);
-    if (input.price > MAX_AMOUNT) {
-      throw new ShippingError('VALIDATION_ERROR', `price must be <= ${MAX_AMOUNT} DZD for ZRExpress`, {
-        provider: PROVIDER,
-        details: [{ field: 'price', message: `price must be <= ${MAX_AMOUNT} DZD for ZRExpress` }],
-      });
-    }
-    if (input.orderId !== undefined && input.orderId.length > 100) {
-      throw new ShippingError('VALIDATION_ERROR', 'orderId must be at most 100 characters', {
-        provider: PROVIDER,
-        details: [{ field: 'orderId', message: 'orderId must be at most 100 characters' }],
-      });
-    }
-
-    const phone: Record<string, string> = {
-      number1: normalizeAlgerianPhone(input.phone, 'international', PROVIDER, 'phone'),
-    };
-    if (input.phone2) phone.number2 = normalizeAlgerianPhone(input.phone2, 'international', PROVIDER, 'phone2');
-
-    const wilaya = await this.resolveWilaya(input.wilayaId ?? input.wilayaName!);
-    const communeId = await this.resolveCommuneId(wilaya.id, input);
-
-    const orderedProducts = this.buildOrderedProducts(input);
-
-    // No parcel-level dimensions: applied to the first product (docs/PROVIDERS.md).
-    const first = orderedProducts[0] as Record<string, unknown>;
-    if (input.length !== undefined) first.length = input.length;
-    if (input.width !== undefined) first.width = input.width;
-    if (input.height !== undefined) first.height = input.height;
-
-    const description = this.parcelDescription(input);
-    if (description.trim().length < 2) {
-      throw new ShippingError('VALIDATION_ERROR', 'Product description must be at least 2 characters', {
-        provider: PROVIDER,
-        details: [{ field: 'productName', message: 'Product description must be at least 2 characters' }],
-      });
-    }
-
-    const body: Record<string, unknown> = {
-      customer: { customerId: randomUuid(), name: input.recipientName.trim(), phone },
-      deliveryAddress: { street: input.address.trim(), cityTerritoryId: wilaya.id, districtTerritoryId: communeId },
-      orderedProducts,
-      deliveryType: input.isStopDesk ? 'pickup-point' : 'home',
-      amount: input.price,
-      description,
-    };
-    if (input.isStopDesk) body.hubId = input.stopDeskId;
-    if (input.weight !== undefined) body.weight = { weight: input.weight };
-    if (input.orderId) body.externalId = input.orderId;
-
+    const body = await this.buildCreateBody(input, { requireOrderId: false });
     const created = await this.http.request<{ id?: string }>({ method: 'POST', path: `${API}/parcels`, body });
     const id = isRecord(created.body) ? str(created.body.id) : undefined;
     if (!id) {
@@ -270,6 +262,147 @@ export class ZRExpressProvider implements ShippingProvider {
 
     const parcel = await this.getParcel(id);
     return this.toParcel(parcel);
+  }
+
+  /**
+   * ZRExpress extra — `POST /parcels/bulk` (max 100). Each item **must** have `orderId`
+   * (`externalId`). Partial success (`207`) and all-failed (`400` with report body) return
+   * a structured result instead of throwing.
+   */
+  async createParcelsBulk(inputs: ParcelInput[]): Promise<BulkCreateResult> {
+    if (!Array.isArray(inputs) || inputs.length === 0) {
+      throw new ShippingError('VALIDATION_ERROR', 'createParcelsBulk requires at least one parcel', {
+        provider: PROVIDER,
+        details: [{ field: 'inputs', message: 'at least one parcel is required' }],
+      });
+    }
+    if (inputs.length > BULK_CREATE_MAX) {
+      throw new ShippingError('VALIDATION_ERROR', `createParcelsBulk accepts at most ${BULK_CREATE_MAX} parcels`, {
+        provider: PROVIDER,
+        details: [{ field: 'inputs', message: `max ${BULK_CREATE_MAX}` }],
+      });
+    }
+
+    const parcels: Record<string, unknown>[] = [];
+    for (let i = 0; i < inputs.length; i++) {
+      try {
+        parcels.push(await this.buildCreateBody(inputs[i]!, { requireOrderId: true, index: i }));
+      } catch (err) {
+        if (isShippingError(err) && err.code === 'VALIDATION_ERROR') throw err;
+        throw err;
+      }
+    }
+
+    const body = await this.requestBulkReport('POST', `${API}/parcels/bulk`, { parcels });
+    return this.mapBulkCreateResult(body);
+  }
+
+  /**
+   * ZRExpress extra — delete by UUID (`DELETE /parcels/bulk`) and/or tracking
+   * (`DELETE /parcels/bulk/by-tracking-number`). Max 200 refs. Mixed lists are split
+   * and indices remapped to the original order.
+   */
+  async deleteParcelsBulk(refs: string[]): Promise<BulkDeleteResult> {
+    const cleaned = (refs ?? []).map((r) => r?.trim()).filter(Boolean) as string[];
+    if (cleaned.length === 0) {
+      throw new ShippingError('VALIDATION_ERROR', 'deleteParcelsBulk requires at least one id or tracking number', {
+        provider: PROVIDER,
+        details: [{ field: 'refs', message: 'at least one reference is required' }],
+      });
+    }
+    if (cleaned.length > BULK_DELETE_MAX) {
+      throw new ShippingError('VALIDATION_ERROR', `deleteParcelsBulk accepts at most ${BULK_DELETE_MAX} references`, {
+        provider: PROVIDER,
+        details: [{ field: 'refs', message: `max ${BULK_DELETE_MAX}` }],
+      });
+    }
+
+    const uuidEntries: Array<{ index: number; value: string }> = [];
+    const trackingEntries: Array<{ index: number; value: string }> = [];
+    cleaned.forEach((value, index) => {
+      if (isUuid(value)) uuidEntries.push({ index, value });
+      else trackingEntries.push({ index, value });
+    });
+
+    const successes: BulkDeleteSuccess[] = [];
+    const failures: BulkDeleteFailure[] = [];
+    const rawParts: unknown[] = [];
+
+    if (uuidEntries.length > 0) {
+      const body = await this.requestBulkReport('DELETE', `${API}/parcels/bulk`, {
+        parcelIds: uuidEntries.map((e) => e.value),
+      });
+      rawParts.push(body);
+      this.mergeBulkDelete(body, uuidEntries, successes, failures);
+    }
+    if (trackingEntries.length > 0) {
+      const body = await this.requestBulkReport('DELETE', `${API}/parcels/bulk/by-tracking-number`, {
+        trackingNumbers: trackingEntries.map((e) => e.value),
+      });
+      rawParts.push(body);
+      this.mergeBulkDelete(body, trackingEntries, successes, failures);
+    }
+
+    successes.sort((a, b) => a.index - b.index);
+    failures.sort((a, b) => a.index - b.index);
+    const result: BulkDeleteResult = { successes, failures };
+    if (this.includeRaw) result.raw = rawParts.length === 1 ? rawParts[0] : rawParts;
+    return result;
+  }
+
+  /**
+   * ZRExpress extra — HTML labels (SAS URL).
+   * `mode: 'multiple'` (default) → one file for up to 250 trackings.
+   * `mode: 'individual'` → one file per tracking (max 100).
+   */
+  async generateLabels(
+    trackingNumbers: string[],
+    options?: { mode?: 'multiple' | 'individual' },
+  ): Promise<LabelResult> {
+    const list = (trackingNumbers ?? []).map((t) => t?.trim()).filter(Boolean) as string[];
+    if (list.length === 0) {
+      throw new ShippingError('VALIDATION_ERROR', 'generateLabels requires at least one tracking number', {
+        provider: PROVIDER,
+        details: [{ field: 'trackingNumbers', message: 'at least one tracking number is required' }],
+      });
+    }
+    const mode = options?.mode ?? 'multiple';
+    const max = mode === 'individual' ? LABELS_INDIVIDUAL_MAX : LABELS_MULTIPLE_MAX;
+    if (list.length > max) {
+      throw new ShippingError('VALIDATION_ERROR', `generateLabels(${mode}) accepts at most ${max} tracking numbers`, {
+        provider: PROVIDER,
+        details: [{ field: 'trackingNumbers', message: `max ${max}` }],
+      });
+    }
+
+    const path =
+      mode === 'individual' ? `${API}/parcels/labels/individual` : `${API}/parcels/labels/multiple`;
+    const res = await this.http.request<Record<string, unknown>>({
+      method: 'POST',
+      path,
+      body: { trackingNumbers: list },
+    });
+    const body = isRecord(res.body) ? res.body : {};
+    const failed = Array.isArray(body.failedTrackingNumbers)
+      ? body.failedTrackingNumbers.map((t) => String(t))
+      : [];
+
+    if (mode === 'individual') {
+      const files = Array.isArray(body.parcelLabelFiles) ? body.parcelLabelFiles : [];
+      const labels = files
+        .filter(isRecord)
+        .map((f) => ({
+          trackingNumber: str(f.trackingNumber) ?? '',
+          fileUrl: str(f.fileUrl) ?? '',
+        }))
+        .filter((l) => l.trackingNumber && l.fileUrl);
+      return withRaw({ labels, failedTrackingNumbers: failed }, res.body, this.includeRaw);
+    }
+
+    const fileUrl = str(body.fileUrl);
+    const out: LabelResult = { failedTrackingNumbers: failed };
+    if (fileUrl) out.fileUrl = fileUrl;
+    return withRaw(out, res.body, this.includeRaw);
   }
 
   async track(trackingNumber: string): Promise<TrackResult> {
@@ -471,6 +604,158 @@ export class ZRExpressProvider implements ShippingProvider {
   }
 
   // --- internals -------------------------------------------------------------
+
+  private async buildCreateBody(
+    input: ParcelInput,
+    opts: { requireOrderId: boolean; index?: number },
+  ): Promise<Record<string, unknown>> {
+    const field = (name: string) => (opts.index !== undefined ? `inputs[${opts.index}].${name}` : name);
+    validateParcelInput(input, PROVIDER);
+    if (input.price > MAX_AMOUNT) {
+      throw new ShippingError('VALIDATION_ERROR', `price must be <= ${MAX_AMOUNT} DZD for ZRExpress`, {
+        provider: PROVIDER,
+        details: [{ field: field('price'), message: `price must be <= ${MAX_AMOUNT} DZD for ZRExpress` }],
+      });
+    }
+    if (opts.requireOrderId && !input.orderId?.trim()) {
+      throw new ShippingError('VALIDATION_ERROR', 'orderId is required for bulk create (ZRExpress externalId)', {
+        provider: PROVIDER,
+        details: [{ field: field('orderId'), message: 'orderId is required for bulk create' }],
+      });
+    }
+    if (input.orderId !== undefined && input.orderId.length > 100) {
+      throw new ShippingError('VALIDATION_ERROR', 'orderId must be at most 100 characters', {
+        provider: PROVIDER,
+        details: [{ field: field('orderId'), message: 'orderId must be at most 100 characters' }],
+      });
+    }
+
+    const phone: Record<string, string> = {
+      number1: normalizeAlgerianPhone(input.phone, 'international', PROVIDER, field('phone')),
+    };
+    if (input.phone2) {
+      phone.number2 = normalizeAlgerianPhone(input.phone2, 'international', PROVIDER, field('phone2'));
+    }
+
+    const wilaya = await this.resolveWilaya(input.wilayaId ?? input.wilayaName!);
+    const communeId = await this.resolveCommuneId(wilaya.id, input);
+    const orderedProducts = this.buildOrderedProducts(input);
+
+    const first = orderedProducts[0] as Record<string, unknown>;
+    if (input.length !== undefined) first.length = input.length;
+    if (input.width !== undefined) first.width = input.width;
+    if (input.height !== undefined) first.height = input.height;
+
+    const description = this.parcelDescription(input);
+    if (description.trim().length < 2) {
+      throw new ShippingError('VALIDATION_ERROR', 'Product description must be at least 2 characters', {
+        provider: PROVIDER,
+        details: [{ field: field('productName'), message: 'Product description must be at least 2 characters' }],
+      });
+    }
+
+    const body: Record<string, unknown> = {
+      customer: { customerId: randomUuid(), name: input.recipientName.trim(), phone },
+      deliveryAddress: { street: input.address.trim(), cityTerritoryId: wilaya.id, districtTerritoryId: communeId },
+      orderedProducts,
+      deliveryType: input.isStopDesk ? 'pickup-point' : 'home',
+      amount: input.price,
+      description,
+    };
+    if (input.isStopDesk) body.hubId = input.stopDeskId;
+    if (input.weight !== undefined) body.weight = { weight: input.weight };
+    if (input.orderId) body.externalId = input.orderId;
+    return body;
+  }
+
+  /** POST/DELETE bulk endpoints: accept 200/207 and 400 when the body is a bulk report. */
+  private async requestBulkReport(
+    method: 'POST' | 'DELETE',
+    path: string,
+    body: unknown,
+  ): Promise<Record<string, unknown>> {
+    try {
+      const res = await this.http.request<Record<string, unknown>>({ method, path, body });
+      return isRecord(res.body) ? res.body : {};
+    } catch (err) {
+      if (isShippingError(err) && err.httpStatus === 400 && isBulkReport(err.raw)) {
+        return err.raw as Record<string, unknown>;
+      }
+      throw err;
+    }
+  }
+
+  private mapBulkCreateResult(body: Record<string, unknown>): BulkCreateResult {
+    const successes: Parcel[] = [];
+    for (const item of Array.isArray(body.successes) ? body.successes : []) {
+      if (!isRecord(item)) continue;
+      const id = str(item.parcelId);
+      if (!id) continue;
+      successes.push(
+        withRaw(
+          {
+            id,
+            trackingNumber: str(item.trackingNumber) ?? id,
+            status: 'pending' as ParcelStatus,
+            provider: PROVIDER,
+          },
+          item,
+          this.includeRaw,
+        ),
+      );
+    }
+    const failures: BulkCreateFailure[] = [];
+    for (const item of Array.isArray(body.failures) ? body.failures : []) {
+      if (!isRecord(item)) continue;
+      const index = Number(item.index);
+      const failure: BulkCreateFailure = {
+        index: Number.isFinite(index) ? index : -1,
+        error: {
+          code: 'PROVIDER_ERROR',
+          message: str(item.errorMessage) ?? str(item.errorCode) ?? 'Bulk create failed',
+          ...(str(item.errorCode) ? { errorCode: str(item.errorCode)! } : {}),
+        },
+      };
+      const orderId = str(item.externalId);
+      if (orderId) failure.orderId = orderId;
+      failures.push(failure);
+    }
+    const result: BulkCreateResult = { successes, failures };
+    if (this.includeRaw) result.raw = body;
+    return result;
+  }
+
+  private mergeBulkDelete(
+    body: Record<string, unknown>,
+    indexMap: Array<{ index: number; value: string }>,
+    successes: BulkDeleteSuccess[],
+    failures: BulkDeleteFailure[],
+  ): void {
+    for (const item of Array.isArray(body.successes) ? body.successes : []) {
+      if (!isRecord(item)) continue;
+      const localIndex = Number(item.index);
+      const mapped = Number.isFinite(localIndex) ? indexMap[localIndex] : undefined;
+      const entry: BulkDeleteSuccess = { index: mapped?.index ?? localIndex };
+      const parcelId = str(item.parcelId);
+      if (parcelId) entry.parcelId = parcelId;
+      const trackingNumber = str(item.trackingNumber);
+      if (trackingNumber) entry.trackingNumber = trackingNumber;
+      successes.push(entry);
+    }
+    for (const item of Array.isArray(body.failures) ? body.failures : []) {
+      if (!isRecord(item)) continue;
+      const localIndex = Number(item.index);
+      const mapped = Number.isFinite(localIndex) ? indexMap[localIndex] : undefined;
+      failures.push({
+        index: mapped?.index ?? localIndex,
+        error: {
+          code: 'PROVIDER_ERROR',
+          message: str(item.errorMessage) ?? str(item.errorCode) ?? 'Bulk delete failed',
+          ...(str(item.errorCode) ? { errorCode: str(item.errorCode)! } : {}),
+        },
+      });
+    }
+  }
 
   /**
    * Builds `orderedProducts[]`. Default `stockType` is `"none"` (no catalog).
@@ -791,4 +1076,8 @@ export class ZRExpressProvider implements ShippingProvider {
     if (!found) throw new ShippingError('NOT_FOUND', `Unknown ZRExpress commune "${value}"`, { provider: PROVIDER });
     return found.id;
   }
+}
+
+function isBulkReport(body: unknown): body is Record<string, unknown> {
+  return isRecord(body) && (Array.isArray(body.successes) || Array.isArray(body.failures));
 }

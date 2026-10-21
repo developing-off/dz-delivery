@@ -2,6 +2,7 @@
 
 A practical guide to calling ZRExpress, Yalidine and Maystro from your own PHP application through one API.
 For the full contract see [`CONTRACT.md`](./CONTRACT.md); for carrier-specific details see [`PROVIDERS.md`](./PROVIDERS.md).
+ZRExpress extras (bulk, labels, webhook verify): [`ZREXPRESS.md`](./ZREXPRESS.md).
 
 - [1. Install](#1-install)
 - [2. Configure a carrier](#2-configure-a-carrier)
@@ -11,6 +12,7 @@ For the full contract see [`CONTRACT.md`](./CONTRACT.md); for carrier-specific d
 - [6. Laravel example](#6-laravel-example)
 - [7. Maystro webhooks](#7-maystro-webhooks)
 - [8. Testing your integration](#8-testing-your-integration)
+- [9. ZRExpress extras](#9-zrexpress-extras)
 
 ---
 
@@ -645,3 +647,32 @@ $wilayas = $client->getWilayas();   // served by the mock, no HTTP call
 Add `GuzzleHttp\Middleware::history($container)` to the stack to assert on the requests sent. Realistic native responses for every carrier are in [`docs/fixtures/`](./fixtures/).
 
 In application code, type-hint `ShippingProviderInterface`: you can then swap in your own fake implementation in tests instead of mocking HTTP.
+
+---
+
+## 9. ZRExpress extras
+
+Bulk create/delete, shipping labels, and signed webhook verification live on `ZRExpressProvider` (and `DzDelivery\Providers\ZRExpress\Webhook`), **not** on `ShippingProviderInterface`.
+
+Full matrix and examples: [`ZREXPRESS.md`](./ZREXPRESS.md).
+
+```php
+use DzDelivery\Providers\ZRExpressProvider;
+use DzDelivery\Providers\ZRExpress\Webhook;
+
+$zr = new ZRExpressProvider([
+    'apiKey' => getenv('ZREXPRESS_API_KEY'),
+    'tenant' => getenv('ZREXPRESS_TENANT'),
+]);
+
+$bulk = $zr->createParcelsBulk([
+    // each item MUST include orderId (externalId)
+    [...$parcelInput, 'orderId' => 'ORD-1'],
+]);
+$labels = $zr->generateLabels(['16-AAA111-ZR']);
+
+// Webhooks: use the raw request body (before JSON decode)
+$raw = file_get_contents('php://input');
+$event = Webhook::verify($raw, getallheaders(), getenv('ZREXPRESS_WEBHOOK_SECRET'));
+// $event->type, $event->parcelId, $event->trackingNumber, $event->status
+```

@@ -20,6 +20,9 @@ use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\StopDeskQuery;
 use DzDelivery\Models\TrackingEvent;
 use DzDelivery\Models\TrackResult;
+use DzDelivery\Providers\ZRExpress\BulkCreateResult;
+use DzDelivery\Providers\ZRExpress\BulkDeleteResult;
+use DzDelivery\Providers\ZRExpress\LabelResult;
 use DzDelivery\Support\Dates;
 use DzDelivery\Support\Health;
 use DzDelivery\Support\Phone;
@@ -37,6 +40,10 @@ final class ZRExpressProvider implements ShippingProviderInterface
     private const API = '/api/v1';
     private const PAGE_SIZE = 1000;
     private const MAX_AMOUNT = 150000;
+    private const BULK_CREATE_MAX = 100;
+    private const BULK_DELETE_MAX = 200;
+    private const LABELS_MULTIPLE_MAX = 250;
+    private const LABELS_INDIVIDUAL_MAX = 100;
     private const UUID_RE = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
 
     private HttpClient $http;
@@ -79,78 +86,7 @@ final class ZRExpressProvider implements ShippingProviderInterface
 
     public function createParcel(ParcelInput|array $input): Parcel
     {
-        $input = ParcelInput::from($input, self::NAME);
-
-        if ($input->price > self::MAX_AMOUNT) {
-            throw ShippingError::validation('price must be <= ' . self::MAX_AMOUNT . ' DZD for ZRExpress', self::NAME, 'price');
-        }
-        if ($input->orderId !== null && strlen($input->orderId) > 100) {
-            throw ShippingError::validation('orderId must be at most 100 characters', self::NAME, 'orderId');
-        }
-        $description = $this->parcelDescription($input);
-        if (strlen(trim($description)) < 2) {
-            throw ShippingError::validation('Product description must be at least 2 characters', self::NAME, 'productName');
-        }
-
-        $phone = Phone::toInternational($input->phone, self::NAME, 'phone');
-        $phone2 = $input->phone2 !== null ? Phone::toInternational($input->phone2, self::NAME, 'phone2') : null;
-
-        $wilayaId = $this->resolveWilayaId($input->wilayaId ?? $input->wilayaName, $input->wilayaId === null);
-        $communeId = $this->resolveCommuneId($wilayaId, $input->communeId ?? $input->communeName, $input->communeId === null);
-
-        $products = [];
-        $defaultStock = $this->resolveStockType($input->stockType, 'stockType');
-        foreach ($input->products() as $i => $item) {
-            $fieldPrefix = $input->productList !== null && $input->productList !== []
-                ? "productList.$i"
-                : 'productName';
-            $stockType = $this->resolveStockType($item->stockType ?? $defaultStock, "$fieldPrefix.stockType");
-            $this->assertCatalogFields($stockType, $item->productId, $item->sku, $fieldPrefix);
-            $product = array_filter([
-                'productName' => $item->name,
-                'quantity' => $item->quantity,
-                // Assumption: ZRExpress requires a unit price; 0 when the merchant did not provide one.
-                'unitPrice' => $item->unitPrice ?? 0,
-                'productSku' => $item->sku,
-                'productId' => $item->productId,
-                'stockType' => $stockType,
-            ], static fn ($v) => $v !== null);
-            if ($i === 0) {
-                $product += array_filter([
-                    'length' => $input->length,
-                    'width' => $input->width,
-                    'height' => $input->height,
-                ], static fn ($v) => $v !== null);
-            }
-            $products[] = $product;
-        }
-
-        $body = [
-            'customer' => [
-                'customerId' => self::uuid4(),
-                'name' => $input->recipientName,
-                'phone' => array_filter(['number1' => $phone, 'number2' => $phone2], static fn ($v) => $v !== null),
-            ],
-            'deliveryAddress' => [
-                'street' => $input->address,
-                'cityTerritoryId' => $wilayaId,
-                'districtTerritoryId' => $communeId,
-            ],
-            'orderedProducts' => $products,
-            'description' => $description,
-            'amount' => $input->price,
-            'deliveryType' => $input->isStopDesk ? 'pickup-point' : 'home',
-        ];
-        if ($input->isStopDesk) {
-            $body['hubId'] = $input->stopDeskId;
-        }
-        if ($input->weight !== null) {
-            $body['weight'] = ['weight' => $input->weight];
-        }
-        if ($input->orderId !== null) {
-            $body['externalId'] = $input->orderId;
-        }
-
+        $body = $this->buildCreateBody(ParcelInput::from($input, self::NAME), requireOrderId: false);
         $created = $this->http->request('POST', self::API . '/parcels', [], $body);
         $id = is_array($created) ? ($created['id'] ?? null) : (is_string($created) ? $created : null);
         if (!is_string($id) || $id === '') {
@@ -158,6 +94,169 @@ final class ZRExpressProvider implements ShippingProviderInterface
         }
 
         return $this->toParcel($this->fetchParcel($id));
+    }
+
+    /**
+     * ZRExpress extra — POST /parcels/bulk (max 100). Each item must include orderId.
+     *
+     * @param list<ParcelInput|array<string, mixed>> $inputs
+     */
+    public function createParcelsBulk(array $inputs): BulkCreateResult
+    {
+        if ($inputs === []) {
+            throw ShippingError::validation('createParcelsBulk requires at least one parcel', self::NAME, 'inputs');
+        }
+        if (count($inputs) > self::BULK_CREATE_MAX) {
+            throw ShippingError::validation(
+                'createParcelsBulk accepts at most ' . self::BULK_CREATE_MAX . ' parcels',
+                self::NAME,
+                'inputs',
+            );
+        }
+
+        $parcels = [];
+        foreach ($inputs as $i => $input) {
+            $parcels[] = $this->buildCreateBody(
+                ParcelInput::from($input, self::NAME),
+                requireOrderId: true,
+                index: is_int($i) ? $i : null,
+            );
+        }
+
+        $body = $this->requestBulkReport('POST', self::API . '/parcels/bulk', ['parcels' => $parcels]);
+
+        return $this->mapBulkCreateResult($body);
+    }
+
+    /**
+     * ZRExpress extra — delete by UUID and/or tracking (max 200).
+     *
+     * @param list<string> $refs
+     */
+    public function deleteParcelsBulk(array $refs): BulkDeleteResult
+    {
+        $cleaned = [];
+        foreach ($refs as $ref) {
+            $value = trim((string) $ref);
+            if ($value !== '') {
+                $cleaned[] = $value;
+            }
+        }
+        if ($cleaned === []) {
+            throw ShippingError::validation(
+                'deleteParcelsBulk requires at least one id or tracking number',
+                self::NAME,
+                'refs',
+            );
+        }
+        if (count($cleaned) > self::BULK_DELETE_MAX) {
+            throw ShippingError::validation(
+                'deleteParcelsBulk accepts at most ' . self::BULK_DELETE_MAX . ' references',
+                self::NAME,
+                'refs',
+            );
+        }
+
+        $uuidEntries = [];
+        $trackingEntries = [];
+        foreach ($cleaned as $index => $value) {
+            if (preg_match(self::UUID_RE, $value) === 1) {
+                $uuidEntries[] = ['index' => $index, 'value' => $value];
+            } else {
+                $trackingEntries[] = ['index' => $index, 'value' => $value];
+            }
+        }
+
+        $successes = [];
+        $failures = [];
+        $rawParts = [];
+
+        if ($uuidEntries !== []) {
+            $body = $this->requestBulkReport('DELETE', self::API . '/parcels/bulk', [
+                'parcelIds' => array_column($uuidEntries, 'value'),
+            ]);
+            $rawParts[] = $body;
+            $this->mergeBulkDelete($body, $uuidEntries, $successes, $failures);
+        }
+        if ($trackingEntries !== []) {
+            $body = $this->requestBulkReport('DELETE', self::API . '/parcels/bulk/by-tracking-number', [
+                'trackingNumbers' => array_column($trackingEntries, 'value'),
+            ]);
+            $rawParts[] = $body;
+            $this->mergeBulkDelete($body, $trackingEntries, $successes, $failures);
+        }
+
+        usort($successes, static fn ($a, $b) => $a['index'] <=> $b['index']);
+        usort($failures, static fn ($a, $b) => $a['index'] <=> $b['index']);
+
+        return new BulkDeleteResult(
+            $successes,
+            $failures,
+            $this->includeRaw ? (count($rawParts) === 1 ? $rawParts[0] : $rawParts) : null,
+        );
+    }
+
+    /**
+     * ZRExpress extra — HTML labels (SAS URL).
+     *
+     * @param list<string> $trackingNumbers
+     * @param array{mode?: 'multiple'|'individual'} $options
+     */
+    public function generateLabels(array $trackingNumbers, array $options = []): LabelResult
+    {
+        $list = [];
+        foreach ($trackingNumbers as $t) {
+            $value = trim((string) $t);
+            if ($value !== '') {
+                $list[] = $value;
+            }
+        }
+        if ($list === []) {
+            throw ShippingError::validation(
+                'generateLabels requires at least one tracking number',
+                self::NAME,
+                'trackingNumbers',
+            );
+        }
+        $mode = $options['mode'] ?? 'multiple';
+        $max = $mode === 'individual' ? self::LABELS_INDIVIDUAL_MAX : self::LABELS_MULTIPLE_MAX;
+        if (count($list) > $max) {
+            throw ShippingError::validation(
+                "generateLabels($mode) accepts at most $max tracking numbers",
+                self::NAME,
+                'trackingNumbers',
+            );
+        }
+
+        $path = $mode === 'individual'
+            ? self::API . '/parcels/labels/individual'
+            : self::API . '/parcels/labels/multiple';
+        $body = $this->http->request('POST', $path, [], ['trackingNumbers' => $list]);
+        $body = is_array($body) ? $body : [];
+        $failed = [];
+        foreach ($body['failedTrackingNumbers'] ?? [] as $t) {
+            $failed[] = (string) $t;
+        }
+
+        if ($mode === 'individual') {
+            $labels = [];
+            foreach ($body['parcelLabelFiles'] ?? [] as $file) {
+                if (!is_array($file)) {
+                    continue;
+                }
+                $tn = isset($file['trackingNumber']) ? (string) $file['trackingNumber'] : '';
+                $url = isset($file['fileUrl']) ? (string) $file['fileUrl'] : '';
+                if ($tn !== '' && $url !== '') {
+                    $labels[] = ['trackingNumber' => $tn, 'fileUrl' => $url];
+                }
+            }
+
+            return new LabelResult(null, $labels, $failed, $this->raw($body));
+        }
+
+        $fileUrl = isset($body['fileUrl']) && is_string($body['fileUrl']) ? $body['fileUrl'] : null;
+
+        return new LabelResult($fileUrl, null, $failed, $this->raw($body));
     }
 
     public function track(string $trackingNumber): TrackResult
@@ -427,6 +526,216 @@ final class ZRExpressProvider implements ShippingProviderInterface
         }
 
         return [is_string($message) ? $message : null, $details];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildCreateBody(ParcelInput $input, bool $requireOrderId, ?int $index = null): array
+    {
+        $field = static fn (string $name): string => $index !== null ? "inputs[$index].$name" : $name;
+
+        if ($input->price > self::MAX_AMOUNT) {
+            throw ShippingError::validation(
+                'price must be <= ' . self::MAX_AMOUNT . ' DZD for ZRExpress',
+                self::NAME,
+                $field('price'),
+            );
+        }
+        if ($requireOrderId && ($input->orderId === null || trim($input->orderId) === '')) {
+            throw ShippingError::validation(
+                'orderId is required for bulk create (ZRExpress externalId)',
+                self::NAME,
+                $field('orderId'),
+            );
+        }
+        if ($input->orderId !== null && strlen($input->orderId) > 100) {
+            throw ShippingError::validation('orderId must be at most 100 characters', self::NAME, $field('orderId'));
+        }
+        $description = $this->parcelDescription($input);
+        if (strlen(trim($description)) < 2) {
+            throw ShippingError::validation(
+                'Product description must be at least 2 characters',
+                self::NAME,
+                $field('productName'),
+            );
+        }
+
+        $phone = Phone::toInternational($input->phone, self::NAME, $field('phone'));
+        $phone2 = $input->phone2 !== null
+            ? Phone::toInternational($input->phone2, self::NAME, $field('phone2'))
+            : null;
+
+        $wilayaId = $this->resolveWilayaId($input->wilayaId ?? $input->wilayaName, $input->wilayaId === null);
+        $communeId = $this->resolveCommuneId(
+            $wilayaId,
+            $input->communeId ?? $input->communeName,
+            $input->communeId === null,
+        );
+
+        $products = [];
+        $defaultStock = $this->resolveStockType($input->stockType, $field('stockType'));
+        foreach ($input->products() as $i => $item) {
+            $fieldPrefix = $input->productList !== null && $input->productList !== []
+                ? $field("productList.$i")
+                : $field('productName');
+            $stockType = $this->resolveStockType($item->stockType ?? $defaultStock, "$fieldPrefix.stockType");
+            $this->assertCatalogFields($stockType, $item->productId, $item->sku, $fieldPrefix);
+            $product = array_filter([
+                'productName' => $item->name,
+                'quantity' => $item->quantity,
+                'unitPrice' => $item->unitPrice ?? 0,
+                'productSku' => $item->sku,
+                'productId' => $item->productId,
+                'stockType' => $stockType,
+            ], static fn ($v) => $v !== null);
+            if ($i === 0) {
+                $product += array_filter([
+                    'length' => $input->length,
+                    'width' => $input->width,
+                    'height' => $input->height,
+                ], static fn ($v) => $v !== null);
+            }
+            $products[] = $product;
+        }
+
+        $body = [
+            'customer' => [
+                'customerId' => self::uuid4(),
+                'name' => $input->recipientName,
+                'phone' => array_filter(['number1' => $phone, 'number2' => $phone2], static fn ($v) => $v !== null),
+            ],
+            'deliveryAddress' => [
+                'street' => $input->address,
+                'cityTerritoryId' => $wilayaId,
+                'districtTerritoryId' => $communeId,
+            ],
+            'orderedProducts' => $products,
+            'description' => $description,
+            'amount' => $input->price,
+            'deliveryType' => $input->isStopDesk ? 'pickup-point' : 'home',
+        ];
+        if ($input->isStopDesk) {
+            $body['hubId'] = $input->stopDeskId;
+        }
+        if ($input->weight !== null) {
+            $body['weight'] = ['weight' => $input->weight];
+        }
+        if ($input->orderId !== null) {
+            $body['externalId'] = $input->orderId;
+        }
+
+        return $body;
+    }
+
+    /** @param array<string, mixed> $json */
+    private function requestBulkReport(string $method, string $path, array $json): array
+    {
+        try {
+            $body = $this->http->request($method, $path, [], $json);
+
+            return is_array($body) ? $body : [];
+        } catch (ShippingError $e) {
+            if ($e->httpStatus === 400 && is_array($e->raw) && self::isBulkReport($e->raw)) {
+                return $e->raw;
+            }
+            throw $e;
+        }
+    }
+
+    /** @param array<string, mixed> $body */
+    private function mapBulkCreateResult(array $body): BulkCreateResult
+    {
+        $successes = [];
+        foreach ($body['successes'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $id = isset($item['parcelId']) ? (string) $item['parcelId'] : '';
+            if ($id === '') {
+                continue;
+            }
+            $successes[] = new Parcel(
+                id: $id,
+                trackingNumber: (string) ($item['trackingNumber'] ?? $id),
+                status: 'pending',
+                provider: self::NAME,
+                raw: $this->raw($item),
+            );
+        }
+
+        $failures = [];
+        foreach ($body['failures'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $error = [
+                'code' => ShippingError::PROVIDER_ERROR,
+                'message' => (string) ($item['errorMessage'] ?? $item['errorCode'] ?? 'Bulk create failed'),
+            ];
+            if (isset($item['errorCode']) && is_string($item['errorCode'])) {
+                $error['errorCode'] = $item['errorCode'];
+            }
+            $failure = [
+                'index' => isset($item['index']) ? (int) $item['index'] : -1,
+                'error' => $error,
+            ];
+            if (isset($item['externalId']) && is_string($item['externalId'])) {
+                $failure['orderId'] = $item['externalId'];
+            }
+            $failures[] = $failure;
+        }
+
+        return new BulkCreateResult($successes, $failures, $this->includeRaw ? $body : null);
+    }
+
+    /**
+     * @param array<string, mixed> $body
+     * @param list<array{index: int, value: string}> $indexMap
+     * @param list<array<string, mixed>> $successes
+     * @param list<array<string, mixed>> $failures
+     */
+    private function mergeBulkDelete(array $body, array $indexMap, array &$successes, array &$failures): void
+    {
+        foreach ($body['successes'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $localIndex = isset($item['index']) ? (int) $item['index'] : -1;
+            $mapped = $indexMap[$localIndex] ?? null;
+            $entry = ['index' => $mapped['index'] ?? $localIndex];
+            if (isset($item['parcelId'])) {
+                $entry['parcelId'] = (string) $item['parcelId'];
+            }
+            if (isset($item['trackingNumber'])) {
+                $entry['trackingNumber'] = (string) $item['trackingNumber'];
+            }
+            $successes[] = $entry;
+        }
+        foreach ($body['failures'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $localIndex = isset($item['index']) ? (int) $item['index'] : -1;
+            $mapped = $indexMap[$localIndex] ?? null;
+            $error = [
+                'code' => ShippingError::PROVIDER_ERROR,
+                'message' => (string) ($item['errorMessage'] ?? $item['errorCode'] ?? 'Bulk delete failed'),
+            ];
+            if (isset($item['errorCode']) && is_string($item['errorCode'])) {
+                $error['errorCode'] = $item['errorCode'];
+            }
+            $failures[] = [
+                'index' => $mapped['index'] ?? $localIndex,
+                'error' => $error,
+            ];
+        }
+    }
+
+    /** @param array<string, mixed> $body */
+    private static function isBulkReport(array $body): bool
+    {
+        return array_key_exists('successes', $body) || array_key_exists('failures', $body);
     }
 
     /**

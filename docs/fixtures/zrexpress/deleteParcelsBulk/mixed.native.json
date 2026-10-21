@@ -1,0 +1,35 @@
+[
+  {
+    "status": 200,
+    "body": {
+      "totalRequested": 1,
+      "successCount": 1,
+      "failureCount": 0,
+      "successes": [
+        {
+          "index": 0,
+          "parcelId": "8c1a4c53-0000-4000-8000-000000000001",
+          "trackingNumber": "16-DEL001-ZR"
+        }
+      ],
+      "failures": []
+    }
+  },
+  {
+    "status": 207,
+    "body": {
+      "totalRequested": 1,
+      "successCount": 0,
+      "failureCount": 1,
+      "successes": [],
+      "failures": [
+        {
+          "index": 0,
+          "trackingNumber": "16-MISSING-ZR",
+          "errorCode": "ParcelErrors.NotFound",
+          "errorMessage": "Parcel with tracking number '16-MISSING-ZR' was not found"
+        }
+      ]
+    }
+  }
+]

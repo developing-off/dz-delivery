@@ -1,0 +1,14 @@
+[
+  {
+    "status": 200,
+    "body": {
+      "parcelLabelFiles": [
+        {
+          "trackingNumber": "16-AAA111-ZR",
+          "fileUrl": "https://zrexpressstorage.blob.core.windows.net/labels/bordereau_16-AAA111-ZR.html?sv=demo"
+        }
+      ],
+      "failedTrackingNumbers": []
+    }
+  }
+]

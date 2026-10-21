@@ -6,6 +6,7 @@ namespace DzDelivery\Tests;
 
 use DzDelivery\Errors\ShippingError;
 use DzDelivery\Models\ParcelInput;
+use DzDelivery\Providers\ZRExpressProvider;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request;
 
@@ -412,5 +413,107 @@ final class ZRExpressProviderTest extends TestCase
 
         self::assertNull($result->parcel->raw);
         self::assertNull($result->events[0]->raw);
+    }
+
+    public function testGenerateLabelsMultiple(): void
+    {
+        /** @var ZRExpressProvider $zr */
+        $zr = $this->client('zrexpress', self::nativeResponses('zrexpress/generateLabels/multiple.native.json'));
+        $result = $zr->generateLabels(['16-AAA111-ZR', '16-MISSING-ZR']);
+
+        self::assertStringContainsString('bordereaux_multiple', (string) $result->fileUrl);
+        self::assertSame(['16-MISSING-ZR'], $result->failedTrackingNumbers);
+        self::assertSame('/api/v1/parcels/labels/multiple', $this->history[0]['request']->getUri()->getPath());
+    }
+
+    public function testGenerateLabelsIndividual(): void
+    {
+        /** @var ZRExpressProvider $zr */
+        $zr = $this->client('zrexpress', self::nativeResponses('zrexpress/generateLabels/individual.native.json'));
+        $result = $zr->generateLabels(['16-AAA111-ZR'], ['mode' => 'individual']);
+
+        self::assertNull($result->fileUrl);
+        self::assertSame('16-AAA111-ZR', $result->labels[0]['trackingNumber']);
+        self::assertSame('/api/v1/parcels/labels/individual', $this->history[0]['request']->getUri()->getPath());
+    }
+
+    public function testCreateParcelsBulkPartialSuccess(): void
+    {
+        /** @var ZRExpressProvider $zr */
+        $zr = $this->client('zrexpress', self::nativeResponses('zrexpress/createParcelsBulk/partial.native.json'));
+        $input = [
+            'recipientName' => 'Test Client',
+            'phone' => '0550123456',
+            'address' => '1 Rue de Test',
+            'wilayaId' => self::WILAYA_16,
+            'communeId' => '00000000-0000-4000-8000-000000016042',
+            'productName' => 'T-shirt',
+            'price' => 2500,
+            'orderId' => 'ORD-BULK-1',
+        ];
+
+        $result = $zr->createParcelsBulk([
+            $input,
+            array_merge($input, ['orderId' => 'ORD-BULK-2']),
+        ]);
+
+        self::assertCount(1, $result->successes);
+        self::assertSame('16-BULK001-ZR', $result->successes[0]->trackingNumber);
+        self::assertSame('pending', $result->successes[0]->status);
+        self::assertCount(1, $result->failures);
+        self::assertSame(1, $result->failures[0]['index']);
+        self::assertSame('ORD-BULK-2', $result->failures[0]['orderId']);
+        self::assertSame('/api/v1/parcels/bulk', $this->history[0]['request']->getUri()->getPath());
+    }
+
+    public function testCreateParcelsBulkAllFailedReturnsReport(): void
+    {
+        /** @var ZRExpressProvider $zr */
+        $zr = $this->client('zrexpress', self::nativeResponses('zrexpress/createParcelsBulk/all-failed.native.json'));
+        $result = $zr->createParcelsBulk([[
+            'recipientName' => 'Test Client',
+            'phone' => '0550123456',
+            'address' => '1 Rue de Test',
+            'wilayaId' => self::WILAYA_16,
+            'communeId' => '00000000-0000-4000-8000-000000016042',
+            'productName' => 'T-shirt',
+            'price' => 2500,
+            'orderId' => 'ORD-FAIL',
+        ]]);
+
+        self::assertSame([], $result->successes);
+        self::assertSame('ORD-FAIL', $result->failures[0]['orderId']);
+        self::assertSame('ParcelErrors.Validation', $result->failures[0]['error']['errorCode']);
+    }
+
+    public function testCreateParcelsBulkRequiresOrderId(): void
+    {
+        /** @var ZRExpressProvider $zr */
+        $zr = $this->client('zrexpress', []);
+        $this->expectException(ShippingError::class);
+        $zr->createParcelsBulk([[
+            'recipientName' => 'Test Client',
+            'phone' => '0550123456',
+            'address' => '1 Rue de Test',
+            'wilayaId' => self::WILAYA_16,
+            'communeId' => '00000000-0000-4000-8000-000000016042',
+            'productName' => 'T-shirt',
+            'price' => 2500,
+        ]]);
+    }
+
+    public function testDeleteParcelsBulkMixedRefs(): void
+    {
+        /** @var ZRExpressProvider $zr */
+        $zr = $this->client('zrexpress', self::nativeResponses('zrexpress/deleteParcelsBulk/mixed.native.json'));
+        $result = $zr->deleteParcelsBulk([
+            '8c1a4c53-0000-4000-8000-000000000001',
+            '16-MISSING-ZR',
+        ]);
+
+        self::assertSame(0, $result->successes[0]['index']);
+        self::assertSame(1, $result->failures[0]['index']);
+        self::assertSame('/api/v1/parcels/bulk', $this->history[0]['request']->getUri()->getPath());
+        self::assertSame('/api/v1/parcels/bulk/by-tracking-number', $this->history[1]['request']->getUri()->getPath());
     }
 }

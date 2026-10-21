@@ -1,0 +1,19 @@
+[
+  {
+    "status": 400,
+    "body": {
+      "totalRequested": 1,
+      "successCount": 0,
+      "failureCount": 1,
+      "successes": [],
+      "failures": [
+        {
+          "index": 0,
+          "externalId": "ORD-FAIL",
+          "errorCode": "ParcelErrors.Validation",
+          "errorMessage": "amount exceeds max"
+        }
+      ]
+    }
+  }
+]

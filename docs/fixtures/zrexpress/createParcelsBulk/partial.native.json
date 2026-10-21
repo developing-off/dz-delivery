@@ -1,0 +1,26 @@
+[
+  {
+    "status": 207,
+    "body": {
+      "totalRequested": 2,
+      "successCount": 1,
+      "failureCount": 1,
+      "successes": [
+        {
+          "index": 0,
+          "parcelId": "8c1a4c53-0000-4000-8000-000000000001",
+          "trackingNumber": "16-BULK001-ZR",
+          "externalId": "ORD-BULK-1"
+        }
+      ],
+      "failures": [
+        {
+          "index": 1,
+          "externalId": "ORD-BULK-2",
+          "errorCode": "ParcelErrors.DuplicateExternalId",
+          "errorMessage": "externalId already exists"
+        }
+      ]
+    }
+  }
+]

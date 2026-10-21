@@ -20,7 +20,7 @@ It is **not** a 1:1 wrapper of every carrier endpoint. It focuses on the handful
 
 ## The unified API
 
-Every provider implements the same `ShippingProvider` interface (5 MVP operations):
+Every provider implements the same `ShippingProvider` interface:
 
 | # | Operation | Method(s) |
 |---|-----------|-----------|
@@ -28,12 +28,14 @@ Every provider implements the same `ShippingProvider` interface (5 MVP operation
 | 2 | Track a parcel | `track(trackingNumber)` |
 | 3 | Quote delivery fees | `getFees(query)` |
 | 4 | List locations | `getWilayas()` / `getCommunes(wilayaId)` / `getStopDesks({ wilayaId, communeId? })` |
-| 5 | Cancel a parcel | `cancelParcel(trackingNumberOrId)` |
+| 5 | List account parcels | `listParcels(query?)` |
+| 6 | Cancel a parcel | `cancelParcel(trackingNumberOrId)` |
+| 7 | Health probe | `healthCheck()` |
 
 Statuses are normalized to: `pending | created | in_transit | delivered | returned | cancelled | unknown`.
 Every returned object can carry an optional `raw` field with the native API response for power users.
 
-📄 **The source of truth is [`docs/CONTRACT.md`](./docs/CONTRACT.md).** Provider-specific endpoint mapping lives in [`docs/PROVIDERS.md`](./docs/PROVIDERS.md).
+📄 **The source of truth is [`docs/CONTRACT.md`](./docs/CONTRACT.md).** Provider-specific endpoint mapping lives in [`docs/PROVIDERS.md`](./docs/PROVIDERS.md). ZRExpress extras (bulk, labels, webhooks): [`docs/ZREXPRESS.md`](./docs/ZREXPRESS.md).
 
 ## Quickstart
 
