@@ -3,7 +3,7 @@
 All notable changes to `@dz-delivery/core` (npm) and `dz-delivery/sdk` (Composer).
 The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, minor versions may change the API.
 
-## [0.1.8] — unreleased
+## [0.1.8] — 2026-10-24
 
 ### Changed
 - npm / Composer metadata: richer description and keywords (French + English), homepage now points to the docs site.
@@ -12,6 +12,9 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 ### Added
 - Docs site: one guide per carrier (Yalidine / GuepEx, ZRExpress, Maystro, Ecotrack), FAQ, `sitemap.xml`, Open Graph image and structured data.
 - CI workflow running the TypeScript (Node 18 / 20 / 22) and PHP (8.2 / 8.3 / 8.4) test suites.
+
+### Fixed
+- ZRExpress webhook test fixture no longer stores a `whsec_`-prefixed fake key, which secret scanners flagged as a leaked Stripe secret.
 
 ## [0.1.7] — 2026-10-21
 
@@ -44,7 +47,7 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 ### Added
 - First public release: unified `createParcel`, `track`, `getFees`, `getWilayas`, `getCommunes`, `getStopDesks`, `cancelParcel` for ZRExpress, Yalidine, Maystro and Ecotrack, in TypeScript and PHP.
 
-[0.1.8]: https://github.com/developing-off/dz-delivery/compare/v0.1.7...HEAD
+[0.1.8]: https://github.com/developing-off/dz-delivery/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/developing-off/dz-delivery/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/developing-off/dz-delivery/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/developing-off/dz-delivery/compare/v0.1.3...v0.1.5
