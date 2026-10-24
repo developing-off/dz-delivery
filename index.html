@@ -3,9 +3,57 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>dz-delivery — documentation</title>
-  <meta name="description" content="Documentation complète du SDK dz-delivery : TypeScript et PHP, contrat unifié, transporteurs algériens, extras ZRExpress." />
+  <title>dz-delivery — SDK livraison Algérie : Yalidine, ZRExpress, Maystro, Ecotrack (TypeScript &amp; PHP)</title>
+  <meta name="description" content="SDK open source TypeScript (npm) et PHP (Composer) pour créer, suivre et tarifer des colis avec Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack, DHD et plus — une seule API, wilayas et communes incluses." />
   <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://developing-off.github.io/dz-delivery/" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:url" content="https://developing-off.github.io/dz-delivery/" />
+  <meta property="og:title" content="dz-delivery — SDK livraison Algérie (TypeScript &amp; PHP)" />
+  <meta property="og:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD : créer, suivre et tarifer des colis." />
+  <meta property="og:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="dz-delivery — SDK livraison Algérie (TypeScript &amp; PHP)" />
+  <meta name="twitter:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD : créer, suivre et tarifer des colis." />
+  <meta name="twitter:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://developing-off.github.io/dz-delivery/#website",
+        "name": "dz-delivery",
+        "alternateName": ["dz-delivery SDK", "dz delivery"],
+        "url": "https://developing-off.github.io/dz-delivery/",
+        "inLanguage": "fr"
+      },
+      {
+        "@type": "SoftwareSourceCode",
+        "@id": "https://developing-off.github.io/dz-delivery/#sdk",
+        "name": "dz-delivery",
+        "description": "Unified TypeScript and PHP SDK for Algerian delivery carriers: Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express…).",
+        "url": "https://developing-off.github.io/dz-delivery/",
+        "codeRepository": "https://github.com/developing-off/dz-delivery",
+        "programmingLanguage": ["TypeScript", "PHP"],
+        "runtimePlatform": ["Node.js", "PHP"],
+        "license": "https://opensource.org/licenses/MIT",
+        "keywords": "SDK livraison Algérie, Yalidine API, ZRExpress API, Maystro API, Ecotrack API, DHD, GuepEx, wilaya, commune, e-commerce Algérie",
+        "sameAs": [
+          "https://www.npmjs.com/package/@dz-delivery/core",
+          "https://packagist.org/packages/dz-delivery/sdk"
+        ]
+      }
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -131,6 +179,15 @@
       opacity: 0;
       transform: translateY(10px);
       animation: rise 0.65s ease forwards;
+    }
+    .hero-tag {
+      display: block;
+      margin-top: 0.7rem;
+      font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--accent-ink);
     }
     .hero-lead {
       max-width: 34rem;
@@ -324,6 +381,20 @@
       box-shadow: var(--shadow);
       color: var(--ink-soft);
     }
+    .providers li:has(> a) { padding: 0; }
+    .providers a {
+      display: block;
+      padding: 0.45rem 0.7rem;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .providers a:hover { color: var(--accent-ink); }
+
+    .faq { border-top: 1px solid var(--line); }
+    .faq details { border-bottom: 1px solid var(--line); padding: 0.9rem 0; }
+    .faq summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+    .faq details p { margin: 0.55rem 0 0; max-width: 44rem; color: var(--ink-soft); }
+
     .providers li.soon {
       color: var(--muted);
       border-style: dashed;
@@ -599,6 +670,7 @@
       <nav class="nav-links" aria-label="Principal">
         <a class="hide-sm" href="#install">Installer</a>
         <a class="hide-sm" href="#api">API</a>
+        <a class="hide-sm" href="#matrix">Transporteurs</a>
         <a class="hide-sm" href="#zrexpress">ZR extras</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
         <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
@@ -614,9 +686,9 @@
         <circle class="dot" cx="420" cy="100" r="5" />
         <circle class="pulse" cx="420" cy="100" r="6" />
       </svg>
-      <h1 class="hero-brand" id="brand">dz-delivery</h1>
+      <h1 class="hero-brand" id="brand">dz-delivery<span class="hero-tag">SDK livraison Algérie</span></h1>
       <p class="hero-lead">
-        Documentation du SDK unifié pour les transporteurs algériens — TypeScript et PHP, même contrat.
+        Un seul SDK pour créer, suivre et tarifer des colis avec Yalidine, ZRExpress, Maystro, Ecotrack (DHD…) — TypeScript et PHP, même contrat.
       </p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="#install">Installer</a>
@@ -645,6 +717,7 @@
           <li><a href="#matrix">Compatibilité</a></li>
           <li><a href="#zrexpress">ZRExpress extras</a></li>
           <li><a href="#providers-notes">Notes par transporteur</a></li>
+          <li><a href="#faq">FAQ</a></li>
           <li><a href="#refs">Références</a></li>
         </ul>
       </aside>
@@ -1072,14 +1145,14 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
           <h2 class="section-title">Ce que chaque transporteur expose</h2>
           <p class="section-desc"><span class="mono">NOT_SUPPORTED</span> = l’API carrier n’a pas l’opération (pas un bug SDK).</p>
           <ul class="providers">
-            <li>ZRExpress</li>
-            <li>Yalidine</li>
-            <li>GuepEx</li>
-            <li>Maystro</li>
-            <li>Ecotrack · DHD</li>
-            <li>World Express</li>
-            <li>Anderson</li>
-            <li>48Hr · EcoRapid · Conexlog…</li>
+            <li><a href="zrexpress/">ZRExpress</a></li>
+            <li><a href="yalidine/">Yalidine</a></li>
+            <li><a href="yalidine/#guepex">GuepEx</a></li>
+            <li><a href="maystro/">Maystro</a></li>
+            <li><a href="ecotrack/">Ecotrack · DHD</a></li>
+            <li><a href="ecotrack/#couriers">World Express</a></li>
+            <li><a href="ecotrack/#couriers">Anderson</a></li>
+            <li><a href="ecotrack/#couriers">48Hr · EcoRapid · Conexlog…</a></li>
             <li class="soon">Ecom · MDM · NoEST…</li>
           </ul>
           <div class="doc-table-wrap">
@@ -1235,16 +1308,16 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="section-kicker">Particularités</p>
           <h2 class="section-title">Notes par transporteur</h2>
 
-          <h3 class="sub">ZRExpress</h3>
+          <h3 class="sub"><a href="zrexpress/">ZRExpress</a></h3>
           <p class="prose">Montant ≤ 150 000 DZD (frais inclus). Téléphones en international (<span class="mono">+213…</span>). Stop desks = hubs ; préfère wilaya seule. Sans <span class="mono">stateId</span>, le colis reste en <span class="mono">OrderReceived</span> jusqu’à passage « prêt à expédier » côté portail.</p>
 
-          <h3 class="sub">Yalidine / GuepEx</h3>
+          <h3 class="sub"><a href="yalidine/">Yalidine / GuepEx</a></h3>
           <p class="prose"><span class="mono">fromWilayaId</span> obligatoire à la construction. Annulation seulement en « En préparation ». GuepEx = même API, autre <span class="mono">baseUrl</span>.</p>
 
-          <h3 class="sub">Maystro</h3>
+          <h3 class="sub"><a href="maystro/">Maystro</a></h3>
           <p class="prose">Pas d’API track/cancel — configurer les webhooks Maystro et mapper avec <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> exige <span class="mono">communeId</span>.</p>
 
-          <h3 class="sub">Ecotrack</h3>
+          <h3 class="sub"><a href="ecotrack/">Ecotrack</a></h3>
           <p class="prose">Un provider, plusieurs coursiers via <span class="mono">courier</span> (<span class="mono">dhd</span>, <span class="mono">anderson</span>, <span class="mono">worldexpress</span>…) ou <span class="mono">baseUrl</span> HTTPS du tenant. Option <span class="mono">autoValidate</span> pour valider juste après création.</p>
 
           <p class="callout warn">
@@ -1255,11 +1328,46 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           </p>
         </article>
 
+        <article class="doc-section" id="faq">
+          <p class="section-kicker">Questions fréquentes</p>
+          <h2 class="section-title">FAQ</h2>
+          <div class="faq">
+            <details>
+              <summary>Comment utiliser l’API Yalidine en Node.js ou en PHP&nbsp;?</summary>
+              <p>Installez <span class="mono">@dz-delivery/core</span> (npm) ou <span class="mono">dz-delivery/sdk</span> (Composer), puis créez un client <span class="mono">yalidine</span> avec <span class="mono">apiId</span>, <span class="mono">apiToken</span> et votre wilaya d’origine. <a href="yalidine/">Guide Yalidine</a>.</p>
+            </details>
+            <details>
+              <summary>Comment intégrer ZR Express dans ma boutique&nbsp;?</summary>
+              <p>Un client <span class="mono">zrexpress</span> avec votre <span class="mono">apiKey</span> et votre <span class="mono">tenant</span> suffit pour créer, suivre, tarifer, lister et annuler des colis — plus les étiquettes, le bulk et les webhooks signés. <a href="zrexpress/">Guide ZRExpress</a>.</p>
+            </details>
+            <details>
+              <summary>DHD, Anderson, World Express… sont-ils supportés&nbsp;?</summary>
+              <p>Oui&nbsp;: ce sont des transporteurs de la plateforme Ecotrack. Un seul provider <span class="mono">ecotrack</span> les couvre, avec une clé <span class="mono">courier</span> intégrée ou l’URL de votre tenant. <a href="ecotrack/">Guide Ecotrack</a>.</p>
+            </details>
+            <details>
+              <summary>Puis-je changer de transporteur sans réécrire mon code&nbsp;?</summary>
+              <p>Oui. Tous les transporteurs renvoient les mêmes objets et les mêmes statuts normalisés (<span class="mono">pending</span>, <span class="mono">in_transit</span>, <span class="mono">delivered</span>…). Seule la configuration du client change.</p>
+            </details>
+            <details>
+              <summary>Ça marche avec Laravel, WooCommerce ou Shopify&nbsp;?</summary>
+              <p>Le SDK PHP s’installe dans n’importe quel projet Composer (exemple Laravel dans le <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md#6-laravel-example">guide PHP</a>). Pour un backend Node.js ou une app Shopify, utilisez le package npm.</p>
+            </details>
+            <details>
+              <summary>Est-ce gratuit&nbsp;?</summary>
+              <p>Oui, le SDK est open source sous licence MIT. Vous utilisez vos propres identifiants API chez chaque transporteur.</p>
+            </details>
+          </div>
+        </article>
+
         <article class="doc-section" id="refs">
           <p class="section-kicker">Aller plus loin</p>
           <h2 class="section-title">Références</h2>
           <p class="section-desc">Sources dans le dépôt et packages publiés.</p>
           <ul class="doc-links">
+            <li><a href="yalidine/">API Yalidine / GuepEx</a></li>
+            <li><a href="zrexpress/">API ZRExpress</a></li>
+            <li><a href="maystro/">API Maystro</a></li>
+            <li><a href="ecotrack/">API Ecotrack · DHD</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat unifié</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">Mapping providers</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZRExpress extras</a></li>

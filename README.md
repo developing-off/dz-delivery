@@ -1,22 +1,37 @@
-# dz-delivery
+# dz-delivery — SDK livraison Algérie (Yalidine, ZRExpress, Maystro, Ecotrack)
 
-> One SDK, every Algerian shipping carrier. Available for **TypeScript** (npm) and **PHP** (Composer).
+[![npm](https://img.shields.io/npm/v/@dz-delivery/core?label=npm%20%40dz-delivery%2Fcore)](https://www.npmjs.com/package/@dz-delivery/core)
+[![Packagist](https://img.shields.io/packagist/v/dz-delivery/sdk?label=packagist%20dz-delivery%2Fsdk)](https://packagist.org/packages/dz-delivery/sdk)
+[![CI](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml/badge.svg)](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+
+> One SDK, every Algerian shipping carrier. Available for **TypeScript / Node.js** (npm) and **PHP / Laravel** (Composer).
+>
+> Un seul SDK pour créer, suivre et tarifer des colis avec les transporteurs algériens.
+
+🌐 **Docs & site : <https://developing-off.github.io/dz-delivery/>**
 
 `dz-delivery` gives e-commerce developers in Algeria a **single, simple interface** to create parcels, track shipments, quote fees and list wilayas/communes — regardless of which carrier is behind it.
 
 It is **not** a 1:1 wrapper of every carrier endpoint. It focuses on the handful of operations every shop needs, with the same names and shapes in TypeScript and PHP.
 
-> **Status:** MVP implemented (mocked tests). Yalidine mapping is checked against its developer docs; error bodies still need real responses. See [`TASKS.md`](./TASKS.md).
+## Install
 
-## Supported providers (MVP)
+```bash
+npm install @dz-delivery/core      # TypeScript / Node.js ≥ 18, zero runtime dependencies
+composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
+```
 
-| Provider   | TypeScript | PHP     |
-|------------|------------|---------|
-| ZRExpress  | yes        | yes     |
-| Yalidine   | yes | yes |
-| Maystro Delivery | yes (track / cancel not supported) | yes (track / cancel not supported) |
-| Ecotrack (DHD, Conexlog, MSM Go, Packers, World Express, …) | yes | yes |
-| Other carriers | backlog | backlog |
+## Supported carriers
+
+| Carrier | Key | TypeScript | PHP | Guide |
+|---------|-----|------------|-----|-------|
+| Yalidine | `yalidine` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/) |
+| GuepEx (Yalidine platform) | `yalidine` + GuepEx `baseUrl` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/#guepex) |
+| ZRExpress | `zrexpress` | yes (+ bulk, labels, webhooks) | yes (+ bulk, labels, webhooks) | [ZRExpress API](https://developing-off.github.io/dz-delivery/zrexpress/) |
+| Maystro Delivery | `maystro` | yes (track / cancel via webhooks) | yes (track / cancel via webhooks) | [Maystro API](https://developing-off.github.io/dz-delivery/maystro/) |
+| Ecotrack (DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers, …) | `ecotrack` | yes | yes | [Ecotrack API](https://developing-off.github.io/dz-delivery/ecotrack/) |
+| NoEST, MDM, Ecom… | — | backlog | backlog | |
 
 ## The unified API
 
@@ -37,9 +52,9 @@ Every returned object can carry an optional `raw` field with the native API resp
 
 📄 **The source of truth is [`docs/CONTRACT.md`](./docs/CONTRACT.md).** Provider-specific endpoint mapping lives in [`docs/PROVIDERS.md`](./docs/PROVIDERS.md). ZRExpress extras (bulk, labels, webhooks): [`docs/ZREXPRESS.md`](./docs/ZREXPRESS.md).
 
-## Quickstart
+> **Status:** `0.x` — the API may still change between minor versions. Tests replay shared fixtures (mocked HTTP, no network) in both languages. Reports with anonymized real carrier responses are very welcome, see [`TASKS.md`](./TASKS.md).
 
-> ⚠️ Packages are not published yet — these snippets show the target API.
+## Quickstart
 
 Copy `.env.example` to `.env` and fill in your credentials.
 
@@ -67,6 +82,8 @@ const { parcel: current, events } = await shipping.track(parcel.trackingNumber);
 console.log(current.status, events);
 ```
 
+Full TypeScript reference: [`packages/ts/README.md`](./packages/ts/README.md).
+
 ### PHP
 
 ```php
@@ -93,6 +110,23 @@ echo $result->parcel->status;
 
 Full PHP guide (install, every method, errors, Laravel, webhooks): [`docs/guide-php.md`](./docs/guide-php.md).
 
+## FAQ
+
+**How do I use the Yalidine API in Node.js or PHP?**
+`createClient('yalidine', { apiId, apiToken, fromWilayaId })` in TypeScript, `ClientFactory::create('yalidine', [...])` in PHP. See the [Yalidine guide](https://developing-off.github.io/dz-delivery/yalidine/).
+
+**Comment intégrer l'API ZR Express dans mon site e-commerce ?**
+Installez `@dz-delivery/core` (Node.js) ou `dz-delivery/sdk` (PHP / Laravel), puis créez un client `zrexpress` avec votre `apiKey` et votre `tenant`. Voir le [guide ZRExpress](https://developing-off.github.io/dz-delivery/zrexpress/).
+
+**Does it work with DHD and other Ecotrack couriers?**
+Yes — one `ecotrack` provider covers every courier on the Ecotrack platform, with a built-in `courier` key (`dhd`, `anderson`, `worldexpress`, …) or your tenant `baseUrl`. See the [Ecotrack guide](https://developing-off.github.io/dz-delivery/ecotrack/).
+
+**Can I switch carriers without rewriting my code?**
+Yes. Every carrier returns the same models and the same normalized statuses, so only the client configuration changes.
+
+**Est-ce que ça marche avec Laravel, WooCommerce ou Shopify ?**
+Le SDK PHP fonctionne dans n'importe quel projet Composer (exemple Laravel dans le [guide PHP](./docs/guide-php.md#6-laravel-example)). Pour Shopify ou un backend Node, utilisez le package npm.
+
 ## Repository layout
 
 ```
@@ -105,13 +139,7 @@ examples/php/    PHP examples
 
 ## Contributing
 
-Contributions are very welcome — especially new providers. See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
-
-## Site
-
-Documentation (GitHub Pages) : [`index.html`](./index.html) — install, API unifiée, modèles, erreurs, matrice providers, extras ZRExpress.  
-Activer dans **Settings → Pages → Deploy from a branch → `main` / `/ (root)`**.  
-URL typique : `https://developing-off.github.io/dz-delivery/`.
+Contributions are very welcome — especially new providers. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) and the [`CHANGELOG`](./CHANGELOG.md).
 
 ## License
 

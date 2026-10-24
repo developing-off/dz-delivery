@@ -1,9 +1,9 @@
 {
     "name": "dz-delivery/sdk",
-    "description": "Unified PHP SDK for Algerian delivery carriers (ZRExpress, Yalidine, Maystro, Ecotrack).",
+    "description": "Unified PHP SDK for Algerian delivery carriers (Yalidine, ZRExpress, Maystro, Ecotrack/DHD, GuepEx) — SDK livraison Algérie: parcels, tracking, fees, wilayas. Laravel-friendly.",
     "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/developing-off/dz-delivery",
+    "homepage": "https://developing-off.github.io/dz-delivery/",
     "support": {
         "issues": "https://github.com/developing-off/dz-delivery/issues",
         "source": "https://github.com/developing-off/dz-delivery-php",
@@ -11,13 +11,27 @@
     },
     "keywords": [
         "algeria",
+        "algerie",
+        "dz",
         "delivery",
+        "livraison",
         "shipping",
-        "zrexpress",
-        "yalidine",
+        "colis",
         "cod",
+        "ecommerce",
+        "wilaya",
+        "sdk",
+        "api",
+        "laravel",
+        "yalidine",
+        "guepex",
+        "zrexpress",
+        "zr-express",
         "maystro",
-        "ecotrack"
+        "ecotrack",
+        "dhd",
+        "anderson",
+        "woocommerce"
     ],
     "require": {
         "php": ">=8.2",

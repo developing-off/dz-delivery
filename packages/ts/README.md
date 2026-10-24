@@ -1,12 +1,22 @@
-# @dz-delivery/core (TypeScript)
+# @dz-delivery/core — Algerian delivery SDK for TypeScript / Node.js
 
-One API for Algerian delivery carriers. Implements the shared contract in
-[`docs/CONTRACT.md`](../../docs/CONTRACT.md); carrier-specific mappings are in
-[`docs/PROVIDERS.md`](../../docs/PROVIDERS.md).
+[![npm](https://img.shields.io/npm/v/@dz-delivery/core)](https://www.npmjs.com/package/@dz-delivery/core)
+[![CI](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml/badge.svg)](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/developing-off/dz-delivery/blob/main/LICENSE)
+
+One API for Algerian delivery carriers — **Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express, …)**.
+Create parcels, track shipments, quote fees and list wilayas / communes / stop desks with the same code for every carrier.
+
+> 🇩🇿 SDK livraison Algérie : un seul code pour créer, suivre et tarifer vos colis chez tous les transporteurs.
+> Docs : <https://developing-off.github.io/dz-delivery/> · PHP / Laravel : [`dz-delivery/sdk`](https://packagist.org/packages/dz-delivery/sdk)
+
+Implements the shared contract in
+[`docs/CONTRACT.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md); carrier-specific mappings are in
+[`docs/PROVIDERS.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md).
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | ✅ contrat unifié (create, track, fees, locations, stop desks, list, cancel, health) + [extras](../../docs/ZREXPRESS.md) (bulk, labels, webhooks) |
+| ZRExpress | `zrexpress` | ✅ contrat unifié (create, track, fees, locations, stop desks, list, cancel, health) + [extras](https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md) (bulk, labels, webhooks) |
 | Yalidine | `yalidine` | ✅ contrat unifié (mapping checked against the developer docs, see PROVIDERS.md) |
 | Maystro Delivery | `maystro` | ✅ createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
 | Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
@@ -143,7 +153,7 @@ npm run typecheck
 npm run build     # tsup → dist/ (ESM + CJS + .d.ts)
 ```
 
-Tests replay the shared fixtures in [`docs/fixtures/`](../../docs/fixtures/) (also used by the
+Tests replay the shared fixtures in [`docs/fixtures/`](https://github.com/developing-off/dz-delivery/tree/main/docs/fixtures) (also used by the
 PHP package), so both implementations produce the same output for the same native responses.
 
-A runnable example lives in [`examples/ts/quickstart.ts`](../../examples/ts/quickstart.ts).
+A runnable example lives in [`examples/ts/quickstart.ts`](https://github.com/developing-off/dz-delivery/blob/main/examples/ts/quickstart.ts).

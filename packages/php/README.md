@@ -1,6 +1,15 @@
-# dz-delivery/sdk (PHP)
+# dz-delivery/sdk — Algerian delivery SDK for PHP / Laravel
 
-Unified PHP client for Algerian delivery carriers. Implements the shared contract in
+[![Packagist](https://img.shields.io/packagist/v/dz-delivery/sdk)](https://packagist.org/packages/dz-delivery/sdk)
+[![CI](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml/badge.svg)](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/developing-off/dz-delivery/blob/main/LICENSE)
+
+Unified PHP client for Algerian delivery carriers — **Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express, …)**.
+
+> 🇩🇿 SDK PHP livraison Algérie : créer, suivre et tarifer vos colis avec le même code pour chaque transporteur.
+> Docs : <https://developing-off.github.io/dz-delivery/> · TypeScript / Node.js : [`@dz-delivery/core`](https://www.npmjs.com/package/@dz-delivery/core)
+
+Implements the shared contract in
 [`docs/CONTRACT.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md); provider mappings are in
 [`docs/PROVIDERS.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md).
 
@@ -15,17 +24,9 @@ Requires PHP ≥ 8.2 and Guzzle 7.
 
 ## Install
 
-The package is **not on Packagist yet**. Until it is, add it as a Composer `path` repository
-(or a `vcs` repository pointing to a split of `packages/php`):
-
-```json
-{
-  "repositories": [{ "type": "path", "url": "../dz-delivery/packages/php" }],
-  "require": { "dz-delivery/sdk": "*@dev" }
-}
+```bash
+composer require dz-delivery/sdk
 ```
-
-Once published: `composer require dz-delivery/sdk`.
 
 **Full guide** (configuration, every method with input/output tables, errors, Laravel,
 Maystro webhooks, testing): [`docs/guide-php.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md).

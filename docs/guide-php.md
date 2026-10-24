@@ -1,6 +1,6 @@
 # Using dz-delivery in a PHP project
 
-A practical guide to calling ZRExpress, Yalidine and Maystro from your own PHP application through one API.
+A practical guide to calling Yalidine, ZRExpress, Maystro and Ecotrack (DHD, …) from your own PHP application through one API.
 For the full contract see [`CONTRACT.md`](./CONTRACT.md); for carrier-specific details see [`PROVIDERS.md`](./PROVIDERS.md).
 ZRExpress extras (bulk, labels, webhook verify): [`ZREXPRESS.md`](./ZREXPRESS.md).
 
@@ -20,9 +20,13 @@ ZRExpress extras (bulk, labels, webhook verify): [`ZREXPRESS.md`](./ZREXPRESS.md
 
 Requirements: **PHP ≥ 8.2**, **Guzzle 7** (pulled in by Composer).
 
-The package (`dz-delivery/sdk`) is **not on Packagist yet**. Until it is, install it from a local checkout or from Git.
+The package is published on [Packagist](https://packagist.org/packages/dz-delivery/sdk):
 
-**From a local checkout** (`path` repository; changes in the SDK are visible immediately):
+```bash
+composer require dz-delivery/sdk
+```
+
+**Working on the SDK itself?** Point your app at a local checkout with a `path` repository (changes in the SDK are visible immediately):
 
 ```json
 {
@@ -34,27 +38,6 @@ The package (`dz-delivery/sdk`) is **not on Packagist yet**. Until it is, instal
   }
 }
 ```
-
-**From Git** (`vcs` repository). Composer reads `composer.json` at the repository root, but the PHP package lives in `packages/php/`. Use the `path` option above, or a Git mirror/subtree split of `packages/php`:
-
-```json
-{
-  "repositories": [
-    { "type": "vcs", "url": "https://github.com/<your-org>/dz-delivery-php" }
-  ],
-  "require": {
-    "dz-delivery/sdk": "dev-main"
-  }
-}
-```
-
-Then:
-
-```bash
-composer update dz-delivery/sdk
-```
-
-Once published on Packagist this becomes simply `composer require dz-delivery/sdk`.
 
 Everything lives under the `DzDelivery\` namespace (PSR-4).
 

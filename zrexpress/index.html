@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API ZR Express en Node.js et PHP — SDK dz-delivery</title>
+  <meta name="description" content="Intégrer l’API ZRExpress (ZR Express) en TypeScript ou PHP : créer et suivre des colis, frais, wilayas, hubs/stop desks, étiquettes, envoi en masse et webhooks signés. Exemple complet avec le SDK dz-delivery." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://developing-off.github.io/dz-delivery/zrexpress/" />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:url" content="https://developing-off.github.io/dz-delivery/zrexpress/" />
+  <meta property="og:title" content="API ZR Express en Node.js et PHP — SDK dz-delivery" />
+  <meta property="og:description" content="Intégrer l’API ZRExpress (ZR Express) en TypeScript ou PHP : créer et suivre des colis, frais, wilayas, hubs/stop desks, étiquettes, envoi en masse et webhooks signés. Exemple complet avec le SDK dz-delivery." />
+  <meta property="og:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "API ZR Express en Node.js et PHP",
+        "description": "Intégrer l’API ZRExpress (ZR Express) en TypeScript ou PHP : créer et suivre des colis, frais, wilayas, hubs/stop desks, étiquettes, envoi en masse et webhooks signés. Exemple complet avec le SDK dz-delivery.",
+        "inLanguage": "fr",
+        "url": "https://developing-off.github.io/dz-delivery/zrexpress/",
+        "about": [
+          "ZRExpress",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://developing-off.github.io/dz-delivery/#website"
+        },
+        "mainEntityOfPage": "https://developing-off.github.io/dz-delivery/zrexpress/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://developing-off.github.io/dz-delivery/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "ZRExpress",
+            "item": "https://developing-off.github.io/dz-delivery/zrexpress/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Transporteurs">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/" aria-current="page">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Fil d’Ariane">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Transporteurs</a></li>
+          <li aria-current="page">ZRExpress</li>
+        </ol>
+      </nav>
+
+      <h1>API ZR Express en Node.js et PHP</h1>
+      <p class="lead">Créez, suivez, listez et annulez vos colis ZRExpress avec le SDK dz-delivery — plus les étiquettes PDF, la création en masse et la vérification des webhooks.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Installer</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">Identifiants ZRExpress</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Header envoyé</th><th>Où la trouver</th></tr></thead><tbody><tr><td><code>apiKey</code></td><td><code>X-Api-Key</code></td><td>Portail ZRExpress (clé API secrète)</td></tr><tr><td><code>tenant</code></td><td><code>X-Tenant</code></td><td>Portail ZRExpress (identifiant du tenant)</td></tr></tbody></table></div><p>Documentation officielle&nbsp;: <a href="https://docs.zrexpress.app/reference">docs.zrexpress.app</a>.</p>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">ZRExpress en TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> zr = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;zrexpress&#x27;</span>, {
+  apiKey: process.env.<span class="c-type">ZREXPRESS_API_KEY</span>!,
+  tenant: process.env.<span class="c-type">ZREXPRESS_TENANT</span>!,
+});
+
+<span class="c-key">const</span> wilayas = <span class="c-key">await</span> zr.<span class="c-fn">getWilayas</span>();               <span class="c-cmt">// [{ id, name, code: &#x27;16&#x27; }]</span>
+<span class="c-key">const</span> communes = <span class="c-key">await</span> zr.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);           <span class="c-cmt">// id ZR ou code officiel 1–58</span>
+<span class="c-key">const</span> hubs = <span class="c-key">await</span> zr.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> }); <span class="c-cmt">// points relais</span>
+
+<span class="c-key">const</span> quote = <span class="c-key">await</span> zr.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, isStopDesk: <span class="c-key">false</span> });
+<span class="c-cmt">// { deliveryFee: 400, stopDeskFee: 250, currency: &#x27;DZD&#x27; }</span>
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> zr.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550 12 34 56&#x27;</span>,          <span class="c-cmt">// normalisé en +213…</span>
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaName: <span class="c-str">&#x27;Alger&#x27;</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,                     <span class="c-cmt">// montant encaissé, frais inclus (≤ 150 000 DZD)</span>
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> zr.<span class="c-fn">track</span>(parcel.trackingNumber);
+
+  <span class="c-cmt">// Synchroniser les colis du compte (pull)</span>
+  <span class="c-key">const</span> page = <span class="c-key">await</span> zr.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-str">&#x27;2026-10-01T00:00:00+00:00&#x27;</span>, allPages: <span class="c-key">true</span> });
+
+  <span class="c-key">await</span> zr.<span class="c-fn">cancelParcel</span>(parcel.trackingNumber); <span class="c-cmt">// numéro de suivi ou UUID</span>
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">ZRExpress en PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$zr</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;zrexpress&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_API_KEY&#x27;</span>),
+    <span class="c-str">&#x27;tenant&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_TENANT&#x27;</span>),
+]);
+
+<span class="c-var">$quote</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>, <span class="c-str">&#x27;isStopDesk&#x27;</span> =&gt; <span class="c-key">false</span>]);
+<span class="c-var">$hubs</span>  = <span class="c-var">$zr</span>-&gt;<span class="c-fn">getStopDesks</span>([<span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$parcel</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaName&#x27;</span>    =&gt; <span class="c-str">&#x27;Alger&#x27;</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+    <span class="c-var">$page</span>   = <span class="c-var">$zr</span>-&gt;<span class="c-fn">listParcels</span>([<span class="c-str">&#x27;orderId&#x27;</span> =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>]);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Méthodes supportées</h2>
+        <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Le SDK relit le colis créé pour renvoyer le numéro de suivi.</td></tr><tr><td><code>track</code></td><td class="ok">oui</td><td>Statut unifié + historique des états.</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Tarif domicile et point relais pour la wilaya.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Territoires ZR, code officiel ou nom acceptés.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">oui</td><td>Hubs ZR avec point relais.</td></tr><tr><td><code>listParcels</code></td><td class="ok">oui</td><td>Recherche paginée, filtres <code>orderId</code>, <code>keyword</code>, <code>status</code>, <code>updatedSince</code>.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">oui</td><td>Numéro de suivi ou UUID.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie les identifiants (appel réel).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="extras" aria-labelledby="extras-title">
+        <h2 id="extras-title">Étiquettes, envoi en masse et webhooks ZRExpress</h2>
+        <p>Ces fonctions propres à ZRExpress sont disponibles via <code>createZRExpress()</code> (TS) ou <code>new ZRExpressProvider()</code> (PHP).</p>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createZRExpress, verifyZRExpressWebhook } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> zr = <span class="c-fn">createZRExpress</span>({ apiKey, tenant });
+
+<span class="c-cmt">// Étiquettes PDF (max 250)</span>
+<span class="c-key">const</span> { fileUrl } = <span class="c-key">await</span> zr.<span class="c-fn">generateLabels</span>([<span class="c-str">&#x27;16-AAA111-ZR&#x27;</span>, <span class="c-str">&#x27;16-BBB222-ZR&#x27;</span>]);
+
+<span class="c-cmt">// Création en masse (max 100, orderId obligatoire)</span>
+<span class="c-key">const</span> { successes, failures } = <span class="c-key">await</span> zr.<span class="c-fn">createParcelsBulk</span>([
+  { ...parcelInput, orderId: <span class="c-str">&#x27;ORD-1&#x27;</span> },
+  { ...parcelInput, orderId: <span class="c-str">&#x27;ORD-2&#x27;</span> },
+]);
+
+<span class="c-cmt">// Webhooks signés (corps brut obligatoire)</span>
+app.<span class="c-fn">post</span>(<span class="c-str">&#x27;/webhooks/zrexpress&#x27;</span>, express.<span class="c-fn">raw</span>({ type: <span class="c-str">&#x27;*/*&#x27;</span> }), (req, res) =&gt; {
+  <span class="c-key">const</span> event = <span class="c-fn">verifyZRExpressWebhook</span>(req.body, req.headers, process.env.<span class="c-type">ZREXPRESS_WEBHOOK_SECRET</span>!);
+  <span class="c-cmt">// event.type · event.trackingNumber · event.status (unifié)</span>
+  res.<span class="c-fn">sendStatus</span>(<span class="c-num">200</span>);
+});</pre></div>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpressProvider</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpress</span>\<span class="c-type">Webhook</span>;
+
+<span class="c-var">$zr</span> = <span class="c-key">new</span> <span class="c-fn">ZRExpressProvider</span>([<span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_API_KEY&#x27;</span>), <span class="c-str">&#x27;tenant&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_TENANT&#x27;</span>)]);
+<span class="c-var">$zr</span>-&gt;<span class="c-fn">createParcelsBulk</span>([...]);
+
+<span class="c-var">$raw</span>   = <span class="c-fn">file_get_contents</span>(<span class="c-str">&#x27;php://input&#x27;</span>);
+<span class="c-var">$event</span> = <span class="c-type">Webhook</span>::<span class="c-fn">verify</span>(<span class="c-var">$raw</span>, <span class="c-fn">getallheaders</span>(), <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_WEBHOOK_SECRET&#x27;</span>));</pre></div>
+        <p>Détails&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZREXPRESS.md</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">À savoir sur l’API ZRExpress</h2>
+        <ul class="notes">
+          <li><strong>Montant ≤ 150 000 DZD</strong>, frais de livraison inclus (<code>price</code>).</li>
+          <li>Les téléphones sont envoyés au format international (<code>+213…</code>)&nbsp;: passez-les comme vous les avez, le SDK normalise.</li>
+          <li>Sans changement d’état côté portail, le colis reste « Commande reçue » (<code>pending</code>) jusqu’à être marqué prêt à expédier.</li>
+          <li>Stop desks = hubs ZR avec point relais&nbsp;; filtrer par wilaya seule donne les meilleurs résultats.</li>
+          <li>Produits&nbsp;: <code>stockType</code> vaut <code>none</code> par défaut (pas de catalogue). <code>local</code> / <code>warehouse</code> demandent <code>productId</code> + <code>sku</code>.</li>
+          <li>En production, préférez les webhooks pour suivre les statuts&nbsp;; <code>listParcels</code> est l’alternative en pull.</li>
+        </ul>
+        <p>Mapping natif détaillé (endpoints, champs, statuts)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#zrexpress">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">FAQ ZRExpress</h2>
+        <div class="faq">
+          <details>
+            <summary>Où trouver l’API key et le tenant ZRExpress&nbsp;?</summary>
+            <p>Dans le portail ZRExpress&nbsp;: la clé API va dans <code>apiKey</code> (header <code>X-Api-Key</code>) et l’identifiant du tenant dans <code>tenant</code> (header <code>X-Tenant</code>).</p>
+          </details>
+          <details>
+            <summary>Comment imprimer les étiquettes ZR Express&nbsp;?</summary>
+            <p><code>generateLabels([...trackings])</code> renvoie l’URL d’un PDF regroupé, ou un PDF par colis avec <code>{ mode: 'individual' }</code>.</p>
+          </details>
+          <details>
+            <summary>Comment recevoir les changements de statut ZRExpress&nbsp;?</summary>
+            <p>Configurez un webhook dans le portail, puis vérifiez la signature avec <code>verifyZRExpressWebhook</code> (TS) ou <code>Webhook::verify</code> (PHP) sur le corps brut de la requête.</p>
+          </details>
+          <details>
+            <summary>Puis-je annuler un colis avec son numéro de suivi&nbsp;?</summary>
+            <p>Oui&nbsp;: <code>cancelParcel</code> accepte le numéro de suivi ou l’UUID ZR.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Autres transporteurs</h2>
+        <p>Même interface, mêmes statuts normalisés (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">API Yalidine</a></li>
+          <li><a href="../maystro/">API Maystro</a></li>
+          <li><a href="../ecotrack/">API Ecotrack</a></li>
+          <li><a href="../">Documentation complète</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copié";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copier"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
