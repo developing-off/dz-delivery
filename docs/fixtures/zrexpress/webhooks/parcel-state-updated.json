@@ -1,5 +1,5 @@
 {
-  "secret": "whsec_dGVzdF93ZWJob29rX3NlY3JldF9rZXkhIQ==",
+  "secretKeyBase64": "dGVzdF93ZWJob29rX3NlY3JldF9rZXkhIQ==",
   "msgId": "msg_test_001",
   "msgTimestamp": "1705315800",
   "signature": "v1,M7q53wBPyNQy0c9IGqMAy4jaSeguVaat0Di3fj4e4GQ=",

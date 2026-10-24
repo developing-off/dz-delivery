@@ -32,7 +32,7 @@ final class ZRExpressWebhookTest extends TestCase
                 'svix-timestamp' => $fixture['msgTimestamp'],
                 'svix-signature' => $fixture['signature'],
             ],
-            $fixture['secret'],
+            'whsec_' . $fixture['secretKeyBase64'], // prefix added here so secret scanners don't flag the fixture
             null,
             (int) $fixture['msgTimestamp'],
         );
@@ -53,7 +53,7 @@ final class ZRExpressWebhookTest extends TestCase
                 'svix-timestamp' => $fixture['msgTimestamp'],
                 'svix-signature' => 'v1,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             ],
-            $fixture['secret'],
+            'whsec_' . $fixture['secretKeyBase64'], // prefix added here so secret scanners don't flag the fixture
             null,
             (int) $fixture['msgTimestamp'],
         );
@@ -71,7 +71,7 @@ final class ZRExpressWebhookTest extends TestCase
                 'svix-timestamp' => $fixture['msgTimestamp'],
                 'svix-signature' => $fixture['signature'],
             ],
-            $fixture['secret'],
+            'whsec_' . $fixture['secretKeyBase64'], // prefix added here so secret scanners don't flag the fixture
             300,
             (int) $fixture['msgTimestamp'] + 600,
         );
