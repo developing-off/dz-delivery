@@ -1,6 +1,9 @@
 [
   {
     "method": "GET",
-    "path": "/api/public/get/communes/16"
+    "path": "/api/public/get/communes/16",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    }
   }
 ]

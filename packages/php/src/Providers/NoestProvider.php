@@ -104,8 +104,8 @@ final class NoestProvider implements ShippingProviderInterface
         if ($token === '' || $userGuid === '') {
             throw new ShippingError(ShippingError::AUTH_FAILED, 'NOEST requires "apiToken" and "userGuid"', null, null, null, self::NAME);
         }
-        $base = trim((string) ($options->baseUrl ?? '')) ?: self::DEFAULT_BASE_URL;
-        $base = (string) preg_replace('#/api/public$#i', '', rtrim($base, '/'));
+        $base = Dates::requireHttps(trim((string) ($options->baseUrl ?? '')) ?: self::DEFAULT_BASE_URL, self::NAME);
+        $base = (string) preg_replace('#/api/public$#i', '', $base);
 
         $this->userGuid = $userGuid;
         $this->includeRaw = $options->includeRaw;
@@ -115,7 +115,9 @@ final class NoestProvider implements ShippingProviderInterface
             provider: self::NAME,
             headers: ['Authorization' => 'Bearer ' . $token],
             timeoutMs: $options->timeoutMs,
-            includeRaw: $options->includeRaw,
+            // Error bodies are always kept so refineError() can classify them; send() drops them
+            // again when includeRaw is off.
+            includeRaw: true,
             handler: is_callable($options->handler) ? $options->handler : null,
             errorParser: [self::class, 'parseError'],
         );
@@ -135,6 +137,10 @@ final class NoestProvider implements ShippingProviderInterface
         $input = ParcelInput::from($input, self::NAME);
         $phone = Phone::toLocal($input->phone, self::NAME, 'phone');
         $phone2 = $input->phone2 !== null ? Phone::toLocal($input->phone2, self::NAME, 'phone2') : null;
+        $reference = trim((string) $input->orderId);
+        if ($reference !== '' && mb_strlen($reference) < 5) {
+            throw ShippingError::validation('NOEST requires an orderId (reference) of at least 5 characters', self::NAME, 'orderId');
+        }
 
         $wilayaCode = $this->resolveWilayaCode($input->wilayaId ?? $input->wilayaName);
         $commune = $this->resolveCommune($wilayaCode, $input->communeId ?? $input->communeName);
@@ -164,8 +170,8 @@ final class NoestProvider implements ShippingProviderInterface
         if ($input->remark !== null && trim($input->remark) !== '') {
             $order['remarque'] = trim($input->remark);
         }
-        if ($input->orderId !== null && trim($input->orderId) !== '') {
-            $order['reference'] = trim($input->orderId);
+        if ($reference !== '') {
+            $order['reference'] = $reference;
         }
 
         $body = $this->send('POST', 'create/order', $order);
@@ -225,7 +231,7 @@ final class NoestProvider implements ShippingProviderInterface
                 $rows[] = ['a' => $a, 'i' => $i, 'at' => Dates::toIso(self::text($a['date'] ?? null) ?? '', self::TIMEZONE)];
             }
         }
-        usort($rows, static fn (array $x, array $y) => strcmp($x['at'], $y['at']) ?: $x['i'] <=> $y['i']);
+        usort($rows, static fn (array $x, array $y) => Dates::compare($x['at'], $y['at']) ?: $x['i'] <=> $y['i']);
 
         $current = ParcelStatus::PENDING;
         $events = [];
@@ -364,14 +370,12 @@ final class NoestProvider implements ShippingProviderInterface
             throw $e;
         }
         if (is_array($body) && ($body['success'] ?? null) === false) {
-            throw new ShippingError(
-                ShippingError::VALIDATION_ERROR,
-                self::text($body['message'] ?? null)
-                    ?? "NOEST order $tracking cannot be cancelled: it does not exist or has already been validated (only orders not yet validated can be deleted)",
+            // Business codes (account_suspended, ...) keep their mapping; anything else is a refusal.
+            throw $this->businessError(
+                $body,
                 200,
-                null,
-                $this->raw($body),
-                self::NAME,
+                "NOEST order $tracking cannot be cancelled: it does not exist or has already been validated (only orders not yet validated can be deleted)",
+                ShippingError::VALIDATION_ERROR,
             );
         }
     }
@@ -419,7 +423,11 @@ final class NoestProvider implements ShippingProviderInterface
         try {
             return $this->http->request($method, $path, [], $json);
         } catch (ShippingError $e) {
-            throw self::refineError($e);
+            $e = self::refineError($e);
+            if (!$this->includeRaw && $e->raw !== null) {
+                $e = new ShippingError($e->code, $e->getMessage(), $e->httpStatus, $e->details, null, self::NAME, $e->getPrevious() ?? $e, $e->retryAfter);
+            }
+            throw $e;
         }
     }
 
@@ -474,8 +482,12 @@ final class NoestProvider implements ShippingProviderInterface
     }
 
     /** `{ success: false, ... }` (HTTP 200) → ShippingError. */
-    private function businessError(array $body, int $httpStatus, string $fallback): ShippingError
-    {
+    private function businessError(
+        array $body,
+        int $httpStatus,
+        string $fallback,
+        string $fallbackCode = ShippingError::PROVIDER_ERROR,
+    ): ShippingError {
         $details = self::collectDetails($body['errors'] ?? null);
         $nativeCode = null;
         foreach (['code', 'error_code', 'error'] as $key) {
@@ -497,7 +509,7 @@ final class NoestProvider implements ShippingProviderInterface
         }
 
         return new ShippingError(
-            $nativeCode !== null ? self::BUSINESS_ERRORS[$nativeCode] : ShippingError::PROVIDER_ERROR,
+            $nativeCode !== null ? self::BUSINESS_ERRORS[$nativeCode] : $fallbackCode,
             $message,
             $httpStatus,
             $details,
@@ -506,7 +518,7 @@ final class NoestProvider implements ShippingProviderInterface
         );
     }
 
-    /** @return list<array{field: string, message: string}> */
+    /** @return list<array{field?: string, message: string, code?: string}> */
     private static function collectDetails(mixed $errors): array
     {
         $details = [];
@@ -519,10 +531,13 @@ final class NoestProvider implements ShippingProviderInterface
                 if (!is_string($msg)) {
                     continue;
                 }
-                // Keys that are business error codes become `code`, not `field`.
-                $details[] = isset(self::BUSINESS_ERRORS[$key])
-                    ? ['message' => $msg, 'code' => $key]
-                    : ['field' => self::FIELDS[$key] ?? $key, 'message' => $msg];
+                // Business error codes become `code`; input fields keep `field` (station_code: both).
+                $field = self::FIELDS[$key] ?? (isset(self::BUSINESS_ERRORS[$key]) ? null : $key);
+                $detail = $field !== null ? ['field' => $field, 'message' => $msg] : ['message' => $msg];
+                if (isset(self::BUSINESS_ERRORS[$key])) {
+                    $detail['code'] = $key;
+                }
+                $details[] = $detail;
             }
         }
 

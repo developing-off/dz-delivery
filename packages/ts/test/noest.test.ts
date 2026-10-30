@@ -70,6 +70,32 @@ describe('noest', () => {
     expect(result).toEqual([{ id: '16B', name: 'Alger', wilayaId: '16', phone: '0550000000' }]);
   });
 
+  it('rejects a non-https baseUrl (the token would travel in clear text)', () => {
+    expect(() => createClient('noest', { apiToken: 't', userGuid: 'g', baseUrl: 'http://proxy.test' })).toThrow(
+      expect.objectContaining({ code: 'VALIDATION_ERROR', provider: 'noest' }),
+    );
+    expect(() => createClient('ecom', { apiKey: 'k', apiToken: 't', baseUrl: 'http://ecom.test/api_v2' })).toThrow(
+      expect.objectContaining({ code: 'VALIDATION_ERROR', provider: 'ecom' }),
+    );
+  });
+
+  it('rejects an orderId shorter than 5 characters before any request', async () => {
+    const mock = mockFetch([]);
+    const err = await createClient('noest', { apiToken: 't', userGuid: 'g', fetch: mock.fetch })
+      .createParcel({ ...INPUT, orderId: 'A12' })
+      .catch((e) => e);
+    expect(err).toMatchObject({ code: 'VALIDATION_ERROR', details: [{ field: 'orderId' }] });
+    expect(mock.calls).toHaveLength(0);
+  });
+
+  it('keeps business codes when a cancellation is refused', async () => {
+    const mock = mockFetch([{ status: 200, body: { success: false, errors: { account_suspended: 'Compte suspendu' } } }]);
+    const err = await createClient('noest', { apiToken: 't', userGuid: 'g', fetch: mock.fetch })
+      .cancelParcel('NST-1')
+      .catch((e) => e);
+    expect(err).toMatchObject({ code: 'AUTH_FAILED', details: [{ code: 'account_suspended' }] });
+  });
+
   it('maps event keys and English labels, never French display labels', () => {
     expect(mapNoestStatus('livred')).toBe('delivered');
     expect(mapNoestStatus('Return_Asked_By_Hub')).toBe('returned');

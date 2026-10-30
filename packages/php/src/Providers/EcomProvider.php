@@ -69,6 +69,9 @@ final class EcomProvider implements ShippingProviderInterface
 
     private const FINAL = [ParcelStatus::DELIVERED, ParcelStatus::RETURNED, ParcelStatus::CANCELLED];
 
+    /** History lines that are notes, not states: they keep the previous status in track(). */
+    private const NOTE_LABELS = ['', 'encours', 'biz', 'suiviparecom', 'information', 'typedecolis', 'typedelivraison'];
+
     private HttpClient $http;
     private bool $includeRaw;
     private bool $autoValidate;
@@ -90,7 +93,7 @@ final class EcomProvider implements ShippingProviderInterface
         $this->includeRaw = $options->includeRaw;
         $this->autoValidate = (bool) $options->get('autoValidate', false);
         $this->http = $http ?? new HttpClient(
-            baseUrl: trim((string) ($options->baseUrl ?? '')) ?: self::DEFAULT_BASE_URL,
+            baseUrl: Dates::requireHttps(trim((string) ($options->baseUrl ?? '')) ?: self::DEFAULT_BASE_URL, self::NAME),
             provider: self::NAME,
             headers: ['X-API-Key' => $apiKey, 'X-API-Token' => $apiToken],
             timeoutMs: $options->timeoutMs,
@@ -214,20 +217,24 @@ final class EcomProvider implements ShippingProviderInterface
                 $rows[] = ['step' => $step, 'i' => $i, 'at' => Dates::toIso(self::text($step['date'] ?? null) ?? '', self::TIMEZONE)];
             }
         }
-        usort($rows, static fn (array $x, array $y) => strcmp($x['at'], $y['at']) ?: $x['i'] <=> $y['i']);
+        usort($rows, static fn (array $x, array $y) => Dates::compare($x['at'], $y['at']) ?: $x['i'] <=> $y['i']);
 
-        // Notes (Information, Type de Livraison, BIZ, no situation, ...) keep the previous status.
+        // Notes (Information, Type de Livraison, BIZ, no situation, ...) keep the previous status;
+        // any other unmapped label is reported as unknown.
         $current = ParcelStatus::PENDING;
         $events = [];
         foreach ($rows as ['step' => $step, 'at' => $at]) {
             $situation = self::text($step['situation'] ?? null) ?? '';
             $comment = self::text($step['commentaire'] ?? null);
             $label = $situation !== '' && $comment !== null ? "$situation ($comment)" : ($situation !== '' ? $situation : ($comment ?? ''));
-            $status = StatusMapper::ecom($situation);
-            if ($status !== ParcelStatus::UNKNOWN) {
-                $current = $status;
+            $mapped = StatusMapper::ecom($situation);
+            if ($mapped !== ParcelStatus::UNKNOWN) {
+                $current = $mapped;
             }
-            $events[] = new TrackingEvent(status: $current, label: $label, at: $at, raw: $this->raw($step));
+            $status = $mapped === ParcelStatus::UNKNOWN && !in_array(Text::key($situation), self::NOTE_LABELS, true)
+                ? ParcelStatus::UNKNOWN
+                : $current;
+            $events[] = new TrackingEvent(status: $status, label: $label, at: $at, raw: $this->raw($step));
         }
 
         return new TrackResult($this->toParcel($body, $tracking), $events);
@@ -375,7 +382,8 @@ final class EcomProvider implements ShippingProviderInterface
                 }
             }
 
-            return new ParcelListPage($keep($all), 1, $pageSize, $totalCount, false, $this->raw($lastRaw));
+            // hasNext stays true when the page cap cut the walk short.
+            return new ParcelListPage($keep($all), 1, $pageSize, $totalCount, $hasNext, $this->raw($lastRaw));
         }
 
         [$parcels, $totalCount, $hasNext, $raw] = $this->listPage($query, $query->page, $pageSize);

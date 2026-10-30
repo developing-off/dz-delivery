@@ -9,8 +9,8 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 | Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
 | Maystro Delivery | `maystro` | built from the public API docs (2026-10-20), implemented in PHP and TS; `track` / `cancelParcel` not supported |
 | Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
-| NoEST | `noest` | NOEST Public API docs v2.3 + live read-only checks (2026-10-30), implemented in PHP and TS; `listParcels` not supported |
-| E-com Delivery | `ecom` | API v2 docs (v2.153, 2026-10-30), implemented in PHP and TS, including `listParcels` |
+| NoEST | `noest` | NOEST Public API docs v2.3 + live checks (2026-10-30: reads and error bodies; creation not tried, account suspended), implemented in PHP and TS; `listParcels` not supported |
+| E-com Delivery | `ecom` | API v2 docs (v2.153) + live checks on a test account (2026-10-30: reads, create then delete, errors), implemented in PHP and TS, including `listParcels` |
 
 ---
 
@@ -419,7 +419,7 @@ Cross-check of live tariff sources in Confirmation-api vs this SDK (orders / cre
 | **Ecotrack** (DHD, Anderson, …) | `GET /api/v1/get/fees` | Already in SDK ✓ |
 | **Maystro** | `GET https://backend.maystro-delivery.com/api/stores/delivery_price/?commune=&delivery_type=&express=` | SDK primary path (this change); orders-management options/prices kept as fallback ✓ |
 | **NoEST** | `GET https://app.noest-dz.com/api/public/fees` | SDK uses the live grid ✓ |
-| **Ecom** | `GET https://ecom-dz.com/api_v2/tarifs` | SDK uses the live grid ✓ |
+| **Ecom** | — (legacy `Api_v1` adapter: no live fee endpoint) | SDK uses the live `GET https://ecom-dz.com/api_v2/tarifs` grid ✓ |
 | **MDM** | — | Still backlog (see below) |
 
 ---
@@ -566,7 +566,7 @@ Only the stable **keys** are mapped (activity keys and order status enum keys); 
 | `track` | `POST get/trackings/info` `{ user_guid, trackings: [t] }` | Response keyed by tracking: `{ OrderInfo, activity: [...], deliveryAttempts }`. Unknown tracking → HTTP **404** `{"message":"Trackings non trouvés"}` → `NOT_FOUND`. |
 | `getFees` | `GET fees` | `tarifs.delivery` / `tarifs.return`, keyed by wilaya: `tarif` (home), `tarif_stopdesk`. No row (wilayas 50, 54 at test time) → `NOT_FOUND`. Not commune- or weight-dependent. |
 | `getWilayas` | `GET get/wilayas` | `[{ code, nom, is_active }]`; inactive wilayas are skipped. |
-| `getCommunes` | `GET get/communes/{wilaya_id}` | `[{ id, nom, wilaya_id, code_postal, is_active }]`; `Location.id` = `code` = `code_postal`. |
+| `getCommunes` | `GET get/communes/{wilaya_id}` | `[{ id, nom, wilaya_id, code_postal, is_active }]`; `Location.id` = `code` = `code_postal` (or the name when `code_postal` is missing, `code` then omitted). |
 | `getStopDesks` | `GET desks` | All stations keyed `"16B"`: `{ code, name, address, commune, phones, horaires, map, email }`. Filtered by wilaya (digits of `code`); with `communeId`, by `commune` (same spelling as `get/communes`). `StopDesk.id` = `code` → `station_code`. |
 | `listParcels` | — | **`NOT_SUPPORTED`**: no list endpoint. |
 | `cancelParcel` | `POST delete/order` `{ user_guid, tracking }` | Only orders **not validated** yet; `{ success: false }` → `VALIDATION_ERROR`. After validation use the NOEST dashboard (`ask/return` is not mapped). |
@@ -589,7 +589,7 @@ Not mapped yet (documented by NOEST): bulk create / validate (`create/orders`, `
 | `isStopDesk` / `stopDeskId` | `stop_desk` / `station_code` | `station_code` must belong to the destination wilaya |
 | `weight` | `poids` | Sent only when set |
 | `remark` | `remarque` | ≤ 255 chars |
-| `orderId` | `reference` | ≥ 5 chars; NOEST rejects duplicates (`duplicate_order`) |
+| `orderId` | `reference` | ≥ 5 chars, checked before any request (`VALIDATION_ERROR`, `field: orderId`); NOEST rejects duplicates (`duplicate_order`) |
 
 ### Commune names
 
@@ -639,7 +639,7 @@ From `activity[].event_key`; when a row has no key, from the English `event` lab
 
 ## Ecom
 
-> Built from the **E-com Delivery API v2** documentation (developer page of the partner dashboard, v2.153, read 2026-10-30). Fixtures replay the documented examples; no live response checked yet. Replaces the legacy `ecom-dz.net/Api_v1` notes (Confirmation-api `EcomDelivery.php`), which no longer apply.
+> Built from the **E-com Delivery API v2** documentation (developer page of the partner dashboard, v2.153, read 2026-10-30). Checked live on a test account (2026-10-30): reads, unvalidated create (home + stop desk) then delete, error bodies; fixtures `track/paid-with-notes`, `track/returned-to-seller`, `createParcel/unknown-stop-desk` and `createParcel/validation-error` use the real response shapes. Replaces the legacy `ecom-dz.net/Api_v1` notes (Confirmation-api `EcomDelivery.php`), which no longer apply.
 
 - Base URL: `https://ecom-dz.com/api_v2`. JSON (UTF-8), dates ISO 8601 (`2026-06-12 20:49:16+00:00`).
 - Rate limits: 50 / min, 2 000 / h, 20 000 / day → HTTP 429 (`X-RateLimit-Remaining-*` headers on every authenticated response).
@@ -657,7 +657,7 @@ From `activity[].event_key`; when a row has no key, from the English `event` lab
 | Unified method | Native endpoint | Notes |
 |----------------|-----------------|-------|
 | `createParcel` | `POST /colis` (array of 1) | Best-effort per line: HTTP **201** even when `resultats[0].ok === false` → `VALIDATION_ERROR` with the line `code` (e.g. `total_insuffisant` → `field: price`). `trackingNumber` = `resultats[0].tracking`. |
-| `track` | `GET /colis/{tracking}` | Parcel status from `situation` + `etat_logistique`, events from `historique[]`. 404 `colis_introuvable` → `NOT_FOUND`. |
+| `track` | `GET /colis/{tracking}` | Parcel status from `situation` + `etat_logistique`, events from `historique[]` (sorted by instant). Note lines keep the previous status, other unmapped labels are `unknown`. 404 `colis_introuvable` → `NOT_FOUND`. |
 | `getFees` | `GET /tarifs` | `wilayas[]`: `domicile`, `stopdesk`, `annuler` (→ `returnFee`). `service` / `emballage` (account-wide, billed on top) stay in `raw`. |
 | `getWilayas` | `GET /wilayas` | `{ id, libelle, domicile, stopdesk }`; wilayas with neither mode are skipped. |
 | `getCommunes` | `GET /communes?id_wilaya=` | `{ id, commune, code_postal, livrable }`; only `livrable: true`. `Location.id` = E-com id, `code` = postal code. |
@@ -672,9 +672,9 @@ Not mapped yet: `PUT /colis/{tracking}`, `POST /colis/confirmer`, bulk create (�
 
 | ParcelInput | E-com | Notes |
 |-------------|-------|-------|
-| `recipientName` | `nom_complet` | 1–60 chars |
+| `recipientName` | `nom_complet` | 1–60 chars (longer → 422, checked live) |
 | `phone` / `phone2` | `mobile_1` / `mobile_2` | Local format `0XXXXXXXXX` |
-| `address` | `adresse` | ≤ 100 chars |
+| `address` | `adresse` | ≤ 100 chars (longer → 422, checked live) |
 | `wilayaId` / `wilayaName` | `id_wilaya` | 1–58 |
 | `communeId` / `communeName` | `commune` | Home delivery only. Resolved by id, postal code, name, then spelling-tolerant name (see [NoEST — Commune names](#commune-names)); `livrable: false` → `VALIDATION_ERROR` before sending. |
 | `isStopDesk` / `stopDeskId` | `stopdesk` / `code_stopdesk` | With `stopdesk: 1` E-com ignores `commune` (taken from the desk), so no commune lookup is made. |
@@ -693,7 +693,7 @@ Labels of `GET /situations` and `GET /etats-logistiques` (case / accent-insensit
 |--------|---------|
 | `En Préparation`, `Attend Confirmation`, `Commande Reporté`, `Commande a Relancé` | `pending` |
 | `En Traitement`, `Commande Confirmée` | `created` |
-| `Au Bureau`, `En livraison`, `Sortir en livraison`, `Dispatcher`, `Ne Réponde pas #1–3`, `En attente du client`, `Reporté*`, `Appel Tel`, `SMS Envoyé`, `WhatsApp OK` | `in_transit` |
+| `Au Bureau`, `En livraison`, `Sortir en livraison`, `Dispatcher`, `Ne Réponde pas #1–3`, `En attente du client`, `Reporté`, `Reporté Commune Erronée`, `Reporté Wilaya Erronée`, `Appel Tel`, `SMS Envoyé`, `WhatsApp OK` | `in_transit` |
 | `Livrée`, `Encaisser`, `Recouvert`, `Récupérer` (payment collected) | `delivered` |
 | `Annuler`, `Annuler x3`, `Retour de Dispatche`, `Retour Navette`, `Retour Fournisseur`, `Retour Stock` | `returned` |
 | `Commande Annuler`, `Supprimée` | `cancelled` |

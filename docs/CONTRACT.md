@@ -204,7 +204,7 @@ Input to `listParcels` (paginated account sync).
 | `parcels` | `Parcel[]` | **yes** | Mapped parcels for this response (or all pages when `allPages`). |
 | `page` | `int` | **yes** | Page that was fetched (or `1` when `allPages` merged everything). |
 | `pageSize` | `int` | **yes** | Requested/effective page size. |
-| `totalCount` | `int` | **yes** | Carrier-reported total matching the query (before client-side `status` filter when applicable). |
+| `totalCount` | `int` | **yes** | Carrier-reported total matching the query (before client-side filters such as `status`, or E-com `orderId`). When the carrier reports no total for a page (E-com after page 1), a lower bound: `(page - 1) * pageSize + items on the page`. |
 | `hasNext` | `boolean` | **yes** | More pages available (`false` when `allPages` finished or carrier has no more). |
 | `raw` | `unknown` / `mixed` | no | Native page payload (last page when `allPages`). |
 
@@ -357,6 +357,11 @@ Provider-specific credentials:
 | `zrexpress` | `apiKey`, `tenant` | `ZREXPRESS_API_KEY`, `ZREXPRESS_TENANT` |
 | `yalidine` | `apiId`, `apiToken` | `YALIDINE_API_ID`, `YALIDINE_API_TOKEN` |
 | `maystro` | `apiToken` | `MAYSTRO_API_TOKEN` |
+| `ecotrack` | `token`, `courier` or `baseUrl` (https) | `ECOTRACK_TOKEN`, `ECOTRACK_COURIER` / `ECOTRACK_BASE_URL` |
+| `noest` | `apiToken`, `userGuid`, `autoValidate?` | `NOEST_API_TOKEN`, `NOEST_USER_GUID` |
+| `ecom` | `apiKey`, `apiToken`, `autoValidate?` | `ECOM_API_KEY`, `ECOM_API_TOKEN` |
+
+A `baseUrl` override must be an `https:` URL (credentials travel in headers); anything else throws `VALIDATION_ERROR`.
 
 ---
 

@@ -164,6 +164,52 @@ final class NoestProviderTest extends TestCase
         }
     }
 
+    public function testNonHttpsBaseUrlIsRejected(): void
+    {
+        foreach (['noest' => ['apiToken' => 't', 'userGuid' => 'g'], 'ecom' => ['apiKey' => 'k', 'apiToken' => 't']] as $name => $options) {
+            try {
+                ClientFactory::create($name, $options + ['baseUrl' => 'http://proxy.test']);
+                self::fail('ShippingError expected');
+            } catch (ShippingError $e) {
+                self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
+                self::assertSame($name, $e->provider);
+            }
+        }
+    }
+
+    public function testShortOrderIdIsRejectedBeforeAnyRequest(): void
+    {
+        try {
+            $this->client('noest', [])->createParcel(['orderId' => 'A12'] + self::INPUT);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
+            self::assertSame('orderId', $e->details[0]['field'] ?? null);
+        }
+        self::assertCount(0, $this->history);
+    }
+
+    public function testUnknownPartnerIsAuthFailedEvenWithoutRaw(): void
+    {
+        try {
+            $this->client('noest', [self::json(404, ['success' => false, 'message' => 'Partenaire introuvable'])], ['includeRaw' => false])->getWilayas();
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::AUTH_FAILED, $e->code);
+            self::assertNull($e->raw);
+        }
+    }
+
+    public function testRefusedCancellationKeepsBusinessCodes(): void
+    {
+        try {
+            $this->client('noest', [self::json(200, ['success' => false, 'errors' => ['account_suspended' => 'Compte suspendu']])])->cancelParcel('NST-1');
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::AUTH_FAILED, $e->code);
+        }
+    }
+
     public function testIncludeRawFalseOmitsRaw(): void
     {
         $desks = ['16B' => ['code' => '16B', 'name' => 'Alger', 'commune' => 'Bab Azzouar', 'phones' => ['0' => '0550000000']]];

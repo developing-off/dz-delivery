@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API NoEST (NOEST Express) en Node.js et PHP — SDK dz-delivery</title>
+  <meta name="description" content="Intégrer l’API NoEST (NOEST Express) en TypeScript ou PHP : créer et valider des commandes, suivre les colis, tarifs, wilayas, communes et stations (stop desks), avec gestion des erreurs." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://developing-off.github.io/dz-delivery/noest/" />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:url" content="https://developing-off.github.io/dz-delivery/noest/" />
+  <meta property="og:title" content="API NoEST (NOEST Express) en Node.js et PHP — SDK dz-delivery" />
+  <meta property="og:description" content="Intégrer l’API NoEST (NOEST Express) en TypeScript ou PHP : créer et valider des commandes, suivre les colis, tarifs, wilayas, communes et stations (stop desks), avec gestion des erreurs." />
+  <meta property="og:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "API NoEST en Node.js et PHP",
+        "description": "Intégrer l’API NoEST (NOEST Express) en TypeScript ou PHP : créer et valider des commandes, suivre les colis, tarifs, wilayas, communes et stations (stop desks), avec gestion des erreurs.",
+        "inLanguage": "fr",
+        "url": "https://developing-off.github.io/dz-delivery/noest/",
+        "about": [
+          "NoEST",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://developing-off.github.io/dz-delivery/#website"
+        },
+        "mainEntityOfPage": "https://developing-off.github.io/dz-delivery/noest/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://developing-off.github.io/dz-delivery/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "NoEST",
+            "item": "https://developing-off.github.io/dz-delivery/noest/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Transporteurs">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/" aria-current="page">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Fil d’Ariane">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Transporteurs</a></li>
+          <li aria-current="page">NoEST</li>
+        </ol>
+      </nav>
+
+      <h1>API NoEST en Node.js et PHP</h1>
+      <p class="lead">NoEST (NOEST Express) expose une API publique pour ses partenaires e-commerce. Avec dz-delivery, le provider <code>noest</code> parle cette API avec le même code que les autres transporteurs.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Installer</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">Identifiants NoEST</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Valeur</th><th>Notes</th></tr></thead><tbody><tr><td><code>apiToken</code></td><td>Token API du tableau de bord partenaire NOEST</td><td>Envoyé en <code>Authorization: Bearer &lt;token&gt;</code></td></tr><tr><td><code>userGuid</code></td><td>GUID partenaire (même page)</td><td>Envoyé en <code>user_guid</code> dans chaque POST</td></tr><tr><td><code>autoValidate</code></td><td><code>false</code> par défaut</td><td><code>true</code>&nbsp;: <code>valid/order</code> juste après la création</td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">NoEST en TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> noest = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;noest&#x27;</span>, {
+  apiToken: process.env.<span class="c-type">NOEST_API_TOKEN</span>!,
+  userGuid: process.env.<span class="c-type">NOEST_USER_GUID</span>!,
+  autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// remettre le colis au transporteur tout de suite</span>
+});
+
+<span class="c-key">const</span> desks = <span class="c-key">await</span> noest.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+<span class="c-key">const</span> quote = <span class="c-key">await</span> noest.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> noest.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaId: <span class="c-num">16</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> noest.<span class="c-fn">track</span>(parcel.trackingNumber);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">NoEST en PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$noest</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;noest&#x27;</span>, [
+    <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;NOEST_API_TOKEN&#x27;</span>),
+    <span class="c-str">&#x27;userGuid&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;NOEST_USER_GUID&#x27;</span>),
+    <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
+]);
+
+<span class="c-var">$quote</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$parcel</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Méthodes supportées</h2>
+        <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Reste <code>pending</code> jusqu’à validation (voir <code>autoValidate</code>).</td></tr><tr><td><code>track</code></td><td class="ok">oui</td><td>Statut unifié + historique (<code>event_key</code>).</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Grille du partenaire par wilaya (domicile, stop desk, retour).</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Communes actives uniquement.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">oui</td><td>Stations NOEST (id = code station, ex. <code>16B</code>).</td></tr><tr><td><code>listParcels</code></td><td class="no">NOT_SUPPORTED</td><td>L’API NOEST n’a pas de liste des commandes.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">oui</td><td>Uniquement avant validation.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie le token (appel réel).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">À savoir sur l’API NoEST</h2>
+        <ul class="notes">
+          <li><strong>Validation</strong>&nbsp;: sans <code>autoValidate: true</code>, les commandes restent modifiables et supprimables, mais NOEST ne les ramasse pas.</li>
+          <li><strong>Noms de communes</strong>&nbsp;: NOEST écrit par exemple « Bab Azzouar ». Le SDK accepte aussi « Bab Ezzouar » (correspondance tolérante, seulement quand une seule commune correspond).</li>
+          <li><code>orderId</code> (référence NOEST) doit faire au moins 5 caractères&nbsp;: sinon <code>VALIDATION_ERROR</code> avant tout appel.</li>
+          <li>Compte suspendu ou <code>userGuid</code> inconnu → <code>AUTH_FAILED</code>&nbsp;; doublon, commune inactive… → <code>VALIDATION_ERROR</code> avec <code>details[].code</code>.</li>
+          <li>Le <code>baseUrl</code> doit être en HTTPS.</li>
+        </ul>
+        <p>Mapping natif détaillé (endpoints, champs, statuts)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#noest">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">FAQ NoEST</h2>
+        <div class="faq">
+          <details>
+            <summary>Où trouver mon token et mon GUID NoEST&nbsp;?</summary>
+            <p>Dans le tableau de bord partenaire NOEST, rubrique API. Les deux sont nécessaires.</p>
+          </details>
+          <details>
+            <summary>Pourquoi mes commandes NoEST ne sont pas ramassées&nbsp;?</summary>
+            <p>Elles ne sont pas validées. Activez <code>autoValidate: true</code> ou validez-les depuis le tableau de bord.</p>
+          </details>
+          <details>
+            <summary>Puis-je lister mes colis NoEST&nbsp;?</summary>
+            <p>Non&nbsp;: l’API NOEST n’a pas d’endpoint de liste, <code>listParcels</code> renvoie <code>NOT_SUPPORTED</code>. Utilisez <code>track</code> par numéro.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Autres transporteurs</h2>
+        <p>Même interface, mêmes statuts normalisés (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">API Yalidine</a></li>
+          <li><a href="../zrexpress/">API ZRExpress</a></li>
+          <li><a href="../maystro/">API Maystro</a></li>
+          <li><a href="../ecotrack/">API Ecotrack · DHD</a></li>
+          <li><a href="../ecom/">API E-com Delivery</a></li>
+          <li><a href="../">Documentation complète</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copié";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copier"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

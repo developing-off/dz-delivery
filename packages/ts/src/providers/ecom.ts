@@ -31,6 +31,7 @@ import {
   type TrackResult,
 } from '../types';
 import {
+  compareDates,
   findLocationByName,
   findLocationLoosely,
   isRecord,
@@ -38,6 +39,7 @@ import {
   looseNameKey,
   normalizeAlgerianPhone,
   productDescription,
+  requireHttps,
   str,
   toIsoDate,
   validateParcelInput,
@@ -105,6 +107,11 @@ export function mapEcomStatus(native: string | null | undefined): ParcelStatus {
 }
 
 const FINAL: readonly ParcelStatus[] = ['delivered', 'returned', 'cancelled'];
+
+/** History lines that are notes, not states: they keep the previous status in `track()`. */
+const NOTE_LABELS = new Set(
+  ['', 'EnCours', 'BIZ', 'Suivi par E-com', 'Information', 'Type de Colis', 'Type de Livraison'].map(normalizeStatusKey),
+);
 
 /**
  * A parcel's status from its two labels: a final situation (delivered, returned, cancelled)
@@ -217,7 +224,7 @@ export class EcomProvider implements ShippingProvider {
     this.autoValidate = config.autoValidate ?? false;
     this.http = new HttpClient({
       provider: PROVIDER,
-      baseUrl: config.baseUrl?.trim() || ECOM_DEFAULT_BASE_URL,
+      baseUrl: requireHttps(config.baseUrl?.trim() || ECOM_DEFAULT_BASE_URL, PROVIDER),
       timeoutMs: config.timeoutMs,
       fetch: config.fetch,
       parseError: parseEcomError,
@@ -300,19 +307,21 @@ export class EcomProvider implements ShippingProvider {
     if (!isRecord(body)) {
       throw new ShippingError('PROVIDER_ERROR', 'Unexpected E-com parcel response', { provider: PROVIDER, raw: body });
     }
-    // Notes (`Information`, `Type de Livraison`, `BIZ`, no situation, ...) keep the previous status.
+    // Notes (`Information`, `Type de Livraison`, `BIZ`, no situation, ...) keep the previous status;
+    // any other unmapped label is reported as `unknown`.
     let current: ParcelStatus = 'pending';
     const events: TrackingEvent[] = (Array.isArray(body.historique) ? body.historique : [])
       .filter(isRecord)
       .map((step, i) => ({ step, i, at: toIsoDate(str(step.date) ?? '', ALGERIA_OFFSET) }))
-      .sort((x, y) => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.i - y.i))
+      .sort((x, y) => compareDates(x.at, y.at) || x.i - y.i)
       .map(({ step, at }) => {
         const situation = str(step.situation) ?? '';
         const comment = str(step.commentaire);
         const label = situation && comment ? `${situation} (${comment})` : situation || comment || '';
-        const status = mapEcomStatus(situation);
-        if (status !== 'unknown') current = status;
-        return withRaw({ status: current, label, at }, step, this.includeRaw);
+        const mapped = mapEcomStatus(situation);
+        if (mapped !== 'unknown') current = mapped;
+        const status = mapped === 'unknown' && !NOTE_LABELS.has(normalizeStatusKey(situation)) ? 'unknown' : current;
+        return withRaw({ status, label, at }, step, this.includeRaw);
       });
 
     return { parcel: this.toParcel(body, tracking), events };
@@ -442,7 +451,8 @@ export class EcomProvider implements ShippingProvider {
         lastRaw = result.raw;
         hasNext = result.hasNext;
       }
-      return withRaw({ parcels: keep(all), page: 1, pageSize, totalCount, hasNext: false }, lastRaw, this.includeRaw);
+      // `hasNext` stays true when the page cap cut the walk short.
+      return withRaw({ parcels: keep(all), page: 1, pageSize, totalCount, hasNext }, lastRaw, this.includeRaw);
     }
 
     const result = await this.listPage(query, page, pageSize);

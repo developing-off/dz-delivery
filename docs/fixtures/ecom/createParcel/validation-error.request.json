@@ -12,6 +12,19 @@
     "headers": {
       "X-API-Key": "test-api-key",
       "X-API-Token": "test-api-token"
-    }
+    },
+    "body": [
+      {
+        "nom_complet": "Test Client avec un nom beaucoup trop long pour le formulaire E-com",
+        "mobile_1": "0550123456",
+        "id_wilaya": 16,
+        "commune": "Alger Centre",
+        "article": "Casque audio",
+        "quantite": 1,
+        "total": 4500,
+        "stopdesk": 0,
+        "adresse": "12 rue des Tests, résidence des Tests, bâtiment B, 3e étage, porte gauche, à côté de la pharmacie centrale"
+      }
+    ]
   }
 ]
