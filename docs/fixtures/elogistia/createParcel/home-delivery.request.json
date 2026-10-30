@@ -1,0 +1,30 @@
+[
+  {
+    "method": "GET",
+    "path": "/getMunicipalities/",
+    "query": {
+      "key": "test-api-key"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/insertCommande/",
+    "query": {
+      "apiKey": "test-api-key",
+      "name": "Client",
+      "firstname": "Test",
+      "mail": "customer@example.com",
+      "phone": "0550123456",
+      "address": "12 rue des Tests",
+      "commune": "Bab Azzouar",
+      "wilaya": 16,
+      "product": "Casque audio",
+      "price": 4500,
+      "fraisDeLivraison": 0,
+      "stop_desk": 1,
+      "modeDeLivraison": 1,
+      "IdCommande": "CMD-1001",
+      "remarque": "Appeler avant"
+    }
+  }
+]

@@ -43,6 +43,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         'ecotrack' => ['token' => 'test-api-token', 'baseUrl' => 'https://test.ecotrack.dz'],
         'noest' => ['apiToken' => 'test-api-token', 'userGuid' => 'TESTGUID'],
         'ecom' => ['apiKey' => 'test-api-key', 'apiToken' => 'test-api-token'],
+        'mdm' => ['apiKey' => 'test-api-key', 'storeId' => 'STR-TEST01'],
+        'elogistia' => ['apiKey' => 'test-api-key'],
     ];
 
     /** @var array<int, array{request: RequestInterface}> */

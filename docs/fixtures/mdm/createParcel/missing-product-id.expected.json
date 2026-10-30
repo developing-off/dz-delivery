@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": [
+      {
+        "field": "productList",
+        "message": "MDM ships products stocked in its catalog: give every productList line its MDM product id (productId or sku, e.g. PRD-…)"
+      }
+    ]
+  }
+}

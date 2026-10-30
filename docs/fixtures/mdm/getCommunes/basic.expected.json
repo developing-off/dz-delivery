@@ -1,0 +1,22 @@
+{
+  "result": [
+    {
+      "id": "DZA161601",
+      "name": "Alger Centre",
+      "parentId": "16",
+      "code": "1601"
+    },
+    {
+      "id": "DZA161621",
+      "name": "Bab Ezzouar",
+      "parentId": "16",
+      "code": "1621"
+    },
+    {
+      "id": "DZA161650",
+      "name": "Chéraga",
+      "parentId": "16",
+      "code": "1650"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "pagination": {
+        "page": 1,
+        "perPage": 50,
+        "total": 1,
+        "totalPages": 1,
+        "hasMore": false,
+        "firstPage": 1,
+        "lastPage": 1,
+        "nextPage": null,
+        "prevPage": null
+      },
+      "list": [
+        {
+          "trackingId": "PRC-TEST04",
+          "orderId": "ORD-TEST04",
+          "status": "return-received",
+          "notes": null,
+          "store": {
+            "trackingId": "STR-TEST01"
+          }
+        }
+      ]
+    }
+  }
+]

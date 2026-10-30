@@ -1,0 +1,19 @@
+{
+  "result": [
+    {
+      "id": "523",
+      "name": "Ain Benian",
+      "parentId": "16"
+    },
+    {
+      "id": "525",
+      "name": "Alger Centre",
+      "parentId": "16"
+    },
+    {
+      "id": "526",
+      "name": "Bab Azzouar",
+      "parentId": "16"
+    }
+  ]
+}

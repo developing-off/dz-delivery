@@ -1,0 +1,32 @@
+{
+  "result": {
+    "parcel": {
+      "id": "PRC-TEST01",
+      "trackingNumber": "PRC-TEST01",
+      "status": "in_transit",
+      "provider": "mdm"
+    },
+    "events": [
+      {
+        "status": "created",
+        "label": "preparing",
+        "at": "2026-10-29T13:49:32+00:00"
+      },
+      {
+        "status": "created",
+        "label": "packaged",
+        "at": "2026-10-29T15:17:30+00:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "dispatched",
+        "at": "2026-10-29T15:53:51+00:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "received",
+        "at": "2026-10-29T19:06:13+00:00"
+      }
+    ]
+  }
+}

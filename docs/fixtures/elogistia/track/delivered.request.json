@@ -1,0 +1,10 @@
+[
+  {
+    "method": "GET",
+    "path": "/getTracking/",
+    "query": {
+      "apiKey": "test-api-key",
+      "tracking": "ELO--16A-00000001"
+    }
+  }
+]

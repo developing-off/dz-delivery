@@ -1,0 +1,17 @@
+[
+  {
+    "status": 401,
+    "headers": {},
+    "body": {
+      "method": "GET",
+      "path": "/api/geo/countries/DZA/deliverable-states",
+      "status": 401,
+      "correlationId": "00000000-0000-0000-0000-000000000000",
+      "error": {
+        "code": "AUTH.INVALID_API_KEY",
+        "message": "api key with value bad is not valid",
+        "payload": {}
+      }
+    }
+  }
+]

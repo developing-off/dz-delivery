@@ -116,7 +116,8 @@
 - [x] **T6.1-fees** Align Maystro `getFees` on Confirmation-api production: `GET backend.maystro-delivery.com/api/stores/delivery_price/` (fallback orders-management `delivery-options` / `delivery-prices`). See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#confirmation-api-fees-audit-2026-10-20).
 - [x] **T6.1c** Provider **Ecom** (`ecom`) — done on the new API v2 (`ecom-dz.com/api_v2`, 2026-10-30), TS + PHP, shared fixtures. The legacy `ecom-dz.net/Api_v1` audit no longer applies. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#ecom).
 - [x] **T6.1d** Provider **NoEST** — TS + PHP, shared fixtures, docs v2.3 + live read-only checks (2026-10-30).
-- [ ] **T6.1e** Provider **MDM** — backlog (Confirmation-api fees audit: still not in SDK; Ecom same).
+- [x] **T6.1e** Provider **MDM** (`mdm`) — from the OpenAPI spec + live read-only checks (2026-10-30), TS + PHP, shared fixtures.
+- [x] **T6.1f** Provider **Elogistia** (`elogistia`) — no public docs: from the legacy Confirmation-api + live read-only checks (2026-10-30), TS + PHP, shared fixtures.
 - [ ] **T6.2** Endpoints “catalogue” ZRExpress (ex. create product) en module optionnel
 - [ ] **T6.3** Webhooks / statut push si dispo
 - [ ] **T6.4** CLI (`dz-delivery track <id>`)
@@ -165,4 +166,4 @@ Semaine 4:  T4.* + T5.*              ← alignement + open source
 | 3 PHP | ✅ done (T3.8 Packagist plus tard ; mappings à confirmer via fixtures réelles) |
 | 4 Alignement | ⬜ todo |
 | 5 Communauté | ⬜ todo |
-| 6 Extensions | 🟡 T6.1 / T6.1b / T6.1c / T6.1d done (Maystro, Ecotrack, E-com, NoEST) ; T6.1e MDM backlog |
+| 6 Extensions | 🟡 T6.1 → T6.1f done (Maystro, Ecotrack, E-com, NoEST, MDM, Elogistia) ; T6.2+ backlog |

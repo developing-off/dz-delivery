@@ -1,7 +1,7 @@
 {
   "name": "@dz-delivery/core",
-  "version": "0.1.9",
-  "description": "Unified SDK for Algerian delivery carriers (Yalidine, ZRExpress, Maystro, Ecotrack/DHD, GuepEx, NoEST, E-com) — SDK livraison Algérie : créer, suivre et tarifer des colis, wilayas et communes. TypeScript, Node.js.",
+  "version": "0.1.10",
+  "description": "Unified SDK for Algerian delivery carriers (Yalidine, ZRExpress, Maystro, Ecotrack/DHD, GuepEx, NoEST, E-com, MDM, Elogistia) — SDK livraison Algérie : créer, suivre et tarifer des colis, wilayas et communes. TypeScript, Node.js.",
   "license": "MIT",
   "author": "developing-off",
   "homepage": "https://developing-off.github.io/dz-delivery/",

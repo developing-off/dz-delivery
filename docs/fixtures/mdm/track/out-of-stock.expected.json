@@ -1,0 +1,22 @@
+{
+  "result": {
+    "parcel": {
+      "id": "PRC-TEST03",
+      "trackingNumber": "PRC-TEST03",
+      "status": "pending",
+      "provider": "mdm"
+    },
+    "events": [
+      {
+        "status": "created",
+        "label": "preparing",
+        "at": "2026-10-29T14:29:19+00:00"
+      },
+      {
+        "status": "pending",
+        "label": "out-of-stock (outbound OTB-TEST03 out of stock)",
+        "at": "2026-10-29T14:31:51+00:00"
+      }
+    ]
+  }
+}

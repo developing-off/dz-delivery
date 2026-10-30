@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 403,
+    "message": "Products not found: PRD-TEST99",
+    "details": [
+      {
+        "field": "productList",
+        "message": "Products not found: PRD-TEST99",
+        "code": "AUTH.NOT_AUTHORIZED"
+      }
+    ]
+  }
+}

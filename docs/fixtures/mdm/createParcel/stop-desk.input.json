@@ -1,0 +1,20 @@
+{
+  "recipientName": "Test Client Exemple",
+  "phone": "+213550123456",
+  "phone2": "0770 12 34 56",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "DZA161601",
+  "productList": [
+    {
+      "name": "Casque audio",
+      "quantity": 1,
+      "sku": "PRD-TEST01"
+    }
+  ],
+  "price": 4500,
+  "orderId": null,
+  "remark": null,
+  "isStopDesk": true,
+  "stopDeskId": "16A"
+}

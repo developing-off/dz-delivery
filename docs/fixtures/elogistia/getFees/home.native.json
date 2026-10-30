@@ -1,0 +1,28 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "body": [
+        {
+          "wilayaLabel": "Oran",
+          "wilayaID": "31",
+          "home": "500",
+          "stopdesk": "250"
+        },
+        {
+          "wilayaLabel": "Alger",
+          "wilayaID": "16",
+          "home": "700",
+          "stopdesk": "350"
+        },
+        {
+          "wilayaLabel": "Adrar",
+          "wilayaID": "1",
+          "home": "1400",
+          "stopdesk": "800"
+        }
+      ]
+    }
+  }
+]

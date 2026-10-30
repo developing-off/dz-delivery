@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>dz-delivery — SDK livraison Algérie : Yalidine, ZRExpress, Maystro, Ecotrack, NoEST, E-com (TypeScript &amp; PHP)</title>
-  <meta name="description" content="SDK open source TypeScript (npm) et PHP (Composer) pour créer, suivre et tarifer des colis avec Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack, DHD, NoEST, E-com Delivery et plus — une seule API, wilayas et communes incluses." />
+  <title>dz-delivery — SDK livraison Algérie : Yalidine, ZRExpress, Maystro, Ecotrack, NoEST, E-com, MDM, Elogistia (TypeScript &amp; PHP)</title>
+  <meta name="description" content="SDK open source TypeScript (npm) et PHP (Composer) pour créer, suivre et tarifer des colis avec Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack, DHD, NoEST, E-com Delivery, MDM, Elogistia et plus — une seule API, wilayas et communes incluses." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://developing-off.github.io/dz-delivery/" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -15,13 +15,13 @@
   <meta property="og:locale" content="fr_FR" />
   <meta property="og:url" content="https://developing-off.github.io/dz-delivery/" />
   <meta property="og:title" content="dz-delivery — SDK livraison Algérie (TypeScript &amp; PHP)" />
-  <meta property="og:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD, NoEST et E-com : créer, suivre et tarifer des colis." />
+  <meta property="og:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD, NoEST, E-com, MDM et Elogistia : créer, suivre et tarifer des colis." />
   <meta property="og:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="dz-delivery — SDK livraison Algérie (TypeScript &amp; PHP)" />
-  <meta name="twitter:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD, NoEST et E-com : créer, suivre et tarifer des colis." />
+  <meta name="twitter:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD, NoEST, E-com, MDM et Elogistia : créer, suivre et tarifer des colis." />
   <meta name="twitter:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
 
   <script type="application/ld+json">
@@ -40,7 +40,7 @@
         "@type": "SoftwareSourceCode",
         "@id": "https://developing-off.github.io/dz-delivery/#sdk",
         "name": "dz-delivery",
-        "description": "Unified TypeScript and PHP SDK for Algerian delivery carriers: Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express…), NoEST, E-com Delivery.",
+        "description": "Unified TypeScript and PHP SDK for Algerian delivery carriers: Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express…), NoEST, E-com Delivery, MDM Express, Elogistia.",
         "url": "https://developing-off.github.io/dz-delivery/",
         "codeRepository": "https://github.com/developing-off/dz-delivery",
         "programmingLanguage": ["TypeScript", "PHP"],
@@ -689,7 +689,7 @@
       </svg>
       <h1 class="hero-brand" id="brand">dz-delivery<span class="hero-tag">SDK livraison Algérie</span></h1>
       <p class="hero-lead">
-        Un seul SDK pour créer, suivre et tarifer des colis avec Yalidine, ZRExpress, Maystro, Ecotrack (DHD…), NoEST et E-com — TypeScript et PHP, même contrat.
+        Un seul SDK pour créer, suivre et tarifer des colis avec Yalidine, ZRExpress, Maystro, Ecotrack (DHD…), NoEST, E-com, MDM et Elogistia — TypeScript et PHP, même contrat.
       </p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="#install">Installer</a>
@@ -1156,7 +1156,8 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
             <li><a href="ecotrack/#couriers">48Hr · EcoRapid · Conexlog…</a></li>
             <li><a href="noest/">NoEST</a></li>
             <li><a href="ecom/">E-com Delivery</a></li>
-            <li class="soon">MDM · Elogistia…</li>
+            <li><a href="mdm/">MDM Express</a></li>
+            <li><a href="elogistia/">Elogistia</a></li>
           </ul>
           <div class="doc-table-wrap">
             <table class="doc-table">
@@ -1169,44 +1170,46 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
                   <th>Ecotrack</th>
                   <th>NoEST</th>
                   <th>E-com</th>
+                  <th>MDM</th>
+                  <th>Elogistia</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td><code>createParcel</code></td>
-                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">catalogue</td><td class="ok">oui</td>
                 </tr>
                 <tr>
                   <td><code>track</code></td>
-                  <td class="ok">oui</td><td class="ok">oui</td><td class="no">webhooks</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="no">webhooks</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
                 </tr>
                 <tr>
                   <td><code>getFees</code></td>
-                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">par commune</td><td class="ok">oui</td>
                 </tr>
                 <tr>
                   <td><code>getWilayas</code> / <code>getCommunes</code></td>
-                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
                 </tr>
                 <tr>
                   <td><code>getStopDesks</code></td>
-                  <td class="ok">hubs</td><td class="ok">centers</td><td class="ok">communeId</td><td class="ok">oui</td><td class="ok">stations</td><td class="ok">bureaux</td>
+                  <td class="ok">hubs</td><td class="ok">centers</td><td class="ok">communeId</td><td class="ok">oui</td><td class="ok">stations</td><td class="ok">bureaux</td><td class="ok">bureaux</td><td class="no">non</td>
                 </tr>
                 <tr>
                   <td><code>listParcels</code></td>
-                  <td class="ok">oui</td><td class="no">bientôt</td><td class="no">webhooks</td><td class="no">bientôt</td><td class="no">non</td><td class="ok">oui</td>
+                  <td class="ok">oui</td><td class="no">bientôt</td><td class="no">webhooks</td><td class="no">bientôt</td><td class="no">non</td><td class="ok">oui</td><td class="ok">oui</td><td class="no">non</td>
                 </tr>
                 <tr>
                   <td><code>cancelParcel</code></td>
-                  <td class="ok">oui</td><td class="ok">si En prép.</td><td class="no">non</td><td class="ok">si non validé</td><td class="ok">si non validé</td><td class="ok">si en prép.</td>
+                  <td class="ok">oui</td><td class="ok">si En prép.</td><td class="no">non</td><td class="ok">si non validé</td><td class="ok">si non validé</td><td class="ok">si en prép.</td><td class="no">non</td><td class="no">non</td>
                 </tr>
                 <tr>
                   <td><code>healthCheck</code></td>
-                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
+                  <td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td>
                 </tr>
                 <tr>
                   <td>bulk / labels / webhooks verify</td>
-                  <td class="extra">extras</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+                  <td class="extra">extras</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
                 </tr>
               </tbody>
             </table>
@@ -1331,6 +1334,12 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <h3 class="sub"><a href="ecom/">E-com Delivery</a></h3>
           <p class="prose"><span class="mono">apiKey</span> + <span class="mono">apiToken</span> (API v2). Contrat complet, y compris <span class="mono">listParcels</span> avec <span class="mono">updatedSince</span>. Nom ≤ 60 caractères, adresse ≤ 100.</p>
 
+          <h3 class="sub"><a href="mdm/">MDM Express</a></h3>
+          <p class="prose"><span class="mono">apiKey</span> + <span class="mono">storeId</span>. Produits stockés chez MDM (id catalogue <span class="mono">PRD-…</span>). <span class="mono">listParcels</span> filtré côté serveur ; pas d’annulation par API.</p>
+
+          <h3 class="sub"><a href="elogistia/">Elogistia</a></h3>
+          <p class="prose"><span class="mono">apiKey</span> (dans l’URL). Création, suivi, tarifs, wilayas, communes. Pas de liste de bureaux, de liste de colis ni d’annulation.</p>
+
           <p class="callout warn">
             Mapping natif détaillé :
             <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>.
@@ -1381,6 +1390,8 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
             <li><a href="ecotrack/">API Ecotrack · DHD</a></li>
             <li><a href="noest/">API NoEST</a></li>
             <li><a href="ecom/">API E-com Delivery</a></li>
+            <li><a href="mdm/">API MDM Express</a></li>
+            <li><a href="elogistia/">API Elogistia</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat unifié</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">Mapping providers</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZRExpress extras</a></li>

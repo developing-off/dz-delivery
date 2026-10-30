@@ -1,0 +1,78 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "pagination": {
+        "page": 1,
+        "perPage": 100,
+        "total": 3,
+        "totalPages": 1,
+        "hasMore": false,
+        "firstPage": 1,
+        "lastPage": 1,
+        "nextPage": null,
+        "prevPage": null
+      },
+      "list": [
+        {
+          "id": "DZA161601",
+          "name": "Alger Centre",
+          "nameAr": null,
+          "code": "1601",
+          "stateId": "DZA16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        },
+        {
+          "id": "DZA161621",
+          "name": "Bab Ezzouar",
+          "nameAr": null,
+          "code": "1621",
+          "stateId": "DZA16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        },
+        {
+          "id": "DZA161650",
+          "name": "Chéraga",
+          "nameAr": null,
+          "code": "1650",
+          "stateId": "DZA16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "status": 404,
+    "headers": {},
+    "body": {
+      "method": "POST",
+      "path": "/api/v2/shipping/parcels/calculate-fees",
+      "status": 404,
+      "correlationId": "00000000-0000-0000-0000-000000000000",
+      "error": {
+        "code": "GEO.LOCATION.NOT_FOUND",
+        "message": "The location you provided is not found",
+        "payload": {}
+      }
+    }
+  }
+]

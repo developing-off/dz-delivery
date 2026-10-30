@@ -1,0 +1,11 @@
+{
+  "recipientName": "Test Client",
+  "phone": "+213550123456",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "Atlantis",
+  "productName": "Casque audio",
+  "price": 4500,
+  "orderId": "CMD-1001",
+  "remark": "Appeler avant"
+}

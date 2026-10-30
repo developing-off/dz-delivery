@@ -1,0 +1,17 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/geo/countries/DZA/deliverable-states/DZA16/deliverable-cities",
+    "query": {
+      "page": 1,
+      "perPage": 100
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/v2/shipping/parcels/calculate-fees",
+    "headers": {
+      "x-api-key": "test-api-key"
+    }
+  }
+]

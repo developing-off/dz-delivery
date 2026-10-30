@@ -1,0 +1,42 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/geo/countries/DZA/deliverable-states/DZA16/deliverable-cities",
+    "query": {
+      "page": 1,
+      "perPage": 100
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/v2/shipping/parcels",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "body": {
+      "storeId": "STR-TEST01",
+      "destination": {
+        "cityId": "DZA161621",
+        "streetAddress": "12 rue des Tests"
+      },
+      "client": {
+        "firstName": "Test",
+        "lastName": "Client Exemple",
+        "phone": "0550123456",
+        "phone2": "0770123456"
+      },
+      "products": [
+        {
+          "trackingId": "PRD-TEST01",
+          "quantity": 2,
+          "displayName": "Casque audio",
+          "price": 2250
+        }
+      ],
+      "productsPrice": 4500,
+      "isShippingFree": true,
+      "isStopDesk": false,
+      "notes": "Ref: CMD-1001 — Appeler avant"
+    }
+  }
+]

@@ -45,10 +45,14 @@ export {
 } from './providers/ecotrack';
 export { NoestProvider, mapNoestStatus, NOEST_DEFAULT_BASE_URL } from './providers/noest';
 export { EcomProvider, mapEcomStatus, ECOM_DEFAULT_BASE_URL } from './providers/ecom';
+export { ElogistiaProvider, mapElogistiaStatus, ELOGISTIA_DEFAULT_BASE_URL } from './providers/elogistia';
+export { MdmProvider, mapMdmStatus, MDM_DEFAULT_BASE_URL } from './providers/mdm';
 export { PARCEL_STATUSES } from './types';
 export type {
   BaseClientConfig,
   EcomConfig,
+  MdmConfig,
+  ElogistiaConfig,
   EcotrackConfig,
   FeeQuery,
   FeeQuote,

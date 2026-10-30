@@ -242,6 +242,64 @@ final class StatusMapper
         'supprimee' => ParcelStatus::CANCELLED,
     ];
 
+    /** MDM parcel status slugs (GET /api/v2/shipping/parcels/metadata). Same table, same order as the TS provider. */
+    private const MDM_EXACT = [
+        'confirmed' => ParcelStatus::CREATED,
+        'out-of-stock' => ParcelStatus::PENDING,
+        'preparing' => ParcelStatus::CREATED,
+        'packaged' => ParcelStatus::CREATED,
+        'ready-for-dispatch' => ParcelStatus::CREATED,
+        'received-by-mdm' => ParcelStatus::IN_TRANSIT,
+        'dispatched' => ParcelStatus::IN_TRANSIT,
+        'received' => ParcelStatus::IN_TRANSIT,
+        'in-transit' => ParcelStatus::IN_TRANSIT,
+        'ready-for-delivery' => ParcelStatus::IN_TRANSIT,
+        'out-for-delivery' => ParcelStatus::IN_TRANSIT,
+        'postponed' => ParcelStatus::IN_TRANSIT,
+        'delivery-attempt-failed' => ParcelStatus::IN_TRANSIT,
+        'delivered' => ParcelStatus::DELIVERED,
+        'delivered-partially' => ParcelStatus::DELIVERED,
+        'delivery-failed' => ParcelStatus::RETURNED,
+        'returning' => ParcelStatus::RETURNED,
+        'return-ready' => ParcelStatus::RETURNED,
+        'return-received' => ParcelStatus::RETURNED,
+        'return-grouped' => ParcelStatus::RETURNED,
+        'returned' => ParcelStatus::RETURNED,
+        'exchange-pending' => ParcelStatus::IN_TRANSIT,
+        'exchange-collected' => ParcelStatus::DELIVERED,
+        'exchange-failed' => ParcelStatus::RETURNED,
+        'refund-pending' => ParcelStatus::IN_TRANSIT,
+        'refund-collected' => ParcelStatus::RETURNED,
+        'refunded' => ParcelStatus::RETURNED,
+        'refunded-partially' => ParcelStatus::RETURNED,
+        'lost' => ParcelStatus::CANCELLED,
+    ];
+
+    /** Elogistia keyword rules, checked in order. Same list as the TS provider. */
+    private const ELOGISTIA_KEYWORDS = [
+        ['retour', ParcelStatus::RETURNED],
+        ['return', ParcelStatus::RETURNED],
+        ['annul', ParcelStatus::CANCELLED],
+        ['cancel', ParcelStatus::CANCELLED],
+        ['supprim', ParcelStatus::CANCELLED],
+        ['livreur', ParcelStatus::IN_TRANSIT],
+        ['enlivraison', ParcelStatus::IN_TRANSIT],
+        ['sortie', ParcelStatus::IN_TRANSIT],
+        ['transit', ParcelStatus::IN_TRANSIT],
+        ['expedi', ParcelStatus::IN_TRANSIT],
+        ['dispatch', ParcelStatus::IN_TRANSIT],
+        ['verswilaya', ParcelStatus::IN_TRANSIT],
+        ['encours', ParcelStatus::IN_TRANSIT],
+        ['echec', ParcelStatus::IN_TRANSIT],
+        ['tentative', ParcelStatus::IN_TRANSIT],
+        ['livre', ParcelStatus::DELIVERED],
+        ['delivered', ParcelStatus::DELIVERED],
+        ['attente', ParcelStatus::PENDING],
+        ['cree', ParcelStatus::PENDING],
+        ['nouveau', ParcelStatus::PENDING],
+        ['pending', ParcelStatus::PENDING],
+    ];
+
     public static function zrexpress(?string $native): string
     {
         $key = Text::key((string) $native);
@@ -327,6 +385,48 @@ final class StatusMapper
         return self::ECOM_EXACT[Text::key((string) $native)] ?? ParcelStatus::UNKNOWN;
     }
 
+    /** MDM status slug (out-for-delivery, delivered, ...) → unified status. */
+    public static function mdm(?string $native): string
+    {
+        $key = Text::key((string) $native);
+        foreach (self::MDM_EXACT as $slug => $status) {
+            if ($key !== '' && Text::key($slug) === $key) {
+                return $status;
+            }
+        }
+
+        return ParcelStatus::UNKNOWN;
+    }
+
+    /**
+     * Every MDM slug of one unified status, in table order (listParcels status filter).
+     *
+     * @return list<string>
+     */
+    public static function mdmSlugs(string $unified): array
+    {
+        return array_keys(array_filter(self::MDM_EXACT, static fn (string $s) => $s === $unified));
+    }
+
+    /**
+     * Elogistia label (Statut, else Log) → unified status. Elogistia publishes no status list:
+     * labels are matched by keyword (returns and cancellations first, then transit, then delivered).
+     */
+    public static function elogistia(?string $native): string
+    {
+        $key = Text::key((string) $native);
+        if ($key === '') {
+            return ParcelStatus::UNKNOWN;
+        }
+        foreach (self::ELOGISTIA_KEYWORDS as [$keyword, $status]) {
+            if (str_contains($key, $keyword)) {
+                return $status;
+            }
+        }
+
+        return ParcelStatus::UNKNOWN;
+    }
+
     public static function map(string $provider, ?string $native): string
     {
         return match ($provider) {
@@ -336,6 +436,8 @@ final class StatusMapper
             'ecotrack' => self::ecotrack($native),
             'noest' => self::noest($native),
             'ecom' => self::ecom($native),
+            'mdm' => self::mdm($native),
+            'elogistia' => self::elogistia($native),
             default => ParcelStatus::UNKNOWN,
         };
     }

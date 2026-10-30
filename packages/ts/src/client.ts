@@ -2,12 +2,16 @@ import { ShippingError } from './errors';
 import { EcomProvider } from './providers/ecom';
 import { EcotrackProvider } from './providers/ecotrack';
 import { MaystroProvider } from './providers/maystro';
+import { ElogistiaProvider } from './providers/elogistia';
+import { MdmProvider } from './providers/mdm';
 import { NoestProvider } from './providers/noest';
 import type { ShippingProvider } from './providers/types';
 import { YalidineProvider } from './providers/yalidine';
 import { ZRExpressProvider } from './providers/zrexpress';
 import type {
   EcomConfig,
+  MdmConfig,
+  ElogistiaConfig,
   EcotrackConfig,
   MaystroConfig,
   NoestConfig,
@@ -17,7 +21,7 @@ import type {
   ZRExpressConfig,
 } from './types';
 
-export const SUPPORTED_PROVIDERS: readonly ProviderName[] = ['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom'];
+export const SUPPORTED_PROVIDERS: readonly ProviderName[] = ['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom', 'elogistia', 'mdm'];
 
 export function createClient(provider: 'zrexpress', config: ZRExpressConfig): ShippingProvider;
 export function createClient(provider: 'yalidine', config: YalidineConfig): ShippingProvider;
@@ -25,6 +29,8 @@ export function createClient(provider: 'maystro', config: MaystroConfig): Shippi
 export function createClient(provider: 'ecotrack', config: EcotrackConfig): ShippingProvider;
 export function createClient(provider: 'noest', config: NoestConfig): ShippingProvider;
 export function createClient(provider: 'ecom', config: EcomConfig): ShippingProvider;
+export function createClient(provider: 'elogistia', config: ElogistiaConfig): ShippingProvider;
+export function createClient(provider: 'mdm', config: MdmConfig): ShippingProvider;
 export function createClient<P extends ProviderName>(provider: P, config: ProviderConfigMap[P]): ShippingProvider;
 export function createClient(provider: ProviderName, config: ProviderConfigMap[ProviderName]): ShippingProvider {
   switch (provider) {
@@ -40,6 +46,10 @@ export function createClient(provider: ProviderName, config: ProviderConfigMap[P
       return new NoestProvider(config as NoestConfig);
     case 'ecom':
       return new EcomProvider(config as EcomConfig);
+    case 'elogistia':
+      return new ElogistiaProvider(config as ElogistiaConfig);
+    case 'mdm':
+      return new MdmProvider(config as MdmConfig);
     default:
       throw new ShippingError(
         'NOT_SUPPORTED',

@@ -1,0 +1,27 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v2/shipping/parcels/search",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "body": {
+      "filters": {
+        "storeId": [
+          "STR-TEST01"
+        ],
+        "search": "0550123456",
+        "updatedAt": {
+          "start": "2026-10-28T23:00:00.000Z"
+        }
+      },
+      "sortBy": {
+        "createdAt": "DESC"
+      },
+      "pagination": {
+        "page": 1,
+        "perPage": 2
+      }
+    }
+  }
+]

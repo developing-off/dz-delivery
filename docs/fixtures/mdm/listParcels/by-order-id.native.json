@@ -1,0 +1,39 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "pagination": {
+        "page": 1,
+        "perPage": 50,
+        "total": 2,
+        "totalPages": 1,
+        "hasMore": false,
+        "firstPage": 1,
+        "lastPage": 1,
+        "nextPage": null,
+        "prevPage": null
+      },
+      "list": [
+        {
+          "trackingId": "PRC-TEST05",
+          "orderId": "ORD-TEST05",
+          "status": "packaged",
+          "notes": "Ref: CMD-1005 — Appeler",
+          "store": {
+            "trackingId": "STR-TEST01"
+          }
+        },
+        {
+          "trackingId": "PRC-TEST06",
+          "orderId": "ORD-TEST06",
+          "status": "packaged",
+          "notes": "Ref: CMD-1006",
+          "store": {
+            "trackingId": "STR-TEST01"
+          }
+        }
+      ]
+    }
+  }
+]

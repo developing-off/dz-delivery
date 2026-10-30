@@ -1,0 +1,76 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "trackingId": "PRC-TEST01",
+      "orderId": "ORD-TEST01",
+      "type": "delivery",
+      "subType": "ecommerce",
+      "paymentMethod": "cash",
+      "client": {
+        "firstName": "Test",
+        "lastName": "Client",
+        "phone": "(+213)550123456",
+        "phone2": null
+      },
+      "destinationAddress": {
+        "cityId": "DZA161621",
+        "stateId": "DZA16",
+        "cityCode": "1621",
+        "cityName": "Bab Ezzouar",
+        "stateCode": "16",
+        "stateName": "Alger",
+        "streetAddress": "12 rue des Tests"
+      },
+      "status": "received",
+      "statusDate": "2026-10-29T19:06:13.145Z",
+      "isStopDesk": false,
+      "notes": "Ref: CMD-1001",
+      "store": {
+        "trackingId": "STR-TEST01",
+        "name": "Boutique test"
+      },
+      "statusHistory": [
+        {
+          "status": "received",
+          "notes": null,
+          "date": "2026-10-29T19:06:13.145Z",
+          "createdAt": "2026-10-29T19:21:30.631Z",
+          "meta": {
+            "companyStatus": "8"
+          },
+          "responsible": null
+        },
+        {
+          "status": "dispatched",
+          "notes": null,
+          "date": "2026-10-29T15:53:51.198Z",
+          "createdAt": "2026-10-29T15:53:51.198Z",
+          "meta": {
+            "warehouseName": "ORN 001 - MDM EXPRESS"
+          },
+          "responsible": null
+        },
+        {
+          "status": "packaged",
+          "notes": "",
+          "date": "2026-10-29T15:17:30.720Z",
+          "createdAt": "2026-10-29T15:17:30.720Z",
+          "meta": {
+            "outboundId": "OTB-TEST01"
+          },
+          "responsible": null
+        },
+        {
+          "status": "preparing",
+          "notes": "",
+          "date": "2026-10-29T13:49:32.171Z",
+          "createdAt": "2026-10-29T13:49:32.171Z",
+          "meta": null,
+          "responsible": null
+        }
+      ]
+    }
+  }
+]

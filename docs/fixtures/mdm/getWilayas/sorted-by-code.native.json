@@ -1,0 +1,60 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "pagination": {
+        "page": 1,
+        "perPage": 100,
+        "total": 3,
+        "totalPages": 1,
+        "hasMore": false,
+        "firstPage": 1,
+        "lastPage": 1,
+        "nextPage": null,
+        "prevPage": null
+      },
+      "list": [
+        {
+          "id": "DZA31",
+          "name": "Oran",
+          "nameAr": null,
+          "code": "31",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        },
+        {
+          "id": "DZA16",
+          "name": "Alger",
+          "nameAr": null,
+          "code": "16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        },
+        {
+          "id": "DZA01",
+          "name": "Adrar",
+          "nameAr": null,
+          "code": "1",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        }
+      ]
+    }
+  }
+]

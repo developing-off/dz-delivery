@@ -1,0 +1,13 @@
+[
+  {
+    "method": "GET",
+    "path": "/getMunicipalities/",
+    "query": {
+      "key": "test-api-key"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/insertCommande/"
+  }
+]

@@ -1,0 +1,73 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "pagination": {
+        "page": 1,
+        "perPage": 100,
+        "total": 3,
+        "totalPages": 1,
+        "hasMore": false,
+        "firstPage": 1,
+        "lastPage": 1,
+        "nextPage": null,
+        "prevPage": null
+      },
+      "list": [
+        {
+          "id": "DZA161601",
+          "name": "Alger Centre",
+          "nameAr": null,
+          "code": "1601",
+          "stateId": "DZA16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        },
+        {
+          "id": "DZA161621",
+          "name": "Bab Ezzouar",
+          "nameAr": null,
+          "code": "1621",
+          "stateId": "DZA16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        },
+        {
+          "id": "DZA161650",
+          "name": "Chéraga",
+          "nameAr": null,
+          "code": "1650",
+          "stateId": "DZA16",
+          "countryId": "DZA",
+          "hasStopDesk": true,
+          "companies": [
+            "noest",
+            "maystro",
+            "guepex"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "trackingId": "PRC-TEST01",
+      "orderId": "ORD-TEST01",
+      "posPaymentId": null,
+      "posPaymentLink": null
+    }
+  }
+]

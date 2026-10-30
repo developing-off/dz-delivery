@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 400,
+    "message": "Missing parameter: commune",
+    "details": [
+      {
+        "field": "communeId",
+        "message": "Missing parameter: commune"
+      }
+    ]
+  }
+}
