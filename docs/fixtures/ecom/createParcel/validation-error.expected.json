@@ -6,11 +6,11 @@
     "details": [
       {
         "field": "recipientName",
-        "message": "Field required"
+        "message": "String should have at most 60 characters"
       },
       {
-        "field": "wilayaId",
-        "message": "Input should be less than or equal to 58"
+        "field": "address",
+        "message": "String should have at most 100 characters"
       }
     ]
   }

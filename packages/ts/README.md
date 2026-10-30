@@ -4,7 +4,7 @@
 [![CI](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml/badge.svg)](https://github.com/developing-off/dz-delivery/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/developing-off/dz-delivery/blob/main/LICENSE)
 
-One API for Algerian delivery carriers — **Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express, …)**.
+One API for Algerian delivery carriers — **Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack (DHD, Anderson, World Express, …), NoEST, E-com Delivery**.
 Create parcels, track shipments, quote fees and list wilayas / communes / stop desks with the same code for every carrier.
 
 > 🇩🇿 SDK livraison Algérie : un seul code pour créer, suivre et tarifer vos colis chez tous les transporteurs.
@@ -13,6 +13,17 @@ Create parcels, track shipments, quote fees and list wilayas / communes / stop d
 Implements the shared contract in
 [`docs/CONTRACT.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md); carrier-specific mappings are in
 [`docs/PROVIDERS.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md).
+
+<p align="center">
+  <a href="https://developing-off.github.io/dz-delivery/yalidine/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/yalidine.png" alt="Yalidine" title="Yalidine" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
+  <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#noest"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
+  <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#ecom"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
+</p>
+
+<p align="center"><sub>Logos are trademarks of their respective owners, shown only to indicate which carriers the SDK works with. dz-delivery is an independent open-source project, not affiliated with or endorsed by these companies.</sub></p>
 
 | Provider | Key | Status |
 |----------|-----|--------|
@@ -104,7 +115,7 @@ Every provider implements `ShippingProvider`:
 | `getWilayas()` | `Promise<Location[]>` (cached per client) |
 | `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
 | `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (ZRExpress hubs: prefer wilaya-only; Yalidine centers; Maystro needs `communeId`; Ecotrack communes with a stop desk). Optional fields: `phone`, `openingHours`, `lat`, `lng`, `type`. |
-| `listParcels(query?)` | `Promise<ParcelListPage>` — paginated account parcels + unified status (ZRExpress via `parcels/search`; others `NOT_SUPPORTED` for now). No event history — use `track()`. |
+| `listParcels(query?)` | `Promise<ParcelListPage>` — paginated account parcels + unified status (ZRExpress via `parcels/search`, E-com via `GET /colis`; others `NOT_SUPPORTED` for now). No event history — use `track()`. |
 | `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
 | `healthCheck()` | `Promise<{ ok: true, provider, latencyMs }>` — authenticated connectivity probe (wilayas listing, cache bypassed) |
 

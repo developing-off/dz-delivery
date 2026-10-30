@@ -109,19 +109,37 @@ export function str(value: unknown): string | undefined {
   return String(value);
 }
 
+/** Compares two dates as instants (offsets respected); unparseable values compare as strings. */
+export function compareDates(a: string, b: string): number {
+  const ta = Date.parse(a);
+  const tb = Date.parse(b);
+  if (!Number.isNaN(ta) && !Number.isNaN(tb)) return ta - tb;
+  return a.localeCompare(b);
+}
+
 /** Sorts events by `at` ascending (oldest first); stable for equal/unparseable dates. */
 export function sortEventsAscending(events: TrackingEvent[]): TrackingEvent[] {
   return events
-    .map((e, i) => ({ e, i, t: Date.parse(e.at) }))
-    .sort((a, b) => {
-      if (!Number.isNaN(a.t) && !Number.isNaN(b.t) && a.t !== b.t) return a.t - b.t;
-      if (Number.isNaN(a.t) || Number.isNaN(b.t)) {
-        const cmp = a.e.at.localeCompare(b.e.at);
-        if (cmp !== 0) return cmp;
-      }
-      return a.i - b.i;
-    })
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => compareDates(a.e.at, b.e.at) || a.i - b.i)
     .map(({ e }) => e);
+}
+
+/** Validates a carrier base URL: credentials go in headers, so only `https:` is accepted. */
+export function requireHttps(baseUrl: string, provider: string): string {
+  let url: URL | undefined;
+  try {
+    url = new URL(baseUrl);
+  } catch {
+    url = undefined;
+  }
+  if (!url || url.protocol !== 'https:' || url.username || url.password) {
+    throw new ShippingError('VALIDATION_ERROR', `baseUrl must be an https URL, got "${baseUrl}"`, {
+      provider,
+      details: [{ field: 'baseUrl', message: 'baseUrl must be an https URL' }],
+    });
+  }
+  return baseUrl.replace(/\/+$/, '');
 }
 
 /** Adds `raw` to a model only when enabled. */

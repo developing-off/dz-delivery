@@ -1,6 +1,6 @@
 # Using dz-delivery in a PHP project
 
-A practical guide to calling Yalidine, ZRExpress, Maystro and Ecotrack (DHD, …) from your own PHP application through one API.
+A practical guide to calling Yalidine, ZRExpress, Maystro, Ecotrack (DHD, …), NoEST and E-com Delivery from your own PHP application through one API.
 For the full contract see [`CONTRACT.md`](./CONTRACT.md); for carrier-specific details see [`PROVIDERS.md`](./PROVIDERS.md).
 ZRExpress extras (bulk, labels, webhook verify): [`ZREXPRESS.md`](./ZREXPRESS.md).
 

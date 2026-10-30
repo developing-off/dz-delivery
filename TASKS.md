@@ -165,4 +165,4 @@ Semaine 4:  T4.* + T5.*              ← alignement + open source
 | 3 PHP | ✅ done (T3.8 Packagist plus tard ; mappings à confirmer via fixtures réelles) |
 | 4 Alignement | ⬜ todo |
 | 5 Communauté | ⬜ todo |
-| 6 Extensions | 🟡 T6.1 / T6.1b done (Maystro, Ecotrack) ; T6.1c Ecom backlog |
+| 6 Extensions | 🟡 T6.1 / T6.1b / T6.1c / T6.1d done (Maystro, Ecotrack, E-com, NoEST) ; T6.1e MDM backlog |

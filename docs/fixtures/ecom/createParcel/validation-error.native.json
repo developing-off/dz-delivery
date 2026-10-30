@@ -43,11 +43,11 @@
         "details": [
           {
             "champ": "0.nom_complet",
-            "raison": "Field required"
+            "raison": "String should have at most 60 characters"
           },
           {
-            "champ": "0.id_wilaya",
-            "raison": "Input should be less than or equal to 58"
+            "champ": "0.adresse",
+            "raison": "String should have at most 100 characters"
           }
         ]
       }

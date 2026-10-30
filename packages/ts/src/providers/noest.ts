@@ -32,12 +32,14 @@ import type {
   TrackResult,
 } from '../types';
 import {
+  compareDates,
   findLocationByName,
   findLocationLoosely,
   isRecord,
   isWilayaCode,
   normalizeAlgerianPhone,
   productDescription,
+  requireHttps,
   str,
   toIsoDate,
   validateParcelInput,
@@ -165,14 +167,15 @@ const FIELDS: Record<string, string> = {
   reference: 'orderId',
 };
 
-/** `errors` bag → details. Keys that are business error codes become `code`, not `field`. */
+/** `errors` bag → details. Business error codes become `code`; input fields keep `field` (`station_code`: both). */
 function collectDetails(errors: unknown): ShippingErrorDetail[] {
   const details: ShippingErrorDetail[] = [];
   if (!isRecord(errors)) return details;
   for (const [key, value] of Object.entries(errors)) {
     for (const m of Array.isArray(value) ? value : [value]) {
       if (typeof m !== 'string') continue;
-      details.push(BUSINESS_ERRORS[key] ? { message: m, code: key } : { field: FIELDS[key] ?? key, message: m });
+      const field = FIELDS[key] ?? (BUSINESS_ERRORS[key] ? undefined : key);
+      details.push({ ...(field ? { field } : {}), message: m, ...(BUSINESS_ERRORS[key] ? { code: key } : {}) });
     }
   }
   return details;
@@ -227,8 +230,13 @@ function isActive(row: Record<string, unknown>): boolean {
   return !hasValue(row.is_active) || Number(row.is_active) === 1;
 }
 
-/** `{ success: false, ... }` (HTTP 200) → ShippingError. */
-function businessError(body: Record<string, unknown>, httpStatus: number, fallback: string): ShippingError {
+/** `{ success: false, ... }` (HTTP 200) → ShippingError; `fallbackCode` when no known business code is present. */
+function businessError(
+  body: Record<string, unknown>,
+  httpStatus: number,
+  fallback: string,
+  fallbackCode: ShippingErrorCode = 'PROVIDER_ERROR',
+): ShippingError {
   const details = collectDetails(body.errors);
   const nativeCode =
     [body.code, body.error_code, body.error].map(str).find((v) => v && BUSINESS_ERRORS[v]) ??
@@ -239,7 +247,7 @@ function businessError(body: Record<string, unknown>, httpStatus: number, fallba
     (typeof body.error === 'string' ? body.error : '') ||
     fallback;
   if (details.length === 0) details.push(nativeCode ? { message, code: nativeCode } : { message });
-  return new ShippingError(nativeCode ? BUSINESS_ERRORS[nativeCode]! : 'PROVIDER_ERROR', message, {
+  return new ShippingError(nativeCode ? BUSINESS_ERRORS[nativeCode]! : fallbackCode, message, {
     httpStatus,
     details,
     raw: body,
@@ -268,7 +276,7 @@ export class NoestProvider implements ShippingProvider {
     this.autoValidate = config.autoValidate ?? false;
     this.http = new HttpClient({
       provider: PROVIDER,
-      baseUrl: (config.baseUrl?.trim() || NOEST_DEFAULT_BASE_URL).replace(/\/+$/, '').replace(/\/api\/public$/i, '') + API_PREFIX,
+      baseUrl: requireHttps(config.baseUrl?.trim() || NOEST_DEFAULT_BASE_URL, PROVIDER).replace(/\/api\/public$/i, '') + API_PREFIX,
       timeoutMs: config.timeoutMs,
       fetch: config.fetch,
       parseError: parseNoestError,
@@ -284,6 +292,11 @@ export class NoestProvider implements ShippingProvider {
     validateParcelInput(input, PROVIDER);
     const phone = normalizeAlgerianPhone(input.phone, 'local', PROVIDER, 'phone');
     const phone2 = input.phone2 ? normalizeAlgerianPhone(input.phone2, 'local', PROVIDER, 'phone2') : undefined;
+    const reference = input.orderId?.trim();
+    if (reference && reference.length < 5) {
+      const message = 'NOEST requires an orderId (reference) of at least 5 characters';
+      throw new ShippingError('VALIDATION_ERROR', message, { provider: PROVIDER, details: [{ field: 'orderId', message }] });
+    }
 
     const wilayaCode = await this.resolveWilayaCode(input.wilayaId ?? input.wilayaName!);
     const commune = await this.resolveCommune(wilayaCode, input.communeId ?? input.communeName!);
@@ -305,7 +318,7 @@ export class NoestProvider implements ShippingProvider {
     if (input.isStopDesk) body.station_code = String(input.stopDeskId).trim();
     if (input.weight !== undefined) body.poids = input.weight;
     if (input.remark?.trim()) body.remarque = input.remark.trim();
-    if (input.orderId?.trim()) body.reference = input.orderId.trim();
+    if (reference) body.reference = reference;
 
     const res = await this.send({ method: 'POST', path: '/create/order', body });
     const resBody = res.body;
@@ -353,7 +366,7 @@ export class NoestProvider implements ShippingProvider {
     const rows = entries(info.activity)
       .filter(isRecord)
       .map((a, i) => ({ a, i, at: toIsoDate(str(a.date) ?? '', ALGERIA_OFFSET) }))
-      .sort((x, y) => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.i - y.i));
+      .sort((x, y) => compareDates(x.at, y.at) || x.i - y.i);
 
     let current: ParcelStatus = 'pending';
     const events: TrackingEvent[] = rows.map(({ a, at }) => {
@@ -490,11 +503,12 @@ export class NoestProvider implements ShippingProvider {
       throw err;
     }
     if (isRecord(res.body) && res.body.success === false) {
-      throw new ShippingError(
+      // Business codes (`account_suspended`, ...) keep their mapping; anything else is a refusal.
+      throw businessError(
+        res.body,
+        res.status,
+        `NOEST order ${tracking} cannot be cancelled: it does not exist or has already been validated (only orders not yet validated can be deleted)`,
         'VALIDATION_ERROR',
-        str(res.body.message) ||
-          `NOEST order ${tracking} cannot be cancelled: it does not exist or has already been validated (only orders not yet validated can be deleted)`,
-        { httpStatus: res.status, raw: res.body, provider: PROVIDER },
       );
     }
   }

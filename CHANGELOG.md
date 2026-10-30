@@ -5,14 +5,18 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 
 ## [Unreleased]
 
-### Added
-- NoEST provider (`noest`) in TypeScript and PHP: create (optional `autoValidate`), track, fees, wilayas, communes, stop desks (stations), cancel (orders not validated yet) and health check. `listParcels` throws `NOT_SUPPORTED`. Built from the NOEST Public API docs v2.3 and checked against live responses. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#noest).
-- Spelling-tolerant commune matching for NoEST (`Bab Ezzouar` → NOEST's `Bab Azzouar`): exported helpers `looseNameKey` / `findLocationLoosely` (TS) and `Text::looseKey` / `Text::findLoosely` (PHP). Only used after the exact id / name lookup fails, and only for an unambiguous match.
+## [0.1.9] — 2026-10-30
 
+### Added
+- NoEST provider (`noest`) in TypeScript and PHP: create (optional `autoValidate`), track, fees, wilayas, communes, stop desks (stations), cancel (orders not validated yet) and health check. `listParcels` throws `NOT_SUPPORTED`. Built from the NOEST Public API docs v2.3 and checked against live responses (reads, unknown tracking, and the error bodies of create / validate / delete); creation itself could not be tried, the test account being suspended. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#noest).
+- Spelling-tolerant commune matching for NoEST (`Bab Ezzouar` → NOEST's `Bab Azzouar`): exported helpers `looseNameKey` / `findLocationLoosely` (TS) and `Text::looseKey` / `Text::findLoosely` (PHP). Only used after the exact id / name lookup fails, and only for an unambiguous match.
 - E-com Delivery provider (`ecom`, API v2) in TypeScript and PHP: create (optional `autoValidate` → `confirmee`), track, fees, wilayas, communes (deliverable only), stop desks, **`listParcels`** (`GET /colis`, `updatedSince` via `type_date=action`), cancel (parcels still "En Préparation") and health check. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#ecom). Checked live on a test account: reads, unvalidated create (home + stop desk) then delete, and error bodies; live-only states `Récupérer` (payment collected → `delivered`), `Retour Fournisseur` / `Retour Stock` (→ `returned`) are mapped, and history notes keep the previous status.
 
 ### Changed
 - Composer metadata: `authors` filled in.
+- READMEs: logos of the supported carriers; NoEST and E-com added to the package descriptions.
+- NoEST and E-com reject a non-`https` `baseUrl` (`VALIDATION_ERROR`), like Ecotrack.
+- `.env.example` and `docs/CONTRACT.md` list the NoEST and E-com credentials.
 
 ## [0.1.8] — 2026-10-24
 
@@ -58,6 +62,8 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 ### Added
 - First public release: unified `createParcel`, `track`, `getFees`, `getWilayas`, `getCommunes`, `getStopDesks`, `cancelParcel` for ZRExpress, Yalidine, Maystro and Ecotrack, in TypeScript and PHP.
 
+[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/developing-off/dz-delivery/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/developing-off/dz-delivery/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/developing-off/dz-delivery/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/developing-off/dz-delivery/compare/v0.1.5...v0.1.6

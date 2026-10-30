@@ -1,7 +1,7 @@
 {
-  "recipientName": "Test Client",
+  "recipientName": "Test Client avec un nom beaucoup trop long pour le formulaire E-com",
   "phone": "0550123456",
-  "address": "12 rue des Tests",
+  "address": "12 rue des Tests, résidence des Tests, bâtiment B, 3e étage, porte gauche, à côté de la pharmacie centrale",
   "wilayaId": 16,
   "communeName": "Alger Centre",
   "productName": "Casque audio",
