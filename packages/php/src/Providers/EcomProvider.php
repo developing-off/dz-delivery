@@ -171,9 +171,11 @@ final class EcomProvider implements ShippingProviderInterface
             $detail = ['message' => $message];
             if ($code !== null) {
                 $detail['code'] = $code;
-                if (isset(self::LINE_CODE_FIELDS[$code])) {
-                    $detail['field'] = self::LINE_CODE_FIELDS[$code];
-                }
+            }
+            // By code, else "stopdesk introuvable (...)" (code validation, seen live).
+            $field = self::LINE_CODE_FIELDS[$code ?? ''] ?? (preg_match('/stop\s*desk/i', $message) === 1 ? 'stopDeskId' : null);
+            if ($field !== null) {
+                $detail['field'] = $field;
             }
             throw new ShippingError(ShippingError::VALIDATION_ERROR, $message, 201, [$detail], $this->raw($body), self::NAME);
         }
@@ -214,12 +216,18 @@ final class EcomProvider implements ShippingProviderInterface
         }
         usort($rows, static fn (array $x, array $y) => strcmp($x['at'], $y['at']) ?: $x['i'] <=> $y['i']);
 
+        // Notes (Information, Type de Livraison, BIZ, no situation, ...) keep the previous status.
+        $current = ParcelStatus::PENDING;
         $events = [];
         foreach ($rows as ['step' => $step, 'at' => $at]) {
             $situation = self::text($step['situation'] ?? null) ?? '';
             $comment = self::text($step['commentaire'] ?? null);
-            $label = $comment !== null ? "$situation ($comment)" : $situation;
-            $events[] = new TrackingEvent(status: StatusMapper::ecom($situation), label: $label, at: $at, raw: $this->raw($step));
+            $label = $situation !== '' && $comment !== null ? "$situation ($comment)" : ($situation !== '' ? $situation : ($comment ?? ''));
+            $status = StatusMapper::ecom($situation);
+            if ($status !== ParcelStatus::UNKNOWN) {
+                $current = $status;
+            }
+            $events[] = new TrackingEvent(status: $current, label: $label, at: $at, raw: $this->raw($step));
         }
 
         return new TrackResult($this->toParcel($body, $tracking), $events);
@@ -341,7 +349,8 @@ final class EcomProvider implements ShippingProviderInterface
 
     /**
      * GET /colis (newest first, ≤ 100 per page). keyword filters by tracking number(s),
-     * updatedSince uses type_date=action from that day (Algeria time), orderId and status
+     * updatedSince uses type_date=action from that day (Algeria time): the last logistic move,
+     * so parcels not handled yet (no action) are left out. orderId and status
      * filter the fetched page client-side. E-com only reports total on page 1: further
      * pages report a lower bound.
      */

@@ -5,7 +5,9 @@
   "En livraison": "in_transit",
   "Sortir en livraison": "in_transit",
   "Dispatcher": "in_transit",
-  "Récupérer": "returned",
+  "Récupérer": "delivered",
+  "Retour Fournisseur": "returned",
+  "Retour Stock": "returned",
   "Attend Confirmation": "pending",
   "Commande Reporté": "pending",
   "Commande a Relancé": "pending",
@@ -32,5 +34,7 @@
   "EnCours": "unknown",
   "BIZ": "unknown",
   "Suivi par E-com": "unknown",
-  "something_new": "unknown"
+  "something_new": "unknown",
+  "Information": "unknown",
+  "Type de Livraison": "unknown"
 }

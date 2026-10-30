@@ -662,7 +662,7 @@ From `activity[].event_key`; when a row has no key, from the English `event` lab
 | `getWilayas` | `GET /wilayas` | `{ id, libelle, domicile, stopdesk }`; wilayas with neither mode are skipped. |
 | `getCommunes` | `GET /communes?id_wilaya=` | `{ id, commune, code_postal, livrable }`; only `livrable: true`. `Location.id` = E-com id, `code` = postal code. |
 | `getStopDesks` | `GET /stopdesks?id_wilaya=` | `StopDesk.id` = `code_stopdesk` (→ `stopDeskId`), first number of `tel_contact` → `phone`. `communeId` filters on the desk `commune`. |
-| `listParcels` | `GET /colis?page&limit` | ≤ 100 per page, newest first. `keyword` → `tracking` filter, `updatedSince` → `type_date=action&date_debut=<day, Algeria time>`, `orderId` / `status` filtered client-side. `total` only on page 1: later pages report a lower bound. |
+| `listParcels` | `GET /colis?page&limit` | ≤ 100 per page, newest first. `keyword` → `tracking` filter, `updatedSince` → `type_date=action&date_debut=<day, Algeria time>`, `orderId` / `status` filtered client-side. `total` only on page 1: later pages report a lower bound. Checked live: the *action* date is the last logistic move (dispatch, delivery, return, payment), so parcels never handled yet (still `En Préparation`, or only confirmed through the API) are **not** returned by `updatedSince`. |
 | `cancelParcel` | `DELETE /colis/{tracking}` | Soft delete, only "En Préparation". 409 → `VALIDATION_ERROR`, 404 → `NOT_FOUND`. |
 | `healthCheck` | `GET /wilayas` | (`GET /test` also exists and returns the account flags `stock`, `colis_0da`.) |
 
@@ -694,10 +694,12 @@ Labels of `GET /situations` and `GET /etats-logistiques` (case / accent-insensit
 | `En Préparation`, `Attend Confirmation`, `Commande Reporté`, `Commande a Relancé` | `pending` |
 | `En Traitement`, `Commande Confirmée` | `created` |
 | `Au Bureau`, `En livraison`, `Sortir en livraison`, `Dispatcher`, `Ne Réponde pas #1–3`, `En attente du client`, `Reporté*`, `Appel Tel`, `SMS Envoyé`, `WhatsApp OK` | `in_transit` |
-| `Livrée`, `Encaisser`, `Recouvert` | `delivered` |
-| `Annuler`, `Annuler x3`, `Retour de Dispatche`, `Retour Navette`, `Récupérer` | `returned` |
+| `Livrée`, `Encaisser`, `Recouvert`, `Récupérer` (payment collected) | `delivered` |
+| `Annuler`, `Annuler x3`, `Retour de Dispatche`, `Retour Navette`, `Retour Fournisseur`, `Retour Stock` | `returned` |
 | `Commande Annuler`, `Supprimée` | `cancelled` |
 | `EnCours` (default situation), `BIZ`, `Suivi par E-com` | `unknown` |
+
+`Récupérer`, `Retour Fournisseur` and `Retour Stock` are missing from the docs but returned live (`GET /etats-logistiques`); `Récupérer` follows `Livrée` → `Encaisser` with a payment reference. In `track()` events, history notes (`Information`, `Type de Colis`, `Type de Livraison`, `BIZ`, steps without a situation) keep the previous status.
 
 ### Errors
 
@@ -711,7 +713,7 @@ All global errors: `{ "error": { "code", "message", "details"? } }` (the opening
 | 422 `validation` with `details: [{ champ: "0.nom_complet", raison }]` | `VALIDATION_ERROR`, `details[].field` mapped to `ParcelInput` names |
 | 422 `total_insuffisant`, `trop_de_colis` | `VALIDATION_ERROR` (`total_insuffisant` → `field: price`) |
 | 429 `quota_depasse` | `RATE_LIMITED` |
-| 201 with `resultats[0].ok: false` | `VALIDATION_ERROR`, `details[0].code` = line `code` |
+| 201 with `resultats[0].ok: false` | `VALIDATION_ERROR`, `details[0].code` = line `code` (live: unknown desk → `code: validation`, `stopdesk introuvable (code=…, wilaya=…)` → `field: stopDeskId`) |
 
 ---
 

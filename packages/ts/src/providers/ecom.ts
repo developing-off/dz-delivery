@@ -62,7 +62,10 @@ const mapEcomKey = createStatusMapper({
     'En livraison': 'in_transit',
     'Sortir en livraison': 'in_transit',
     Dispatcher: 'in_transit',
-    Récupérer: 'returned',
+    // Seen live, not in the docs: payment collected after delivery, parcel back at the seller.
+    Récupérer: 'delivered',
+    'Retour Fournisseur': 'returned',
+    'Retour Stock': 'returned',
     // Situations (`situation`, GET /situations).
     'Attend Confirmation': 'pending',
     'Commande Reporté': 'pending',
@@ -93,7 +96,8 @@ const mapEcomKey = createStatusMapper({
 /**
  * E-com situation (`Livrée`, `Ne Réponde pas #1`, ...) or état logistique (`En Préparation`,
  * `Au Bureau`, ...) label → unified status. `EnCours` (the default situation), `BIZ` and
- * `Suivi par E-com` say nothing about the parcel and map to `unknown`.
+ * `Suivi par E-com` say nothing about the parcel and map to `unknown`, as do the history-only
+ * notes (`Information`, `Type de Colis`, `Type de Livraison`).
  * MUST stay identical to the PHP `StatusMapper::ecom` (enforced by docs/fixtures/ecom/statuses.json).
  */
 export function mapEcomStatus(native: string | null | undefined): ParcelStatus {
@@ -134,6 +138,12 @@ const FIELDS: Record<string, string> = {
 const LINE_CODE_FIELDS: Record<string, string> = {
   total_insuffisant: 'price',
 };
+
+/** Field of a rejected creation line: by `code`, else `stopdesk introuvable (...)` (code `validation`, seen live). */
+function lineField(code: string | undefined, message: string): string | undefined {
+  if (code && LINE_CODE_FIELDS[code]) return LINE_CODE_FIELDS[code];
+  return /stop\s*desk/i.test(message) ? 'stopDeskId' : undefined;
+}
 
 /** `0.nom_complet` → `recipientName`. */
 function fieldOf(champ: string): string {
@@ -265,10 +275,9 @@ export class EcomProvider implements ShippingProvider {
       const code = str(line.code);
       const message = str(line.erreur) ?? 'E-com rejected the parcel';
       const detail: ShippingErrorDetail = { message };
-      if (code) {
-        detail.code = code;
-        if (LINE_CODE_FIELDS[code]) detail.field = LINE_CODE_FIELDS[code];
-      }
+      if (code) detail.code = code;
+      const field = lineField(code, message);
+      if (field) detail.field = field;
       throw new ShippingError('VALIDATION_ERROR', message, { httpStatus: res.status, details: [detail], raw: res.body, provider: PROVIDER });
     }
     const tracking = str(line.tracking);
@@ -291,6 +300,8 @@ export class EcomProvider implements ShippingProvider {
     if (!isRecord(body)) {
       throw new ShippingError('PROVIDER_ERROR', 'Unexpected E-com parcel response', { provider: PROVIDER, raw: body });
     }
+    // Notes (`Information`, `Type de Livraison`, `BIZ`, no situation, ...) keep the previous status.
+    let current: ParcelStatus = 'pending';
     const events: TrackingEvent[] = (Array.isArray(body.historique) ? body.historique : [])
       .filter(isRecord)
       .map((step, i) => ({ step, i, at: toIsoDate(str(step.date) ?? '', ALGERIA_OFFSET) }))
@@ -298,8 +309,10 @@ export class EcomProvider implements ShippingProvider {
       .map(({ step, at }) => {
         const situation = str(step.situation) ?? '';
         const comment = str(step.commentaire);
-        const label = comment ? `${situation} (${comment})` : situation;
-        return withRaw({ status: mapEcomStatus(situation), label, at }, step, this.includeRaw);
+        const label = situation && comment ? `${situation} (${comment})` : situation || comment || '';
+        const status = mapEcomStatus(situation);
+        if (status !== 'unknown') current = status;
+        return withRaw({ status: current, label, at }, step, this.includeRaw);
       });
 
     return { parcel: this.toParcel(body, tracking), events };
@@ -395,7 +408,8 @@ export class EcomProvider implements ShippingProvider {
 
   /**
    * `GET /colis` (newest first, ≤ 100 per page). `keyword` filters by tracking number(s),
-   * `updatedSince` uses `type_date=action` from that day (Algeria time), `orderId` and
+   * `updatedSince` uses `type_date=action` from that day (Algeria time): the last logistic move,
+   * so parcels not handled yet (no action) are left out. `orderId` and
    * `status` filter the fetched page client-side. E-com only reports `total` on page 1:
    * further pages report a lower bound.
    */
