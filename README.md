@@ -1,4 +1,4 @@
-# dz-delivery — SDK livraison Algérie (Yalidine, ZRExpress, Maystro, Ecotrack)
+# dz-delivery — SDK livraison Algérie (Yalidine, ZRExpress, Maystro, Ecotrack, NoEST, E-com)
 
 [![npm](https://img.shields.io/npm/v/@dz-delivery/core?label=npm%20%40dz-delivery%2Fcore)](https://www.npmjs.com/package/@dz-delivery/core)
 [![Packagist](https://img.shields.io/packagist/v/dz-delivery/sdk?label=packagist%20dz-delivery%2Fsdk)](https://packagist.org/packages/dz-delivery/sdk)
@@ -23,6 +23,17 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 ```
 
 ## Supported carriers
+
+<p align="center">
+  <a href="https://developing-off.github.io/dz-delivery/yalidine/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/yalidine.png" alt="Yalidine" title="Yalidine" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
+  <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#noest"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
+  <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#ecom"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
+</p>
+
+<p align="center"><sub>Logos are trademarks of their respective owners, shown only to indicate which carriers the SDK works with. dz-delivery is an independent open-source project, not affiliated with or endorsed by these companies.</sub></p>
 
 | Carrier | Key | TypeScript | PHP | Guide |
 |---------|-----|------------|-----|-------|
