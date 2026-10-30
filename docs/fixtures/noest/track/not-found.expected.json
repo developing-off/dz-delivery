@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "httpStatus": 404,
+    "message": "Unknown NOEST tracking number: NST-TST-00000001"
+  }
+}

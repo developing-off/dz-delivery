@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/get/wilayas",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    }
+  }
+]

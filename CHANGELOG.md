@@ -3,6 +3,14 @@
 All notable changes to `@dz-delivery/core` (npm) and `dz-delivery/sdk` (Composer).
 The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, minor versions may change the API.
 
+## [Unreleased]
+
+### Added
+- NoEST provider (`noest`) in TypeScript and PHP: create (optional `autoValidate`), track, fees, wilayas, communes, stop desks (stations), cancel (orders not validated yet) and health check. `listParcels` throws `NOT_SUPPORTED`. Built from the NOEST Public API docs v2.3 and checked against live read-only responses. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#noest).
+
+### Changed
+- Composer metadata: `authors` filled in.
+
 ## [0.1.8] — 2026-10-24
 
 ### Changed

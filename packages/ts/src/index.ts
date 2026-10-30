@@ -43,6 +43,7 @@ export {
   resolveEcotrackBaseUrl,
   ECOTRACK_COURIERS,
 } from './providers/ecotrack';
+export { NoestProvider, mapNoestStatus, NOEST_DEFAULT_BASE_URL } from './providers/noest';
 export { PARCEL_STATUSES } from './types';
 export type {
   BaseClientConfig,
@@ -52,6 +53,7 @@ export type {
   HealthCheckResult,
   Location,
   MaystroConfig,
+  NoestConfig,
   Parcel,
   ParcelInput,
   ParcelListPage,

@@ -1,0 +1,12 @@
+{
+  "error": {
+    "code": "PROVIDER_ERROR",
+    "httpStatus": 200,
+    "message": "Colis déja existant",
+    "details": [
+      {
+        "message": "Colis déja existant"
+      }
+    ]
+  }
+}

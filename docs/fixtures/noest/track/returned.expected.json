@@ -1,0 +1,22 @@
+{
+  "result": {
+    "parcel": {
+      "id": "NST-TST-00000001",
+      "trackingNumber": "NST-TST-00000001",
+      "status": "returned",
+      "provider": "noest"
+    },
+    "events": [
+      {
+        "status": "created",
+        "label": "Validated",
+        "at": "2026-10-20T13:20:15+01:00"
+      },
+      {
+        "status": "returned",
+        "label": "Return dispatched to partner",
+        "at": "2026-10-25T10:18:12+01:00"
+      }
+    ]
+  }
+}

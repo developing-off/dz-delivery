@@ -252,11 +252,24 @@ export interface EcotrackConfig extends BaseClientConfig {
   autoValidate?: boolean;
 }
 
+export interface NoestConfig extends BaseClientConfig {
+  /** API token from the NOEST partner dashboard, sent as `Authorization: Bearer <apiToken>`. */
+  apiToken: string;
+  /** Partner GUID from the NOEST partner dashboard (`user_guid`). */
+  userGuid: string;
+  /**
+   * Validate each order right after creation (`POST valid/order`), so NOEST picks it up.
+   * Default `false`: orders wait as `pending` (still editable) until validated.
+   */
+  autoValidate?: boolean;
+}
+
 export interface ProviderConfigMap {
   zrexpress: ZRExpressConfig;
   yalidine: YalidineConfig;
   maystro: MaystroConfig;
   ecotrack: EcotrackConfig;
+  noest: NoestConfig;
 }
 
 export type ProviderName = keyof ProviderConfigMap;

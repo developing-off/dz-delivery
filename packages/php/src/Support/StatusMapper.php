@@ -144,6 +144,68 @@ final class StatusMapper
         'annule' => ParcelStatus::CANCELLED,
     ];
 
+    /** NOEST event keys + English event labels (normalized). Same table as the TS provider. */
+    private const NOEST_EXACT = [
+        'upload' => ParcelStatus::PENDING,
+        'customervalidation' => ParcelStatus::CREATED,
+        'validationcollectcolis' => ParcelStatus::IN_TRANSIT,
+        'validationreceptionadmin' => ParcelStatus::IN_TRANSIT,
+        'validationreception' => ParcelStatus::IN_TRANSIT,
+        'fdractivated' => ParcelStatus::IN_TRANSIT,
+        'senttoredispatch' => ParcelStatus::IN_TRANSIT,
+        'nouveltentativeaskedbycustomer' => ParcelStatus::IN_TRANSIT,
+        'miseajour' => ParcelStatus::IN_TRANSIT,
+        'colissuspendu' => ParcelStatus::IN_TRANSIT,
+        'returnredispatchedtolivraison' => ParcelStatus::IN_TRANSIT,
+        'pickedup' => ParcelStatus::IN_TRANSIT,
+        'validreturnpickup' => ParcelStatus::IN_TRANSIT,
+        'livre' => ParcelStatus::DELIVERED,
+        'livred' => ParcelStatus::DELIVERED,
+        'verssementadmincust' => ParcelStatus::DELIVERED,
+        'verssementadmincustcanceled' => ParcelStatus::DELIVERED,
+        'verssementhubcustcanceled' => ParcelStatus::DELIVERED,
+        'validationreceptioncashbypartener' => ParcelStatus::DELIVERED,
+        'echangevalide' => ParcelStatus::DELIVERED,
+        'echangevalidbyhub' => ParcelStatus::DELIVERED,
+        'pickuppickedrecu' => ParcelStatus::DELIVERED,
+        'colispickuptransmittopartner' => ParcelStatus::DELIVERED,
+        'returnaskedbycustomer' => ParcelStatus::RETURNED,
+        'returnaskedbyhub' => ParcelStatus::RETURNED,
+        'retourdispatchedtopartenaires' => ParcelStatus::RETURNED,
+        'returndispatchedtopartenaire' => ParcelStatus::RETURNED,
+        'colisretourtransmittopartner' => ParcelStatus::RETURNED,
+        'annulationdispatchretour' => ParcelStatus::RETURNED,
+        'cancelreturndispatchedtopartenaire' => ParcelStatus::RETURNED,
+        'livraisonechouerecu' => ParcelStatus::RETURNED,
+        'returnvalidatedbypartener' => ParcelStatus::RETURNED,
+        'returndispatchedtowarehouse' => ParcelStatus::RETURNED,
+        'asktodeletebyadmin' => ParcelStatus::CANCELLED,
+        'asktodeletebyhub' => ParcelStatus::CANCELLED,
+        'uploadedtosystem' => ParcelStatus::PENDING,
+        'validated' => ParcelStatus::CREATED,
+        'packagepickedup' => ParcelStatus::IN_TRANSIT,
+        'receptionvalidated' => ParcelStatus::IN_TRANSIT,
+        'pickedupbydriver' => ParcelStatus::IN_TRANSIT,
+        'outfordelivery' => ParcelStatus::IN_TRANSIT,
+        'sentforredispatch' => ParcelStatus::IN_TRANSIT,
+        'newattemptrequestedbyseller' => ParcelStatus::IN_TRANSIT,
+        'deliveryattempt' => ParcelStatus::IN_TRANSIT,
+        'suspended' => ParcelStatus::IN_TRANSIT,
+        'returnputbackfordelivery' => ParcelStatus::IN_TRANSIT,
+        'delivered' => ParcelStatus::DELIVERED,
+        'amounttransmittedtopartner' => ParcelStatus::DELIVERED,
+        'amountreceivedbypartner' => ParcelStatus::DELIVERED,
+        'exchangevalidated' => ParcelStatus::DELIVERED,
+        'exchangevalidatedbyhub' => ParcelStatus::DELIVERED,
+        'returnrequestedbypartner' => ParcelStatus::RETURNED,
+        'returnintransit' => ParcelStatus::RETURNED,
+        'returndispatchedtopartner' => ParcelStatus::RETURNED,
+        'returnpackagetransmittedtopartner' => ParcelStatus::RETURNED,
+        'returnreceivedbypartner' => ParcelStatus::RETURNED,
+        'returnvalidatedbypartner' => ParcelStatus::RETURNED,
+        'deletionrequested' => ParcelStatus::CANCELLED,
+    ];
+
     public static function zrexpress(?string $native): string
     {
         $key = Text::key((string) $native);
@@ -210,6 +272,15 @@ final class StatusMapper
         return self::ECOTRACK_EXACT[Text::key((string) $native)] ?? ParcelStatus::UNKNOWN;
     }
 
+    /**
+     * NOEST event key (`livred`, `return_asked_by_hub`, ...) or English event label
+     * (`Delivered`, ...) → unified status. Remark events (`edit_price`, ...) map to `unknown`.
+     */
+    public static function noest(?string $native): string
+    {
+        return self::NOEST_EXACT[Text::key((string) $native)] ?? ParcelStatus::UNKNOWN;
+    }
+
     public static function map(string $provider, ?string $native): string
     {
         return match ($provider) {
@@ -217,6 +288,7 @@ final class StatusMapper
             'yalidine' => self::yalidine($native),
             'maystro' => self::maystro($native),
             'ecotrack' => self::ecotrack($native),
+            'noest' => self::noest($native),
             default => ParcelStatus::UNKNOWN,
         };
     }

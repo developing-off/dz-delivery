@@ -1,0 +1,10 @@
+{
+  "recipientName": "Test Client",
+  "phone": "0550123456",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "Alger Centre",
+  "productName": "Mug",
+  "price": 1500,
+  "orderId": "ORD-1001"
+}

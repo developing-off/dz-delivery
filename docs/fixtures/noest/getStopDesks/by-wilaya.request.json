@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/desks",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    }
+  }
+]

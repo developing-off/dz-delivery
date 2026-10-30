@@ -1,0 +1,36 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 554,
+        "nom": "Alger Centre",
+        "wilaya_id": 16,
+        "code_postal": "16001",
+        "is_active": 1
+      },
+      {
+        "id": 574,
+        "nom": "Bab Azzouar",
+        "wilaya_id": 16,
+        "code_postal": "16021",
+        "is_active": 1
+      },
+      {
+        "id": 583,
+        "nom": "Bordj El Kiffan",
+        "wilaya_id": 16,
+        "code_postal": "16030",
+        "is_active": 1
+      },
+      {
+        "id": 600,
+        "nom": "Commune Test Inactive",
+        "wilaya_id": 16,
+        "code_postal": "16099",
+        "is_active": 0
+      }
+    ]
+  }
+]

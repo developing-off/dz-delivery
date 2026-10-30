@@ -70,6 +70,12 @@ $dhd = ClientFactory::create('ecotrack', [
     'courier' => 'dhd',                     // or 'baseUrl' => 'https://<tenant>.ecotrack.dz'
     // 'autoValidate' => true,              // hand each order to the courier right after creation
 ]);
+
+$noest = ClientFactory::create('noest', [
+    'apiToken' => getenv('NOEST_API_TOKEN'),  // sent as Authorization: Bearer <apiToken>
+    'userGuid' => getenv('NOEST_USER_GUID'),  // partner GUID, sent as user_guid
+    // 'autoValidate' => true,                // hand each order to NOEST right after creation
+]);
 ```
 
 | Carrier | Required keys | Notes |
@@ -78,6 +84,7 @@ $dhd = ClientFactory::create('ecotrack', [
 | `yalidine` | `apiId`, `apiToken` | Plus `fromWilayaId` (code `1`–`58`) **or** `fromWilayaName`: your origin wilaya, needed by `createParcel` and `getFees`. GuepEx (same API): set `'baseUrl' => YalidineProvider::GUEPEX_DEFAULT_BASE_URL`. |
 | `maystro` | `apiToken` | Store token. A value already starting with `Token ` is sent unchanged. |
 | `ecotrack` | `token` + exactly one of `courier` / `baseUrl` | One provider for every courier on the Ecotrack platform. `courier`: `dhd`, `anderson`, `worldexpress`, `48hrexpress`, `ecorapid`, `conexlog`, `msmgo`, `packers`, `rocketdelivery` (plus alias `andersondelivery`). Any other tenant: `baseUrl` (`https` only). `autoValidate` (default `false`): without it, orders stay `pending` until you validate them in the courier's dashboard. |
+| `noest` | `apiToken`, `userGuid` | Both from the NOEST partner dashboard. `autoValidate` (default `false`): without it, orders stay `pending` (still editable) until validated. Commune names follow NOEST spelling (`Bab Azzouar`): use `getCommunes()` ids. |
 
 Missing credentials throw `ShippingError` with code `AUTH_FAILED` when the client is created.
 
@@ -90,7 +97,7 @@ Common options (all carriers):
 | `includeRaw` | `bool` | `true` | Attach the native carrier payload as `->raw` on returned models. Set `false` to keep objects small. |
 | `handler` | `callable` | — | Guzzle handler/HandlerStack, mainly for tests (see [§8](#8-testing-your-integration)). |
 
-`ClientFactory::providers()` returns the supported keys (`['zrexpress', 'yalidine', 'maystro', 'ecotrack']`). An unknown key throws `NOT_SUPPORTED`.
+`ClientFactory::providers()` returns the supported keys (`['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest']`). An unknown key throws `NOT_SUPPORTED`.
 
 Every client implements `DzDelivery\Contracts\ShippingProviderInterface`, so you can type-hint against the interface and swap carriers.
 
@@ -102,16 +109,16 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 
 ### Which methods each carrier supports
 
-| Method | ZRExpress | Yalidine | Maystro | Ecotrack |
-|--------|-----------|----------|---------|----------|
-| `createParcel` | yes | yes | yes | yes (`pending` until validated, see `autoValidate`) |
-| `track` | yes | yes | `NOT_SUPPORTED` (use [webhooks](#7-maystro-webhooks)) | yes |
-| `getFees` | yes | yes | yes | yes (per wilaya) |
-| `getWilayas` / `getCommunes` | yes | yes | yes | yes |
-| `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) |
-| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` (webhooks) | `NOT_SUPPORTED` (soon) |
-| `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) |
-| `healthCheck` | yes | yes | yes | yes |
+| Method | ZRExpress | Yalidine | Maystro | Ecotrack | NoEST |
+|--------|-----------|----------|---------|----------|-------|
+| `createParcel` | yes | yes | yes | yes (`pending` until validated, see `autoValidate`) | yes (same, `autoValidate`) |
+| `track` | yes | yes | `NOT_SUPPORTED` (use [webhooks](#7-maystro-webhooks)) | yes | yes |
+| `getFees` | yes | yes | yes | yes (per wilaya) | yes (per wilaya) |
+| `getWilayas` / `getCommunes` | yes | yes | yes | yes | yes |
+| `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) | yes (stations) |
+| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` (webhooks) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` |
+| `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) | yes (only orders not validated yet) |
+| `healthCheck` | yes | yes | yes | yes | yes |
 
 ### 3.1 `createParcel(ParcelInput|array $input): Parcel`
 

@@ -1,0 +1,38 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "tarifs": {
+        "return": {
+          "16": {
+            "tarif_id": 62,
+            "wilaya_id": 16,
+            "tarif": "300",
+            "tarif_stopdesk": "250"
+          },
+          "5": {
+            "tarif_id": 62,
+            "wilaya_id": 5,
+            "tarif": "300",
+            "tarif_stopdesk": "300"
+          }
+        },
+        "delivery": {
+          "16": {
+            "tarif_id": 829,
+            "wilaya_id": 16,
+            "tarif": "700",
+            "tarif_stopdesk": "450"
+          },
+          "5": {
+            "tarif_id": 829,
+            "wilaya_id": 5,
+            "tarif": "800",
+            "tarif_stopdesk": "500"
+          }
+        }
+      }
+    }
+  }
+]

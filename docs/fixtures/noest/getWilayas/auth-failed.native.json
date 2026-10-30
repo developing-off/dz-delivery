@@ -1,0 +1,9 @@
+[
+  {
+    "status": 401,
+    "headers": {},
+    "body": {
+      "error": "Unauthenticated."
+    }
+  }
+]

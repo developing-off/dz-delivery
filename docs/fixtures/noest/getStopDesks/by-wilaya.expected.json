@@ -1,0 +1,28 @@
+{
+  "result": [
+    {
+      "id": "16A",
+      "name": "Alger « Bir mourad Rais »",
+      "address": "Adresse test 16A",
+      "wilayaId": "16",
+      "phone": "0550000161",
+      "openingHours": "Sam–Jeu, 8h30–18h00"
+    },
+    {
+      "id": "16B",
+      "name": "Alger « Bab Ezzouar »",
+      "address": "Adresse test 16B",
+      "wilayaId": "16",
+      "phone": "0550000162",
+      "openingHours": "Sam–Jeu, 8h30–18h00"
+    },
+    {
+      "id": "16C",
+      "name": "Alger « Chéraga »",
+      "address": "Adresse test 16C",
+      "wilayaId": "16",
+      "phone": "0550000163",
+      "openingHours": "Sam–Jeu, 8h30–18h00"
+    }
+  ]
+}

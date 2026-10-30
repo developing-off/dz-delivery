@@ -9,6 +9,7 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 | Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
 | Maystro Delivery | `maystro` | built from the public API docs (2026-10-20), implemented in PHP and TS; `track` / `cancelParcel` not supported |
 | Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
+| NoEST | `noest` | NOEST Public API docs v2.3 + live read-only checks (2026-10-30), implemented in PHP and TS; `listParcels` not supported |
 | Ecom (ecom-dz.net) | `ecom` | **out of MVP / backlog** — see [below](#ecom-out-of-mvp--backlog); legacy app company-id `19` (`Delivery/EcomDelivery.php`) |
 
 ---
@@ -417,7 +418,8 @@ Cross-check of live tariff sources in Confirmation-api vs this SDK (orders / cre
 | **ZRExpress** | Tariffs from **DB only** in Confirmation; the guide has **no** fees HTTP endpoint | SDK uses live `GET /api/v1/delivery-pricing/rates/{toTerritoryId}` ✓ |
 | **Ecotrack** (DHD, Anderson, …) | `GET /api/v1/get/fees` | Already in SDK ✓ |
 | **Maystro** | `GET https://backend.maystro-delivery.com/api/stores/delivery_price/?commune=&delivery_type=&express=` | SDK primary path (this change); orders-management options/prices kept as fallback ✓ |
-| **NoEST / MDM / Ecom** | — | Still backlog (see below) |
+| **NoEST** | `GET https://app.noest-dz.com/api/public/fees` | SDK uses the live grid ✓ |
+| **MDM / Ecom** | — | Still backlog (see below) |
 
 ---
 
@@ -535,6 +537,89 @@ Only the stable **keys** are mapped (activity keys and order status enum keys); 
 - Response shapes vary slightly between tenants (lists vs index-keyed objects, `data` wrappers); the provider accepts both.
 - Legacy app price tables (`AndersonPriceController`, `DhdPriceController`) are DB-backed, not Ecotrack `get/fees` — the SDK uses the live API.
 - **Not Ecotrack (do not use this provider):** NoEST (`app.noest-dz.com`, different auth/paths), MDM (JWT / `x-api-key`), Elogistia (`api.elogistia.com`).
+
+---
+
+## NoEST
+
+> Built from the **NOEST Public API documentation v2.3** (May 2026, PDF given to partners, not committed) and checked against live **read-only** responses (2026-10-30: wilayas, communes, desks, fees, unknown tracking). Order creation, validation and deletion follow the documentation; confirm with a real order before relying on them.
+
+- Base URL: `https://app.noest-dz.com/api/public` (paths below are relative to it).
+- Rate limit: 60 requests / minute; server timeout 30 s.
+
+### Auth
+
+| Option | Value | Notes |
+|--------|-------|-------|
+| `apiToken` | API token from the NOEST partner dashboard | Sent as `Authorization: Bearer <apiToken>` (a `Bearer ` prefix in the value is stripped). Without it: HTTP 401 `{"error":"Unauthenticated."}`. |
+| `userGuid` | partner GUID from the same dashboard | Sent as `user_guid` in every POST body. GET endpoints do not need it. |
+| `autoValidate` | `false` (default) | `true` → `POST valid/order` right after creation. Unvalidated orders stay editable and deletable but are not picked up. |
+
+> The legacy app (`Confirmation-api`) sent `api_token` in the JSON body, even on GETs. The Bearer header from the v2.3 docs works on every endpoint tested; the SDK uses it.
+
+### Method mapping
+
+| Unified method | Native endpoint | Notes |
+|----------------|-----------------|-------|
+| `createParcel` | `POST create/order` (JSON body) | Commune resolved first through `get/communes/{wilaya}` (NOEST spelling). Response `{ success, tracking, reference, regional_hub_name, wilaya_rank }` → `trackingNumber`; status `pending` (or `created` with `autoValidate`). |
+| `track` | `POST get/trackings/info` `{ user_guid, trackings: [t] }` | Response keyed by tracking: `{ OrderInfo, activity: [...], deliveryAttempts }`. Unknown tracking → HTTP **404** `{"message":"Trackings non trouvés"}` → `NOT_FOUND`. |
+| `getFees` | `GET fees` | `tarifs.delivery` / `tarifs.return`, keyed by wilaya: `tarif` (home), `tarif_stopdesk`. No row (wilayas 50, 54 at test time) → `NOT_FOUND`. Not commune- or weight-dependent. |
+| `getWilayas` | `GET get/wilayas` | `[{ code, nom, is_active }]`; inactive wilayas are skipped. |
+| `getCommunes` | `GET get/communes/{wilaya_id}` | `[{ id, nom, wilaya_id, code_postal, is_active }]`; `Location.id` = `code` = `code_postal`. |
+| `getStopDesks` | `GET desks` | All stations keyed `"16B"`: `{ code, name, address, commune, phones, horaires, map, email }`. Filtered by wilaya (digits of `code`); with `communeId`, by `commune` (same spelling as `get/communes`). `StopDesk.id` = `code` → `station_code`. |
+| `listParcels` | — | **`NOT_SUPPORTED`**: no list endpoint. |
+| `cancelParcel` | `POST delete/order` `{ user_guid, tracking }` | Only orders **not validated** yet; `{ success: false }` → `VALIDATION_ERROR`. After validation use the NOEST dashboard (`ask/return` is not mapped). |
+| `healthCheck` | `GET get/wilayas` | |
+
+Not mapped yet (documented by NOEST): bulk create / validate (`create/orders`, `valid/orders`, ≤ 100), `update/order`, `update/order/before/expedition`, `add/maj` (remark), `ask/new-tentative`, `ask/return`, `get/order/label` (PDF).
+
+### Field mapping (`createParcel`)
+
+| ParcelInput | NOEST | Notes |
+|-------------|-------|-------|
+| `recipientName` | `client` | ≤ 255 chars |
+| `phone` / `phone2` | `phone` / `phone_2` | Local format `0XXXXXXXXX` (9–10 digits) |
+| `address` | `adresse` | ≤ 255 chars |
+| `wilayaId` / `wilayaName` | `wilaya_id` | Official code `1`–`58` |
+| `communeId` / `communeName` | `commune` | NOEST name (e.g. `Bab Azzouar`, not `Bab Ezzouar`) |
+| `price` | `montant` | Amount collected, delivery included |
+| `productName` / `productList` | `produit` | `"Mug x2, T-shirt"` |
+| — | `type_id` | Always `1` (delivery). Exchange (`2`) and pick-up (`3`) are not exposed. |
+| `isStopDesk` / `stopDeskId` | `stop_desk` / `station_code` | `station_code` must belong to the destination wilaya |
+| `weight` | `poids` | Sent only when set |
+| `remark` | `remarque` | ≤ 255 chars |
+| `orderId` | `reference` | ≥ 5 chars; NOEST rejects duplicates (`duplicate_order`) |
+
+### Status mapping
+
+From `activity[].event_key`; when a row has no key, from the English `event` label (`Delivered`, …). French display labels (`Validé`) are not mapped. Remark events (`edited_informations`, `edit_price`, `edit_wilaya`, `extra_fee`) keep the previous status. Full table: [`fixtures/noest/statuses.json`](./fixtures/noest/statuses.json).
+
+| Native | Unified |
+|--------|---------|
+| `upload` | `pending` |
+| `customer_validation` | `created` |
+| `validation_collect_colis`, `validation_reception_admin`, `validation_reception`, `fdr_activated`, `sent_to_redispatch`, `nouvel_tentative_asked_by_customer`, `mise_a_jour`, `colis_suspendu`, `return_redispatched_to_livraison`, `pickedup`, `valid_return_pickup` | `in_transit` |
+| `livre`, `livred`, `verssement_*`, `validation_reception_cash_by_partener`, `echange_valide`, `echange_valid_by_hub`, `pickup_picked_recu`, `colis_pickup_transmit_to_partner` | `delivered` |
+| `return_*`, `retour_dispatched_to_partenaires`, `colis_retour_transmit_to_partner`, `annulation_dispatch_retour`, `cancel_return_dispatched_to_partenaire`, `livraison_echoue_recu` (except `return_redispatched_to_livraison`) | `returned` |
+| `ask_to_delete_by_admin`, `ask_to_delete_by_hub` | `cancelled` |
+
+### Errors
+
+| NOEST | Unified |
+|-------|---------|
+| HTTP 401 `{"error":"Unauthenticated."}` | `AUTH_FAILED` |
+| HTTP 422 `{ message, errors: { field: [..] } }` | `VALIDATION_ERROR`, `details[].field` mapped to `ParcelInput` names (`commune` → `communeId`, `client` → `recipientName`, …) |
+| HTTP 200 `{ success: false, message }` | `PROVIDER_ERROR` (or the code below when the body carries a known error code) |
+| `account_suspended` | `AUTH_FAILED` |
+| `duplicate_order`, `inactive_commune`, `zip_code`, `max_amount_exceeded`, `stopdesk_disabled`, `station_code`, `out_of_stock`, `already_validated`, … | `VALIDATION_ERROR` |
+| HTTP 404 on `get/trackings/info` | `NOT_FOUND` |
+| HTTP 429 | `RATE_LIMITED` |
+
+### Limitations and assumptions
+
+- No sandbox: fixtures for `createParcel`, `cancelParcel` and `valid/order` replay the documented examples; the business-error body shape (`{ success: false, message }`) is assumed. Reports with anonymized real responses are welcome.
+- The documented tracking examples mostly omit `event_key`; the SDK falls back to the English label. Real accounts may return French labels, mapped to `unknown` until fixtures exist.
+- `zip_code` (postal code instead of wilaya + commune), `stock` / `quantite`, `remboursement`, `shop_name` and `station_expedition` are not exposed.
 
 ---
 

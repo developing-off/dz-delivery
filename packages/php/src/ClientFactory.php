@@ -9,6 +9,7 @@ use DzDelivery\Errors\ShippingError;
 use DzDelivery\Models\ClientOptions;
 use DzDelivery\Providers\EcotrackProvider;
 use DzDelivery\Providers\MaystroProvider;
+use DzDelivery\Providers\NoestProvider;
 use DzDelivery\Providers\YalidineProvider;
 use DzDelivery\Providers\ZRExpressProvider;
 
@@ -20,6 +21,7 @@ final class ClientFactory
         YalidineProvider::NAME => YalidineProvider::class,
         MaystroProvider::NAME => MaystroProvider::class,
         EcotrackProvider::NAME => EcotrackProvider::class,
+        NoestProvider::NAME => NoestProvider::class,
     ];
 
     /**
@@ -27,6 +29,7 @@ final class ClientFactory
      * ClientFactory::create('yalidine', ['apiId' => ..., 'apiToken' => ..., 'fromWilayaId' => 16]);
      * ClientFactory::create('maystro', ['apiToken' => ...]);
      * ClientFactory::create('ecotrack', ['token' => ..., 'courier' => 'dhd']); // or 'baseUrl' => 'https://x.ecotrack.dz'
+     * ClientFactory::create('noest', ['apiToken' => ..., 'userGuid' => ...]);
      *
      * @param array<string, mixed>|ClientOptions $options Credentials + common options
      *        (baseUrl, timeoutMs, includeRaw).

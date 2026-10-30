@@ -1,0 +1,47 @@
+{
+  "result": {
+    "parcel": {
+      "id": "NST-TST-00000001",
+      "trackingNumber": "NST-TST-00000001",
+      "status": "delivered",
+      "provider": "noest"
+    },
+    "events": [
+      {
+        "status": "pending",
+        "label": "Uploaded to system",
+        "at": "2026-10-20T10:00:00+01:00"
+      },
+      {
+        "status": "created",
+        "label": "Validated",
+        "at": "2026-10-20T10:05:00+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Package Picked Up",
+        "at": "2026-10-20T15:30:00+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Price modified",
+        "at": "2026-10-21T08:00:00+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Out for delivery",
+        "at": "2026-10-21T09:10:00+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Delivery attempt",
+        "at": "2026-10-21T11:45:00+01:00"
+      },
+      {
+        "status": "delivered",
+        "label": "Delivered",
+        "at": "2026-10-21T16:20:00+01:00"
+      }
+    ]
+  }
+}

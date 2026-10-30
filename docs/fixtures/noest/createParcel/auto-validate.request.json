@@ -1,0 +1,24 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/get/communes/16"
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/create/order",
+    "body": {
+      "commune": "Alger Centre"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/valid/order",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    },
+    "body": {
+      "user_guid": "TESTGUID",
+      "tracking": "NST-TST-00000003"
+    }
+  }
+]

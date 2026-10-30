@@ -1,0 +1,17 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/get/communes/16"
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/create/order",
+    "body": {
+      "commune": "Bab Azzouar",
+      "stop_desk": 1,
+      "station_code": "16B",
+      "montant": 2000,
+      "produit": "Mug"
+    }
+  }
+]

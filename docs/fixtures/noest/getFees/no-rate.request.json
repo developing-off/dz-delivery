@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/fees",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    }
+  }
+]

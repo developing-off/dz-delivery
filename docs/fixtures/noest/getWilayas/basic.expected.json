@@ -1,0 +1,19 @@
+{
+  "result": [
+    {
+      "id": "1",
+      "name": "Adrar",
+      "code": "1"
+    },
+    {
+      "id": "5",
+      "name": "Batna",
+      "code": "5"
+    },
+    {
+      "id": "16",
+      "name": "Alger",
+      "code": "16"
+    }
+  ]
+}
