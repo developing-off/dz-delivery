@@ -264,12 +264,25 @@ export interface NoestConfig extends BaseClientConfig {
   autoValidate?: boolean;
 }
 
+export interface EcomConfig extends BaseClientConfig {
+  /** `KEY` from the E-com developer page, sent as `X-API-Key`. */
+  apiKey: string;
+  /** `Token` from the same page (regenerable), sent as `X-API-Token`. */
+  apiToken: string;
+  /**
+   * Create parcels already confirmed (`confirmee: 1`, "En Traitement"), so E-com picks them up.
+   * Default `false`: parcels stay `pending` ("En Préparation", still editable) until confirmed.
+   */
+  autoValidate?: boolean;
+}
+
 export interface ProviderConfigMap {
   zrexpress: ZRExpressConfig;
   yalidine: YalidineConfig;
   maystro: MaystroConfig;
   ecotrack: EcotrackConfig;
   noest: NoestConfig;
+  ecom: EcomConfig;
 }
 
 export type ProviderName = keyof ProviderConfigMap;

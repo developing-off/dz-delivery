@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "AUTH_FAILED",
+    "httpStatus": 401,
+    "message": "Clé ou token API invalide, ou accès désactivé",
+    "details": [
+      {
+        "message": "Clé ou token API invalide, ou accès désactivé",
+        "code": "api_non_autorise"
+      }
+    ]
+  }
+}

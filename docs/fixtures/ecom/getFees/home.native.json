@@ -1,0 +1,25 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "id_fournisseur": 8,
+      "service": 35,
+      "emballage": 65,
+      "wilayas": [
+        {
+          "wilaya": 1,
+          "domicile": 1100,
+          "stopdesk": 750,
+          "annuler": 0
+        },
+        {
+          "wilaya": 16,
+          "domicile": 450,
+          "stopdesk": 200,
+          "annuler": 100
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/colis",
+    "query": {
+      "page": 2,
+      "limit": 50,
+      "type_date": "action",
+      "date_debut": "2026-10-30"
+    }
+  }
+]

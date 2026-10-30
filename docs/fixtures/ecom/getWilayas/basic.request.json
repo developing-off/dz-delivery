@@ -1,0 +1,10 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/wilayas",
+    "headers": {
+      "X-API-Key": "test-api-key",
+      "X-API-Token": "test-api-token"
+    }
+  }
+]

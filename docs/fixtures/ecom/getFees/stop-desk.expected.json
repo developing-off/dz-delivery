@@ -1,0 +1,8 @@
+{
+  "result": {
+    "deliveryFee": 200,
+    "returnFee": 100,
+    "stopDeskFee": 200,
+    "currency": "DZD"
+  }
+}

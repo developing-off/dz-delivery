@@ -22,6 +22,7 @@ Implements the shared contract in
 | Maystro Delivery | `maystro` | createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
 | Ecotrack (DHD, Anderson, World Express, …) | `ecotrack` | contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
 | NoEST | `noest` | contrat unifié — `listParcels` throws `NOT_SUPPORTED` (no list endpoint) |
+| E-com Delivery | `ecom` | contrat unifié, including `listParcels` |
 
 Requires PHP ≥ 8.2 and Guzzle 7.
 

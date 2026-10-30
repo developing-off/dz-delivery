@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "httpStatus": 429,
+    "message": "Quota dépassé"
+  }
+}

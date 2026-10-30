@@ -1,0 +1,18 @@
+{
+  "result": [
+    {
+      "id": "16B",
+      "name": "Bab Ezzouar",
+      "address": "Adresse test 16B",
+      "wilayaId": "16",
+      "phone": "0550000162"
+    },
+    {
+      "id": "16E",
+      "name": "Centre - Sacré-Cœur",
+      "address": "Adresse test 16E",
+      "wilayaId": "16",
+      "phone": "0550000165"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 201,
+    "message": "total minimum 450 DA pour cette wilaya (compte non autorisé aux colis sans montant). S'il s'agit d'une erreur, contactez le service commercial.",
+    "details": [
+      {
+        "message": "total minimum 450 DA pour cette wilaya (compte non autorisé aux colis sans montant). S'il s'agit d'une erreur, contactez le service commercial.",
+        "code": "total_insuffisant",
+        "field": "price"
+      }
+    ]
+  }
+}

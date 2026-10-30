@@ -1,0 +1,12 @@
+[
+  {
+    "status": 409,
+    "headers": {},
+    "body": {
+      "error": {
+        "code": "colis_non_supprimable",
+        "message": "Colis non supprimable"
+      }
+    }
+  }
+]

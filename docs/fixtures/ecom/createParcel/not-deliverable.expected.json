@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "E-com does not deliver to Commune Test (wilaya 16)"
+  }
+}

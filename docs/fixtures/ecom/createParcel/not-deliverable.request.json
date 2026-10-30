@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/communes",
+    "query": {
+      "id_wilaya": 16
+    }
+  }
+]

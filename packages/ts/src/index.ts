@@ -44,9 +44,11 @@ export {
   ECOTRACK_COURIERS,
 } from './providers/ecotrack';
 export { NoestProvider, mapNoestStatus, NOEST_DEFAULT_BASE_URL } from './providers/noest';
+export { EcomProvider, mapEcomStatus, ECOM_DEFAULT_BASE_URL } from './providers/ecom';
 export { PARCEL_STATUSES } from './types';
 export type {
   BaseClientConfig,
+  EcomConfig,
   EcotrackConfig,
   FeeQuery,
   FeeQuote,

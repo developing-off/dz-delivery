@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 409,
+    "message": "E-com parcel ECTEST01 cannot be cancelled: it has already left preparation (only parcels \"En Préparation\" can be deleted)"
+  }
+}

@@ -7,6 +7,7 @@ namespace DzDelivery;
 use DzDelivery\Contracts\ShippingProviderInterface;
 use DzDelivery\Errors\ShippingError;
 use DzDelivery\Models\ClientOptions;
+use DzDelivery\Providers\EcomProvider;
 use DzDelivery\Providers\EcotrackProvider;
 use DzDelivery\Providers\MaystroProvider;
 use DzDelivery\Providers\NoestProvider;
@@ -22,6 +23,7 @@ final class ClientFactory
         MaystroProvider::NAME => MaystroProvider::class,
         EcotrackProvider::NAME => EcotrackProvider::class,
         NoestProvider::NAME => NoestProvider::class,
+        EcomProvider::NAME => EcomProvider::class,
     ];
 
     /**
@@ -30,6 +32,7 @@ final class ClientFactory
      * ClientFactory::create('maystro', ['apiToken' => ...]);
      * ClientFactory::create('ecotrack', ['token' => ..., 'courier' => 'dhd']); // or 'baseUrl' => 'https://x.ecotrack.dz'
      * ClientFactory::create('noest', ['apiToken' => ..., 'userGuid' => ...]);
+     * ClientFactory::create('ecom', ['apiKey' => ..., 'apiToken' => ...]);
      *
      * @param array<string, mixed>|ClientOptions $options Credentials + common options
      *        (baseUrl, timeoutMs, includeRaw).

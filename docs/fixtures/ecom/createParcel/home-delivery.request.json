@@ -1,0 +1,33 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/communes",
+    "query": {
+      "id_wilaya": 16
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api_v2/colis",
+    "headers": {
+      "X-API-Key": "test-api-key",
+      "X-API-Token": "test-api-token"
+    },
+    "body": [
+      {
+        "nom_complet": "Test Client",
+        "mobile_1": "0550123456",
+        "mobile_2": "0770123456",
+        "id_wilaya": 16,
+        "commune": "Alger Centre",
+        "article": "Casque audio",
+        "quantite": 2,
+        "total": 9000,
+        "stopdesk": 0,
+        "adresse": "12 rue des Tests",
+        "note_fournisseur": "Appeler avant",
+        "id_externe": "CMD-1001"
+      }
+    ]
+  }
+]

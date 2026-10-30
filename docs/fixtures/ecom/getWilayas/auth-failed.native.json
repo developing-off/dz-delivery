@@ -1,0 +1,12 @@
+[
+  {
+    "status": 401,
+    "headers": {},
+    "body": {
+      "error": {
+        "code": "api_non_autorise",
+        "message": "Clé ou token API invalide, ou accès désactivé"
+      }
+    }
+  }
+]

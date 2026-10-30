@@ -32,7 +32,8 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 | Maystro Delivery | `maystro` | yes (track / cancel via webhooks) | yes (track / cancel via webhooks) | [Maystro API](https://developing-off.github.io/dz-delivery/maystro/) |
 | Ecotrack (DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers, …) | `ecotrack` | yes | yes | [Ecotrack API](https://developing-off.github.io/dz-delivery/ecotrack/) |
 | NoEST | `noest` | yes | yes | [PROVIDERS.md](./docs/PROVIDERS.md#noest) |
-| MDM, Ecom… | — | backlog | backlog | |
+| E-com Delivery | `ecom` | yes (+ `listParcels`) | yes (+ `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#ecom) |
+| MDM, Elogistia… | — | backlog | backlog | |
 
 ## The unified API
 

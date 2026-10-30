@@ -1,0 +1,13 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/stopdesks",
+    "headers": {
+      "X-API-Key": "test-api-key",
+      "X-API-Token": "test-api-token"
+    },
+    "query": {
+      "id_wilaya": 16
+    }
+  }
+]

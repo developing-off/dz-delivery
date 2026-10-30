@@ -206,6 +206,40 @@ final class StatusMapper
         'deletionrequested' => ParcelStatus::CANCELLED,
     ];
 
+    /** E-com situations + états logistiques (normalized labels). Same table as the TS provider. */
+    private const ECOM_EXACT = [
+        'enpreparation' => ParcelStatus::PENDING,
+        'entraitement' => ParcelStatus::CREATED,
+        'aubureau' => ParcelStatus::IN_TRANSIT,
+        'enlivraison' => ParcelStatus::IN_TRANSIT,
+        'sortirenlivraison' => ParcelStatus::IN_TRANSIT,
+        'dispatcher' => ParcelStatus::IN_TRANSIT,
+        'recuperer' => ParcelStatus::RETURNED,
+        'attendconfirmation' => ParcelStatus::PENDING,
+        'commandereporte' => ParcelStatus::PENDING,
+        'commandearelance' => ParcelStatus::PENDING,
+        'commandeconfirmee' => ParcelStatus::CREATED,
+        'nerepondepas1' => ParcelStatus::IN_TRANSIT,
+        'nerepondepas2' => ParcelStatus::IN_TRANSIT,
+        'nerepondepas3' => ParcelStatus::IN_TRANSIT,
+        'enattenteduclient' => ParcelStatus::IN_TRANSIT,
+        'reporte' => ParcelStatus::IN_TRANSIT,
+        'reportecommuneerronee' => ParcelStatus::IN_TRANSIT,
+        'reportewilayaerronee' => ParcelStatus::IN_TRANSIT,
+        'appeltel' => ParcelStatus::IN_TRANSIT,
+        'smsenvoye' => ParcelStatus::IN_TRANSIT,
+        'whatsappok' => ParcelStatus::IN_TRANSIT,
+        'livree' => ParcelStatus::DELIVERED,
+        'encaisser' => ParcelStatus::DELIVERED,
+        'recouvert' => ParcelStatus::DELIVERED,
+        'annuler' => ParcelStatus::RETURNED,
+        'annulerx3' => ParcelStatus::RETURNED,
+        'retourdedispatche' => ParcelStatus::RETURNED,
+        'retournavette' => ParcelStatus::RETURNED,
+        'commandeannuler' => ParcelStatus::CANCELLED,
+        'supprimee' => ParcelStatus::CANCELLED,
+    ];
+
     public static function zrexpress(?string $native): string
     {
         $key = Text::key((string) $native);
@@ -281,6 +315,16 @@ final class StatusMapper
         return self::NOEST_EXACT[Text::key((string) $native)] ?? ParcelStatus::UNKNOWN;
     }
 
+    /**
+     * E-com situation (`Livrée`, `Ne Réponde pas #1`, ...) or état logistique
+     * (`En Préparation`, `Au Bureau`, ...) label → unified status. `EnCours`, `BIZ` and
+     * `Suivi par E-com` map to `unknown`.
+     */
+    public static function ecom(?string $native): string
+    {
+        return self::ECOM_EXACT[Text::key((string) $native)] ?? ParcelStatus::UNKNOWN;
+    }
+
     public static function map(string $provider, ?string $native): string
     {
         return match ($provider) {
@@ -289,6 +333,7 @@ final class StatusMapper
             'maystro' => self::maystro($native),
             'ecotrack' => self::ecotrack($native),
             'noest' => self::noest($native),
+            'ecom' => self::ecom($native),
             default => ParcelStatus::UNKNOWN,
         };
     }

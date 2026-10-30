@@ -1,0 +1,26 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 1,
+        "libelle": "Adrar",
+        "domicile": true,
+        "stopdesk": true
+      },
+      {
+        "id": 16,
+        "libelle": "Alger",
+        "domicile": true,
+        "stopdesk": true
+      },
+      {
+        "id": 50,
+        "libelle": "Bordj Badji Mokhtar",
+        "domicile": false,
+        "stopdesk": false
+      }
+    ]
+  }
+]

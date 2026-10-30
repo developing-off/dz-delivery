@@ -1,0 +1,17 @@
+{
+  "result": {
+    "parcel": {
+      "id": "ECTEST01",
+      "trackingNumber": "ECTEST01",
+      "status": "returned",
+      "provider": "ecom"
+    },
+    "events": [
+      {
+        "status": "returned",
+        "label": "Annuler x3",
+        "at": "2026-10-22T10:00:00+00:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "recipientName": "Test Client",
+  "phone": "+213550123456",
+  "phone2": "0770 12 34 56",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "alger centre",
+  "productList": [
+    {
+      "name": "Casque audio",
+      "quantity": 2
+    }
+  ],
+  "price": 9000,
+  "remark": "Appeler avant",
+  "orderId": "CMD-1001"
+}

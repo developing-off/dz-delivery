@@ -1,0 +1,60 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "tracking": "ECTEST01",
+      "date_creation": "2026-10-20 09:12:00+00:00",
+      "situation": "Livrée",
+      "id_situation": 7,
+      "etat_logistique": "Livrée",
+      "id_etat_logistique": 9,
+      "nom_complet": "Test Client",
+      "mobile": "0550000000",
+      "commune": "Bab Ezzouar",
+      "id_wilaya": 16,
+      "article": "Casque audio",
+      "quantite": 1,
+      "total": 8950,
+      "note_fournisseur": null,
+      "stopdesk": 0,
+      "code_stopdesk": null,
+      "nom_stopdesk": null,
+      "id_externe": "CMD-1001",
+      "encaisser": false,
+      "recouvert": false,
+      "historique": [
+        {
+          "date": "2026-10-20 09:12:00+00:00",
+          "ville": 16,
+          "situation": "En Préparation",
+          "commentaire": "Création Api_v2"
+        },
+        {
+          "date": "2026-10-21 16:45:00+00:00",
+          "ville": 16,
+          "situation": "Livrée",
+          "commentaire": "Remis au client"
+        },
+        {
+          "date": "2026-10-20 14:30:00+00:00",
+          "ville": 16,
+          "situation": "Au Bureau",
+          "commentaire": null
+        },
+        {
+          "date": "2026-10-21 08:05:00+00:00",
+          "ville": 16,
+          "situation": "Sortir en livraison",
+          "commentaire": null
+        },
+        {
+          "date": "2026-10-21 11:20:00+00:00",
+          "ville": 16,
+          "situation": "Ne Réponde pas #1",
+          "commentaire": "Client injoignable"
+        }
+      ]
+    }
+  }
+]

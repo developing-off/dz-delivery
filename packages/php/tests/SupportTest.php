@@ -6,6 +6,7 @@ namespace DzDelivery\Tests;
 
 use DzDelivery\ClientFactory;
 use DzDelivery\Errors\ShippingError;
+use DzDelivery\Providers\EcomProvider;
 use DzDelivery\Providers\EcotrackProvider;
 use DzDelivery\Providers\MaystroProvider;
 use DzDelivery\Providers\NoestProvider;
@@ -77,12 +78,13 @@ final class SupportTest extends TestCase
         self::assertInstanceOf(MaystroProvider::class, ClientFactory::create('maystro', ['apiToken' => 't']));
         self::assertInstanceOf(EcotrackProvider::class, ClientFactory::create('ecotrack', ['token' => 't', 'courier' => 'dhd']));
         self::assertInstanceOf(NoestProvider::class, ClientFactory::create('noest', ['apiToken' => 't', 'userGuid' => 'g']));
-        self::assertSame(['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest'], ClientFactory::providers());
+        self::assertInstanceOf(EcomProvider::class, ClientFactory::create('ecom', ['apiKey' => 'k', 'apiToken' => 't']));
+        self::assertSame(['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom'], ClientFactory::providers());
     }
 
     public function testFactoryUnknownProviderIsNotSupported(): void
     {
-        $this->expectExceptionObject(new ShippingError(ShippingError::NOT_SUPPORTED, 'Unknown provider "dhl". Supported: zrexpress, yalidine, maystro, ecotrack, noest'));
+        $this->expectExceptionObject(new ShippingError(ShippingError::NOT_SUPPORTED, 'Unknown provider "dhl". Supported: zrexpress, yalidine, maystro, ecotrack, noest, ecom'));
         ClientFactory::create('dhl');
     }
 

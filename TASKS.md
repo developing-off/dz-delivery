@@ -114,7 +114,7 @@
 - [x] **T6.1** 3e provider : **Maystro Delivery** (TS + PHP, fixtures partagées ; `track` / `cancelParcel` → `NOT_SUPPORTED`, suivi par webhooks uniquement)
 - [x] **T6.1b** 4e provider : **Ecotrack** (un seul provider pour DHD, Conexlog, MSM Go, Packers, World Express… ; option `courier` ou `baseUrl`, `autoValidate`)
 - [x] **T6.1-fees** Align Maystro `getFees` on Confirmation-api production: `GET backend.maystro-delivery.com/api/stores/delivery_price/` (fallback orders-management `delivery-options` / `delivery-prices`). See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#confirmation-api-fees-audit-2026-10-20).
-- [ ] **T6.1c** Provider **Ecom** (`ecom`, ecom-dz.net) — backlog (audit `Delivery/EcomDelivery.php`, company-id **19**). Voir mapping proposé dans [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#ecom-out-of-mvp--backlog). **Ne pas démarrer** tant que : (1) endpoints live wilayas/communes/stopdesks/fees documentés ou fixtures exportées des tables `ecom_delivery_*`, (2) auth `Key`/`Token` + casing `/Api_v1` vs `/API_v1` figés, (3) fixtures create/track réelles. Surface monolithe aujourd’hui : create + track via HTTP ; fees / locations via DB delivery uniquement — **pas trivial**.
+- [x] **T6.1c** Provider **Ecom** (`ecom`) — done on the new API v2 (`ecom-dz.com/api_v2`, 2026-10-30), TS + PHP, shared fixtures. The legacy `ecom-dz.net/Api_v1` audit no longer applies. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#ecom).
 - [x] **T6.1d** Provider **NoEST** — TS + PHP, shared fixtures, docs v2.3 + live read-only checks (2026-10-30).
 - [ ] **T6.1e** Provider **MDM** — backlog (Confirmation-api fees audit: still not in SDK; Ecom same).
 - [ ] **T6.2** Endpoints “catalogue” ZRExpress (ex. create product) en module optionnel
