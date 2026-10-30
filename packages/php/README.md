@@ -9,6 +9,8 @@ Unified PHP client for Algerian delivery carriers — **Yalidine, GuepEx, ZRExpr
 > 🇩🇿 SDK PHP livraison Algérie : créer, suivre et tarifer vos colis avec le même code pour chaque transporteur.
 > Docs : <https://developing-off.github.io/dz-delivery/> · TypeScript / Node.js : [`@dz-delivery/core`](https://www.npmjs.com/package/@dz-delivery/core)
 
+> ⭐ This repository is a read-only mirror of the PHP package. **Stars, issues and pull requests go to the main repo: [developing-off/dz-delivery](https://github.com/developing-off/dz-delivery).**
+
 Implements the shared contract in
 [`docs/CONTRACT.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md); provider mappings are in
 [`docs/PROVIDERS.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md).

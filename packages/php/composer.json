@@ -4,6 +4,13 @@
     "type": "library",
     "license": "MIT",
     "homepage": "https://developing-off.github.io/dz-delivery/",
+    "authors": [
+        {
+            "name": "Younes Sarni",
+            "homepage": "https://github.com/developing-off",
+            "role": "Developer"
+        }
+    ],
     "support": {
         "issues": "https://github.com/developing-off/dz-delivery/issues",
         "source": "https://github.com/developing-off/dz-delivery-php",
