@@ -276,6 +276,26 @@ export interface EcomConfig extends BaseClientConfig {
   autoValidate?: boolean;
 }
 
+export interface ElogistiaConfig extends BaseClientConfig {
+  /** API key from the Elogistia account (sent in the query string, as Elogistia requires). */
+  apiKey: string;
+  /**
+   * Sent as `mail` on every order (mandatory for Elogistia, absent from `ParcelInput`).
+   * Default `customer@example.com`.
+   */
+  email?: string;
+}
+
+export interface MdmConfig extends BaseClientConfig {
+  /** API key created in the MDM dashboard (`/api/auth/api-keys`), sent as `x-api-key`. */
+  apiKey: string;
+  /**
+   * MDM store (`STR-…`) the parcels belong to. Required by `createParcel`; also scopes
+   * geo, office and parcel lookups to what that store can ship.
+   */
+  storeId?: string;
+}
+
 export interface ProviderConfigMap {
   zrexpress: ZRExpressConfig;
   yalidine: YalidineConfig;
@@ -283,6 +303,8 @@ export interface ProviderConfigMap {
   ecotrack: EcotrackConfig;
   noest: NoestConfig;
   ecom: EcomConfig;
+  elogistia: ElogistiaConfig;
+  mdm: MdmConfig;
 }
 
 export type ProviderName = keyof ProviderConfigMap;

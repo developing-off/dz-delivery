@@ -1,0 +1,20 @@
+[
+  {
+    "method": "GET",
+    "path": "/getMunicipalities/",
+    "query": {
+      "key": "test-api-key"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/insertCommande/",
+    "query": {
+      "name": "Amine",
+      "firstname": "Amine",
+      "mail": "shop@example.com",
+      "commune": "Alger Centre",
+      "stop_desk": 2
+    }
+  }
+]

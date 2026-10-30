@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "httpStatus": 404,
+    "message": "The location you provided is not found"
+  }
+}

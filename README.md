@@ -1,4 +1,4 @@
-# dz-delivery — SDK livraison Algérie (Yalidine, ZRExpress, Maystro, Ecotrack, NoEST, E-com)
+# dz-delivery — SDK livraison Algérie (Yalidine, ZRExpress, Maystro, Ecotrack, NoEST, E-com, MDM, Elogistia)
 
 [![npm](https://img.shields.io/npm/v/@dz-delivery/core?label=npm%20%40dz-delivery%2Fcore)](https://www.npmjs.com/package/@dz-delivery/core)
 [![Packagist](https://img.shields.io/packagist/v/dz-delivery/sdk?label=packagist%20dz-delivery%2Fsdk)](https://packagist.org/packages/dz-delivery/sdk)
@@ -29,8 +29,10 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
   <a href="https://developing-off.github.io/dz-delivery/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
   <a href="https://developing-off.github.io/dz-delivery/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
   <a href="https://developing-off.github.io/dz-delivery/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
-  <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#noest"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
-  <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#ecom"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/noest/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/ecom/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/mdm/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/mdm.png" alt="MDM Express" title="MDM Express" height="60"></a>
+  <a href="https://developing-off.github.io/dz-delivery/elogistia/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/elogistia.png" alt="Elogistia" title="Elogistia" height="60"></a>
 </p>
 
 <p align="center"><sub>Logos are trademarks of their respective owners, shown only to indicate which carriers the SDK works with. dz-delivery is an independent open-source project, not affiliated with or endorsed by these companies.</sub></p>
@@ -44,7 +46,8 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 | Ecotrack (DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers, …) | `ecotrack` | yes | yes | [Ecotrack API](https://developing-off.github.io/dz-delivery/ecotrack/) |
 | NoEST | `noest` | yes (no `listParcels`) | yes (no `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#noest) |
 | E-com Delivery | `ecom` | yes (+ `listParcels`) | yes (+ `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#ecom) |
-| MDM, Elogistia… | — | backlog | backlog | |
+| MDM Express | `mdm` | yes (products from the MDM catalog; no `cancelParcel`) | yes (same) | [PROVIDERS.md](./docs/PROVIDERS.md#mdm) |
+| Elogistia | `elogistia` | yes (no stop-desk list, `listParcels`, `cancelParcel`) | yes (same) | [PROVIDERS.md](./docs/PROVIDERS.md#elogistia) |
 
 ## The unified API
 

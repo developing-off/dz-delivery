@@ -11,6 +11,8 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 | Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
 | NoEST | `noest` | NOEST Public API docs v2.3 + live checks (2026-10-30: reads and error bodies; creation not tried, account suspended), implemented in PHP and TS; `listParcels` not supported |
 | E-com Delivery | `ecom` | API v2 docs (v2.153) + live checks on a test account (2026-10-30: reads, create then delete, errors), implemented in PHP and TS, including `listParcels` |
+| MDM Express | `mdm` | OpenAPI spec (`/api/docs/swagger`) + live read-only checks on a seller account (2026-10-30: geo, offices, fees, list, track, errors; creation checked up to validation, no parcel created), implemented in PHP and TS; `cancelParcel` not supported |
+| Elogistia | `elogistia` | No public docs: endpoints from the legacy Confirmation-api + live read-only checks (2026-10-30: wilayas, communes, fees, unknown tracking, errors); `getStopDesks`, `listParcels`, `cancelParcel` not supported |
 
 ---
 
@@ -717,9 +719,89 @@ All global errors: `{ "error": { "code", "message", "details"? } }` (the opening
 
 ---
 
-## Out of MVP / backlog
+## MDM
 
-Carriers present in the legacy `Delivery/` monolith but **not** implemented in the SDK yet: **MDM** (`api.mdm.express`, `x-api-key` / JWT, OpenAPI spec mentioned in `MdmController.php`) and **Elogistia** (`api.elogistia.com`). Do not add code until fixtures + a full method table exist (same bar as ZRExpress / Yalidine).
+> Built from MDM's **OpenAPI spec** (`https://api.mdm.express/api/docs/swagger`, read 2026-10-30) and checked live (read-only) on a seller account: deliverable states / cities, offices, `calculate-fees`, parcel search, parcel detail, status metadata and error bodies. Creation was checked up to MDM's validation (fake store and product ids, so nothing was created): the success body follows the spec.
+
+- Base URL: `https://api.mdm.express`. MDM is a whole e-commerce platform (stock, call center, finance, ~1 300 endpoints); the SDK only uses the "Shipping - Parcels" and geo endpoints.
+- **Fulfilment model**: a parcel ships products **stocked at MDM**. Every `productList` line needs its MDM product id (`productId`, or `sku`, e.g. `PRD-B5C63A`); free-text products are refused by MDM (`products.0.trackingId must be a string`).
+
+### Auth
+
+| Option | Value | Notes |
+|--------|-------|-------|
+| `apiKey` | API key from the MDM dashboard (`POST /api/auth/api-keys`) | Sent as `x-api-key`. Bad key → HTTP 401 `AUTH.INVALID_API_KEY`. |
+| `storeId` | your store, `STR-…` | Required by `createParcel` (`VALIDATION_ERROR` before any request otherwise). When set, also scopes geo, office and parcel lookups to that store. |
+
+### Method mapping
+
+| Unified method | Native endpoint | Notes |
+|----------------|-----------------|-------|
+| `createParcel` | `POST /api/v2/shipping/parcels` | `{ storeId, destination: { cityId, streetAddress }, client, products: [{ trackingId, quantity, displayName?, price? }], productsPrice, isShippingFree: true, isStopDesk, stopDeskId? }` → `{ trackingId, orderId }`. `price` is sent as `productsPrice` with `isShippingFree: true`, so MDM adds no fee on top. MDM parcels have no merchant reference: `orderId` goes in `notes` as `Ref: <orderId>`. |
+| `track` | `GET /api/v2/shipping/parcels/{trackingId}` | Parcel `status` + `statusHistory[]` (newest first; sorted oldest first). Unknown id → 404 `PARCELS.NOT_FOUND` → `NOT_FOUND`. |
+| `getFees` | `POST /api/v2/shipping/parcels/calculate-fees` | Priced per commune: `toCommuneId`, else the wilaya's first deliverable commune. `fees.shipping` → `deliveryFee` (home or desk per `isStopDesk`), `fees.return` → `returnFee`. Live (Alger Centre): 650 home, 600 desk. |
+| `getWilayas` | `GET /api/geo/countries/DZA/deliverable-states` | Paginated (`pagination.hasMore`). `Location.id` = official code (`16`), sorted by code; MDM id `DZA16` accepted as input. |
+| `getCommunes` | `GET …/deliverable-states/DZA16/deliverable-cities` | `Location.id` = MDM city id (`DZA161601`), `code` = `1601`. |
+| `getStopDesks` | `GET /api/v2/shipping/companies/offices?countryId=DZA&stateId=DZA16[&cityId]` | Offices of MDM's partner couriers (NOEST, Maystro, …). `id` (`16A`) → `stopDeskId`; disabled offices skipped. |
+| `listParcels` | `POST /api/v2/shipping/parcels/search` | `{ filters, sortBy: { createdAt: DESC }, pagination: { page, perPage ≤ 100 } }`. `keyword` → `filters.search`, `updatedSince` → `filters.updatedAt.start`, `status` → `filters.status` (every MDM slug of that unified status, filtered server-side), `orderId` → client-side on `notes`. |
+| `cancelParcel` | — | No cancellation endpoint in the spec → `NOT_SUPPORTED` (cancel from the MDM dashboard). |
+| `healthCheck` | deliverable states | |
+
+### Status mapping
+
+Slugs from `GET /api/v2/shipping/parcels/metadata` (live, 2026-10-30). Full table: [`fixtures/mdm/statuses.json`](./fixtures/mdm/statuses.json).
+
+| MDM | Unified |
+|-----|---------|
+| `out-of-stock` | `pending` |
+| `confirmed`, `preparing`, `packaged`, `ready-for-dispatch` | `created` |
+| `received-by-mdm`, `dispatched`, `received`, `in-transit`, `ready-for-delivery`, `out-for-delivery`, `postponed`, `delivery-attempt-failed`, `exchange-pending`, `refund-pending` | `in_transit` |
+| `delivered`, `delivered-partially`, `exchange-collected` | `delivered` |
+| `delivery-failed`, `returning`, `return-ready`, `return-received`, `return-grouped`, `returned`, `exchange-failed`, `refund-collected`, `refunded`, `refunded-partially` | `returned` |
+| `lost` | `cancelled` (terminal, neither delivered nor returned) |
+
+### Errors
+
+`{ method, path, status, correlationId, error: { code, message, payload? } }`.
+
+| MDM | Unified |
+|-----|---------|
+| 400 `INVALID_REQUEST`, `payload: { "products.0.trackingId": "…" }` | `VALIDATION_ERROR`, one detail per path (`products.*` → `productList`, `destination.cityId` → `communeId`, …) |
+| 401 `AUTH.INVALID_API_KEY` | `AUTH_FAILED` |
+| 403 `AUTH.NOT_AUTHORIZED` "Products not found: PRD-…" | `VALIDATION_ERROR`, `field: productList` |
+| 404 `PARCELS.NOT_FOUND`, `GEO.LOCATION.NOT_FOUND` | `NOT_FOUND` |
+
+---
+
+## Elogistia
+
+> **No public documentation** (none on elogistia.com or the web). Endpoints come from the legacy Confirmation-api (`ElogistiaController.php`) and were checked live (read-only, 2026-10-30): fee grid, communes, unknown tracking and error bodies. Required order parameters were found with an invalid key (Elogistia validates parameters **before** the key, so nothing was created). Tracking labels are not documented: they are matched by keyword.
+
+- Base URL: `https://api.elogistia.com`. Every path ends with `/`.
+- **The API key travels in the query string** (Elogistia's design): `key=` on reference data, `apiKey=` on orders. Keep it out of logged URLs.
+
+### Auth
+
+| Option | Value | Notes |
+|--------|-------|-------|
+| `apiKey` | API key of the Elogistia account | Bad key → 401 `{"Message":"Votre apiKey n'est pas valide"}` (404 `"fee not found.0"` on the fee grid, reported as `AUTH_FAILED`). Inactive account: `{"Message":"Votre compte n'est pas actif."}`. |
+| `email` | default `customer@example.com` | Sent as `mail`, which Elogistia requires on every order (absent from `ParcelInput`). |
+
+### Method mapping
+
+| Unified method | Native endpoint | Notes |
+|----------------|-----------------|-------|
+| `createParcel` | `POST /insertCommande/?apiKey&name&firstname&mail&phone&address&commune&wilaya&product&price&fraisDeLivraison&stop_desk&modeDeLivraison&IdCommande[&remarque]` | All but `remarque` are required (`400 {"error":"Missing parameter: commune"}`). `commune` = Elogistia's spelling of the name (resolved via `getMunicipalities`, spelling-tolerant). `name` / `firstname` from `recipientName` (one word fills both). `stop_desk`: `1` home, `2` desk (Elogistia picks the desk; `stopDeskId` is not sent). `price` = amount to collect, `fraisDeLivraison` = 0. `IdCommande` = `orderId` (generated when absent). Answer `{"success":"ELO--31A-12248690"}`. |
+| `track` | `GET /getTracking/?apiKey&tracking` | `body: [{ Date, Statut, Log }]`. 404 `"Commande not found or no log yet."` → `NOT_FOUND` (a new parcel may have no log yet). |
+| `getFees` | `GET /getShippingCost/?key` | `body: [{ wilayaID, wilayaLabel, home, stopdesk }]` (strings). No return fee. Wilayas without a row (50, 54 live) → `NOT_FOUND`. |
+| `getWilayas` | `GET /getShippingCost/?key` | The fee grid's wilayas (56 live), sorted by code. |
+| `getCommunes` | `GET /getMunicipalities/?key` | Every commune (1 433 live), filtered by wilaya. `Location.id` = Elogistia `Id`. |
+| `getStopDesks`, `listParcels`, `cancelParcel` | — | No endpoint → `NOT_SUPPORTED`. |
+| `healthCheck` | fee grid | |
+
+### Status mapping
+
+Keyword rules on `Statut` (else `Log`), in this order: `retour` / `return` → `returned`; `annul` / `cancel` / `supprim` → `cancelled`; `livreur`, `en livraison`, `sortie`, `transit`, `expédi`, `dispatch`, `vers wilaya`, `en cours`, `échec`, `tentative` → `in_transit`; `livré` / `delivered` → `delivered`; `attente`, `créé`, `nouveau`, `pending` → `pending`. Reference cases: [`fixtures/elogistia/statuses.json`](./fixtures/elogistia/statuses.json). Please report real labels so the table can become exact.
 
 ---
 

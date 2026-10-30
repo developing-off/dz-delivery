@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/getShippingCost/",
+    "query": {
+      "key": "test-api-key"
+    }
+  }
+]

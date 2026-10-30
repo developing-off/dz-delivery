@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "MDM createParcel requires `storeId` in the client config"
+  }
+}

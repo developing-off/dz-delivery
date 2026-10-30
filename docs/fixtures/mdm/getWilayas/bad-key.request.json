@@ -1,0 +1,14 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/geo/countries/DZA/deliverable-states",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "query": {
+      "page": 1,
+      "perPage": 100,
+      "storeId": "STR-TEST01"
+    }
+  }
+]

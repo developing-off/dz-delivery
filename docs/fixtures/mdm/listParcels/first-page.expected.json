@@ -1,0 +1,22 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "PRC-TEST01",
+        "trackingNumber": "PRC-TEST01",
+        "status": "in_transit",
+        "provider": "mdm"
+      },
+      {
+        "id": "PRC-TEST02",
+        "trackingNumber": "PRC-TEST02",
+        "status": "delivered",
+        "provider": "mdm"
+      }
+    ],
+    "page": 1,
+    "pageSize": 2,
+    "totalCount": 5,
+    "hasNext": true
+  }
+}

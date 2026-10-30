@@ -1,0 +1,93 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "list": [
+        {
+          "id": "16A",
+          "name": "Alger « Bir Mourad Raïs »",
+          "phones": [
+            "",
+            "0550000161"
+          ],
+          "email": "",
+          "enabled": true,
+          "address": {
+            "countryId": "DZA",
+            "stateId": "DZA16",
+            "stateCode": "16",
+            "stateName": "Alger",
+            "cityId": "DZA161609",
+            "cityCode": "",
+            "cityName": "",
+            "postalCode": "",
+            "streetAddress": "Adresse test 16A",
+            "gps": {
+              "link": "https://maps.app.goo.gl/test"
+            }
+          },
+          "company": {
+            "name": "noest",
+            "previewName": "NOEST Express",
+            "supportsStopdesk": true
+          }
+        },
+        {
+          "id": "16B",
+          "name": "Alger « Bab Ezzouar »",
+          "phones": [
+            "0550000162"
+          ],
+          "email": "",
+          "enabled": true,
+          "address": {
+            "countryId": "DZA",
+            "stateId": "DZA16",
+            "stateCode": "16",
+            "stateName": "Alger",
+            "cityId": "DZA161621",
+            "cityCode": "",
+            "cityName": "",
+            "postalCode": "",
+            "streetAddress": "Adresse test 16B",
+            "gps": {
+              "link": "https://maps.app.goo.gl/test"
+            }
+          },
+          "company": {
+            "name": "noest",
+            "previewName": "NOEST Express",
+            "supportsStopdesk": true
+          }
+        },
+        {
+          "id": "16Z",
+          "name": "Bureau fermé",
+          "phones": [],
+          "email": "",
+          "enabled": false,
+          "address": {
+            "countryId": "DZA",
+            "stateId": "DZA16",
+            "stateCode": "16",
+            "stateName": "Alger",
+            "cityId": "DZA161601",
+            "cityCode": "",
+            "cityName": "",
+            "postalCode": "",
+            "streetAddress": "Adresse test 16Z",
+            "gps": {
+              "link": "https://maps.app.goo.gl/test"
+            }
+          },
+          "company": {
+            "name": "noest",
+            "previewName": "NOEST Express",
+            "supportsStopdesk": true
+          }
+        }
+      ]
+    }
+  }
+]

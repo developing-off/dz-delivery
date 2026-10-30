@@ -1,0 +1,30 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/geo/countries/DZA/deliverable-states/DZA16/deliverable-cities",
+    "query": {
+      "page": 1,
+      "perPage": 100
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/v2/shipping/parcels",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "body": {
+      "destination": {
+        "cityId": "DZA161601"
+      },
+      "products": [
+        {
+          "trackingId": "PRD-TEST01",
+          "quantity": 1
+        }
+      ],
+      "isStopDesk": true,
+      "stopDeskId": "16A"
+    }
+  }
+]

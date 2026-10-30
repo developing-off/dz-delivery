@@ -1,0 +1,20 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/geo/countries/DZA/deliverable-states/DZA16/deliverable-cities",
+    "query": {
+      "page": 1,
+      "perPage": 100
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v2/shipping/companies/offices",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "query": {
+      "cityId": "DZA161621"
+    }
+  }
+]

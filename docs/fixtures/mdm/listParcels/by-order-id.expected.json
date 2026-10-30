@@ -1,0 +1,16 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "PRC-TEST05",
+        "trackingNumber": "PRC-TEST05",
+        "status": "created",
+        "provider": "mdm"
+      }
+    ],
+    "page": 1,
+    "pageSize": 50,
+    "totalCount": 2,
+    "hasNext": false
+  }
+}

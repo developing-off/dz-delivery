@@ -1,0 +1,25 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v2/shipping/parcels/search",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "body": {
+      "filters": {
+        "status": [
+          "delivery-failed",
+          "returning",
+          "return-ready",
+          "return-received",
+          "return-grouped",
+          "returned",
+          "exchange-failed",
+          "refund-collected",
+          "refunded",
+          "refunded-partially"
+        ]
+      }
+    }
+  }
+]

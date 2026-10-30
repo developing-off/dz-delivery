@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "AUTH_FAILED",
+    "httpStatus": 401,
+    "message": "Votre apiKey n'est pas valide"
+  }
+}

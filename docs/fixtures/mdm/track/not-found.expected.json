@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "httpStatus": 404,
+    "message": "Parcel with trackingId PRC-TEST00 not found",
+    "details": [
+      {
+        "message": "Parcel with trackingId PRC-TEST00 not found",
+        "code": "PARCELS.NOT_FOUND"
+      }
+    ]
+  }
+}

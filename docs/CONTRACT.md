@@ -360,6 +360,8 @@ Provider-specific credentials:
 | `ecotrack` | `token`, `courier` or `baseUrl` (https) | `ECOTRACK_TOKEN`, `ECOTRACK_COURIER` / `ECOTRACK_BASE_URL` |
 | `noest` | `apiToken`, `userGuid`, `autoValidate?` | `NOEST_API_TOKEN`, `NOEST_USER_GUID` |
 | `ecom` | `apiKey`, `apiToken`, `autoValidate?` | `ECOM_API_KEY`, `ECOM_API_TOKEN` |
+| `mdm` | `apiKey`, `storeId` (required by `createParcel`) | `MDM_API_KEY`, `MDM_STORE_ID` |
+| `elogistia` | `apiKey`, `email?` | `ELOGISTIA_API_KEY` |
 
 A `baseUrl` override must be an `https:` URL (credentials travel in headers); anything else throws `VALIDATION_ERROR`.
 

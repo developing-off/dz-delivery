@@ -8,7 +8,9 @@ use DzDelivery\ClientFactory;
 use DzDelivery\Errors\ShippingError;
 use DzDelivery\Providers\EcomProvider;
 use DzDelivery\Providers\EcotrackProvider;
+use DzDelivery\Providers\ElogistiaProvider;
 use DzDelivery\Providers\MaystroProvider;
+use DzDelivery\Providers\MdmProvider;
 use DzDelivery\Providers\NoestProvider;
 use DzDelivery\Providers\YalidineProvider;
 use DzDelivery\Providers\ZRExpressProvider;
@@ -79,12 +81,14 @@ final class SupportTest extends TestCase
         self::assertInstanceOf(EcotrackProvider::class, ClientFactory::create('ecotrack', ['token' => 't', 'courier' => 'dhd']));
         self::assertInstanceOf(NoestProvider::class, ClientFactory::create('noest', ['apiToken' => 't', 'userGuid' => 'g']));
         self::assertInstanceOf(EcomProvider::class, ClientFactory::create('ecom', ['apiKey' => 'k', 'apiToken' => 't']));
-        self::assertSame(['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom'], ClientFactory::providers());
+        self::assertInstanceOf(MdmProvider::class, ClientFactory::create('mdm', ['apiKey' => 'k']));
+        self::assertInstanceOf(ElogistiaProvider::class, ClientFactory::create('elogistia', ['apiKey' => 'k']));
+        self::assertSame(['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom', 'mdm', 'elogistia'], ClientFactory::providers());
     }
 
     public function testFactoryUnknownProviderIsNotSupported(): void
     {
-        $this->expectExceptionObject(new ShippingError(ShippingError::NOT_SUPPORTED, 'Unknown provider "dhl". Supported: zrexpress, yalidine, maystro, ecotrack, noest, ecom'));
+        $this->expectExceptionObject(new ShippingError(ShippingError::NOT_SUPPORTED, 'Unknown provider "dhl". Supported: zrexpress, yalidine, maystro, ecotrack, noest, ecom, mdm, elogistia'));
         ClientFactory::create('dhl');
     }
 

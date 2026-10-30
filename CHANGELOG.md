@@ -5,6 +5,10 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 
 ## [Unreleased]
 
+### Added
+- MDM Express provider (`mdm`) in TypeScript and PHP, built from MDM's OpenAPI spec: create (products from the MDM catalog, `storeId`), track, fees (`calculate-fees`), wilayas, communes, stop desks (partner offices), **`listParcels`** (server-side `status` / `updatedSince` filters) and health check. `cancelParcel` throws `NOT_SUPPORTED`. Checked live, read-only. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#mdm).
+- Elogistia provider (`elogistia`) in TypeScript and PHP: create, track, fees, wilayas, communes and health check; `getStopDesks`, `listParcels` and `cancelParcel` throw `NOT_SUPPORTED`. Elogistia publishes no docs: endpoints follow the legacy Confirmation-api, checked live (read-only). See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#elogistia).
+
 ## [0.1.9] — 2026-10-30
 
 ### Added

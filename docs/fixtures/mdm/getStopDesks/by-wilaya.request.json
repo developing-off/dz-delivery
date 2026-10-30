@@ -1,0 +1,14 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v2/shipping/companies/offices",
+    "headers": {
+      "x-api-key": "test-api-key"
+    },
+    "query": {
+      "countryId": "DZA",
+      "stateId": "DZA16",
+      "storeId": "STR-TEST01"
+    }
+  }
+]

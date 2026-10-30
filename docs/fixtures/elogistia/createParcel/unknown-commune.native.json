@@ -1,0 +1,35 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "body": [
+        {
+          "Id": "1",
+          "name": "Adrar",
+          "wilaya": "1"
+        },
+        {
+          "Id": "523",
+          "name": "Ain Benian",
+          "wilaya": "16"
+        },
+        {
+          "Id": "525",
+          "name": "Alger Centre",
+          "wilaya": "16"
+        },
+        {
+          "Id": "526",
+          "name": "Bab Azzouar",
+          "wilaya": "16"
+        },
+        {
+          "Id": "1101",
+          "name": "Oran",
+          "wilaya": "31"
+        }
+      ]
+    }
+  }
+]

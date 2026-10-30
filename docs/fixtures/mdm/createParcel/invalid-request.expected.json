@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 400,
+    "message": "products.0.trackingId must be a string",
+    "details": [
+      {
+        "field": "productList",
+        "message": "products.0.trackingId must be a string",
+        "code": "INVALID_REQUEST"
+      }
+    ]
+  }
+}

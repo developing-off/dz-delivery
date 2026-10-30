@@ -4,11 +4,13 @@ import { mapEcotrackStatus } from '../src/providers/ecotrack';
 import { mapMaystroStatus } from '../src/providers/maystro';
 import { mapNoestStatus } from '../src/providers/noest';
 import { mapEcomStatus } from '../src/providers/ecom';
+import { mapElogistiaStatus } from '../src/providers/elogistia';
+import { mapMdmStatus } from '../src/providers/mdm';
 import { mapYalidineStatus } from '../src/providers/yalidine';
 import { mapZRExpressStatus } from '../src/providers/zrexpress';
 import { loadFixtureCases, mockFetch, readJson, stripRaw, subsetMismatches, type FixtureCase } from './helpers';
 
-const PROVIDERS = ['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom'] as const;
+const PROVIDERS = ['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom', 'mdm', 'elogistia'] as const;
 const MAPPERS = {
   zrexpress: mapZRExpressStatus,
   yalidine: mapYalidineStatus,
@@ -16,6 +18,8 @@ const MAPPERS = {
   ecotrack: mapEcotrackStatus,
   noest: mapNoestStatus,
   ecom: mapEcomStatus,
+  mdm: mapMdmStatus,
+  elogistia: mapElogistiaStatus,
 };
 
 function call(client: ShippingProvider, c: FixtureCase): Promise<unknown> {

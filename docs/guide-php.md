@@ -1,6 +1,6 @@
 # Using dz-delivery in a PHP project
 
-A practical guide to calling Yalidine, ZRExpress, Maystro, Ecotrack (DHD, …), NoEST and E-com Delivery from your own PHP application through one API.
+A practical guide to calling Yalidine, ZRExpress, Maystro, Ecotrack (DHD, …), NoEST, E-com Delivery, MDM and Elogistia from your own PHP application through one API.
 For the full contract see [`CONTRACT.md`](./CONTRACT.md); for carrier-specific details see [`PROVIDERS.md`](./PROVIDERS.md).
 ZRExpress extras (bulk, labels, webhook verify): [`ZREXPRESS.md`](./ZREXPRESS.md).
 
@@ -82,6 +82,15 @@ $ecom = ClientFactory::create('ecom', [
     'apiToken' => getenv('ECOM_API_TOKEN'),  // Token, sent as X-API-Token
     // 'autoValidate' => true,               // create parcels already confirmed
 ]);
+
+$mdm = ClientFactory::create('mdm', [
+    'apiKey'  => getenv('MDM_API_KEY'),   // sent as x-api-key
+    'storeId' => getenv('MDM_STORE_ID'),  // STR-…, required to create parcels
+]);
+
+$elogistia = ClientFactory::create('elogistia', [
+    'apiKey' => getenv('ELOGISTIA_API_KEY'),  // sent in the query string (Elogistia's design)
+]);
 ```
 
 | Carrier | Required keys | Notes |
@@ -92,6 +101,8 @@ $ecom = ClientFactory::create('ecom', [
 | `ecotrack` | `token` + exactly one of `courier` / `baseUrl` | One provider for every courier on the Ecotrack platform. `courier`: `dhd`, `anderson`, `worldexpress`, `48hrexpress`, `ecorapid`, `conexlog`, `msmgo`, `packers`, `rocketdelivery` (plus alias `andersondelivery`). Any other tenant: `baseUrl` (`https` only). `autoValidate` (default `false`): without it, orders stay `pending` until you validate them in the courier's dashboard. |
 | `noest` | `apiToken`, `userGuid` | Both from the NOEST partner dashboard. `autoValidate` (default `false`): without it, orders stay `pending` (still editable) until validated. Commune names follow NOEST spelling (`Bab Azzouar`): use `getCommunes()` ids. |
 | `ecom` | `apiKey`, `apiToken` | `KEY` and `Token` from the E-com developer page. `autoValidate` (default `false`): without it, parcels stay `pending` ("En Préparation", still editable) until confirmed. |
+| `mdm` | `apiKey` (+ `storeId` to create) | MDM ships products **stocked at MDM**: every `productList` line needs its MDM product id (`productId` or `sku`, `PRD-…`). No `cancelParcel`. |
+| `elogistia` | `apiKey` | Optional `email` (sent as `mail`, required by Elogistia; default `customer@example.com`). No stop-desk list, `listParcels` or `cancelParcel`. |
 
 Missing credentials throw `ShippingError` with code `AUTH_FAILED` when the client is created.
 
@@ -104,7 +115,7 @@ Common options (all carriers):
 | `includeRaw` | `bool` | `true` | Attach the native carrier payload as `->raw` on returned models. Set `false` to keep objects small. |
 | `handler` | `callable` | — | Guzzle handler/HandlerStack, mainly for tests (see [§8](#8-testing-your-integration)). |
 
-`ClientFactory::providers()` returns the supported keys (`['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom']`). An unknown key throws `NOT_SUPPORTED`.
+`ClientFactory::providers()` returns the supported keys (`['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom', 'mdm', 'elogistia']`). An unknown key throws `NOT_SUPPORTED`.
 
 Every client implements `DzDelivery\Contracts\ShippingProviderInterface`, so you can type-hint against the interface and swap carriers.
 
@@ -116,16 +127,16 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 
 ### Which methods each carrier supports
 
-| Method | ZRExpress | Yalidine | Maystro | Ecotrack | NoEST | E-com |
-|--------|-----------|----------|---------|----------|-------|-------|
-| `createParcel` | yes | yes | yes | yes (`pending` until validated, see `autoValidate`) | yes (same, `autoValidate`) | yes (same, `autoValidate`) |
-| `track` | yes | yes | `NOT_SUPPORTED` (use [webhooks](#7-maystro-webhooks)) | yes | yes | yes |
-| `getFees` | yes | yes | yes | yes (per wilaya) | yes (per wilaya) | yes (per wilaya) |
-| `getWilayas` / `getCommunes` | yes | yes | yes | yes | yes | yes |
-| `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) | yes (stations) | yes (bureaux) |
-| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` (webhooks) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` | yes (`GET /colis`) |
-| `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) | yes (only orders not validated yet) | yes (only parcels "En Préparation") |
-| `healthCheck` | yes | yes | yes | yes | yes | yes |
+| Method | ZRExpress | Yalidine | Maystro | Ecotrack | NoEST | E-com | MDM | Elogistia |
+|--------|-----------|----------|---------|----------|-------|-------|-----|-----------|
+| `createParcel` | yes | yes | yes | yes (`pending` until validated, see `autoValidate`) | yes (same, `autoValidate`) | yes (same, `autoValidate`) | yes (MDM catalog products, `storeId`) | yes |
+| `track` | yes | yes | `NOT_SUPPORTED` (use [webhooks](#7-maystro-webhooks)) | yes | yes | yes | yes | yes |
+| `getFees` | yes | yes | yes | yes (per wilaya) | yes (per wilaya) | yes (per wilaya) | yes (per commune) | yes (per wilaya) |
+| `getWilayas` / `getCommunes` | yes | yes | yes | yes | yes | yes | yes | yes |
+| `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) | yes (stations) | yes (bureaux) | yes (partner offices) | `NOT_SUPPORTED` (Elogistia picks the desk) |
+| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` (webhooks) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` | yes (`GET /colis`) | yes (`parcels/search`) | `NOT_SUPPORTED` |
+| `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) | yes (only orders not validated yet) | yes (only parcels "En Préparation") | `NOT_SUPPORTED` | `NOT_SUPPORTED` |
+| `healthCheck` | yes | yes | yes | yes | yes | yes | yes | yes |
 
 ### 3.1 `createParcel(ParcelInput|array $input): Parcel`
 

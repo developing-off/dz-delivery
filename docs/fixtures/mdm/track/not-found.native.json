@@ -1,0 +1,19 @@
+[
+  {
+    "status": 404,
+    "headers": {},
+    "body": {
+      "method": "GET",
+      "path": "/api/v2/shipping/parcels/PRC-TEST00",
+      "status": 404,
+      "correlationId": "00000000-0000-0000-0000-000000000000",
+      "error": {
+        "code": "PARCELS.NOT_FOUND",
+        "message": "Parcel with trackingId PRC-TEST00 not found",
+        "payload": {
+          "trackingId": "PRC-TEST00"
+        }
+      }
+    }
+  }
+]

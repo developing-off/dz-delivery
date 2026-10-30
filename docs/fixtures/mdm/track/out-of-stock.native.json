@@ -1,0 +1,54 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "trackingId": "PRC-TEST03",
+      "orderId": "ORD-TEST01",
+      "type": "delivery",
+      "subType": "ecommerce",
+      "paymentMethod": "cash",
+      "client": {
+        "firstName": "Test",
+        "lastName": "Client",
+        "phone": "(+213)550123456",
+        "phone2": null
+      },
+      "destinationAddress": {
+        "cityId": "DZA161621",
+        "stateId": "DZA16",
+        "cityCode": "1621",
+        "cityName": "Bab Ezzouar",
+        "stateCode": "16",
+        "stateName": "Alger",
+        "streetAddress": "12 rue des Tests"
+      },
+      "status": "out-of-stock",
+      "statusDate": "2026-10-29T19:06:13.145Z",
+      "isStopDesk": false,
+      "notes": "Ref: CMD-1001",
+      "store": {
+        "trackingId": "STR-TEST01",
+        "name": "Boutique test"
+      },
+      "statusHistory": [
+        {
+          "status": "out-of-stock",
+          "notes": "outbound OTB-TEST03 out of stock",
+          "date": "2026-10-29T14:31:51.000Z",
+          "createdAt": "2026-10-29T14:31:51.000Z",
+          "meta": null,
+          "responsible": null
+        },
+        {
+          "status": "preparing",
+          "notes": "",
+          "date": "2026-10-29T14:29:19.000Z",
+          "createdAt": "2026-10-29T14:29:19.000Z",
+          "meta": null,
+          "responsible": null
+        }
+      ]
+    }
+  }
+]

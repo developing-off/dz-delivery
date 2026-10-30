@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v2/shipping/parcels/PRC-TEST01",
+    "headers": {
+      "x-api-key": "test-api-key"
+    }
+  }
+]
