@@ -1,0 +1,13 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/desks",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/get/communes/16"
+  }
+]

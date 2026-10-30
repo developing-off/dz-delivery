@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 201,
+    "message": "stopdesk introuvable (code=ZZZ, wilaya=16)",
+    "details": [
+      {
+        "message": "stopdesk introuvable (code=ZZZ, wilaya=16)",
+        "code": "validation",
+        "field": "stopDeskId"
+      }
+    ]
+  }
+}

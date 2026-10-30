@@ -1,0 +1,96 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "tracking": "ECTEST02",
+      "date_creation": "2026-10-04 14:51:57+01:00",
+      "situation": "Livrée",
+      "id_situation": 7,
+      "etat_logistique": "Récupérer",
+      "id_etat_logistique": 8,
+      "nom_complet": "Test Client",
+      "mobile": "0550000000",
+      "commune": "Bab Azzouar",
+      "id_wilaya": 16,
+      "article": "Casque audio",
+      "quantite": 1,
+      "total": 8950.0,
+      "note_fournisseur": null,
+      "stopdesk": 0,
+      "code_stopdesk": null,
+      "nom_stopdesk": null,
+      "id_externe": "CMD-1001",
+      "encaisser": true,
+      "recouvert": true,
+      "historique": [
+        {
+          "date": "2026-10-04 14:51:57+01:00",
+          "ville": 16,
+          "situation": "En Préparation",
+          "commentaire": "Création"
+        },
+        {
+          "date": "2026-10-04 14:52:18+01:00",
+          "ville": 16,
+          "situation": "En Traitement",
+          "commentaire": "Prêt à expédier"
+        },
+        {
+          "date": "2026-10-04 15:44:51+01:00",
+          "ville": 16,
+          "situation": "En livraison",
+          "commentaire": null
+        },
+        {
+          "date": "2026-10-05 10:36:03+01:00",
+          "ville": 16,
+          "situation": null,
+          "commentaire": "A Relancé pour Domicile"
+        },
+        {
+          "date": "2026-10-05 10:38:14+01:00",
+          "ville": 16,
+          "situation": "Type de Colis",
+          "commentaire": "Colis avec Echange"
+        },
+        {
+          "date": "2026-10-05 10:38:52+01:00",
+          "ville": 16,
+          "situation": "Type de Livraison",
+          "commentaire": "-> Domicile : Ain Taya"
+        },
+        {
+          "date": "2026-10-07 16:29:38+01:00",
+          "ville": 16,
+          "situation": "Reporté",
+          "commentaire": "09/10/2026"
+        },
+        {
+          "date": "2026-10-07 16:55:09+01:00",
+          "ville": 16,
+          "situation": "Information",
+          "commentaire": "Ex : 0"
+        },
+        {
+          "date": "2026-10-07 16:55:18+01:00",
+          "ville": 16,
+          "situation": "Livrée",
+          "commentaire": null
+        },
+        {
+          "date": "2026-10-15 14:24:09+01:00",
+          "ville": 16,
+          "situation": "Encaisser",
+          "commentaire": "43110"
+        },
+        {
+          "date": "2026-10-18 14:22:37+01:00",
+          "ville": 16,
+          "situation": "Récupérer",
+          "commentaire": "Paiement PMEP0000"
+        }
+      ]
+    }
+  }
+]

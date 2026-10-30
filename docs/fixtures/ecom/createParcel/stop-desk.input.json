@@ -1,0 +1,11 @@
+{
+  "recipientName": "Test Client",
+  "phone": "0550123456",
+  "address": "12 rue des Tests",
+  "wilayaId": 16,
+  "communeName": "Alger Centre",
+  "productName": "Casque audio",
+  "price": 4500,
+  "isStopDesk": true,
+  "stopDeskId": "16B"
+}

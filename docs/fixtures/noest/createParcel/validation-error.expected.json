@@ -1,0 +1,17 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 422,
+    "message": "The phone field must be between 9 and 10 digits.; The selected commune is invalid.",
+    "details": [
+      {
+        "field": "phone",
+        "message": "The phone field must be between 9 and 10 digits."
+      },
+      {
+        "field": "communeId",
+        "message": "The selected commune is invalid."
+      }
+    ]
+  }
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "05A": {
+        "map": "https://maps.app.goo.gl/test",
+        "code": "5A",
+        "name": "Batna",
+        "email": "",
+        "phones": {
+          "0": "0550000005",
+          "1": "",
+          "2": "",
+          "3": ""
+        },
+        "address": "Adresse test 5A",
+        "commune": "Batna",
+        "horaires": "Sam–Jeu, 8h30–18h00"
+      },
+      "16A": {
+        "map": "https://maps.app.goo.gl/test",
+        "code": "16A",
+        "name": "Alger « Bir mourad Rais »",
+        "email": "",
+        "phones": {
+          "0": "0550000161",
+          "1": "",
+          "2": "",
+          "3": ""
+        },
+        "address": "Adresse test 16A",
+        "commune": "Bir Mourad Rais",
+        "horaires": "Sam–Jeu, 8h30–18h00"
+      },
+      "16B": {
+        "map": "https://maps.app.goo.gl/test",
+        "code": "16B",
+        "name": "Alger « Bab Ezzouar »",
+        "email": "",
+        "phones": {
+          "0": "0550000162",
+          "1": "",
+          "2": "",
+          "3": ""
+        },
+        "address": "Adresse test 16B",
+        "commune": "Bab Azzouar",
+        "horaires": "Sam–Jeu, 8h30–18h00"
+      },
+      "16C": {
+        "map": "https://maps.app.goo.gl/test",
+        "code": "16C",
+        "name": "Alger « Chéraga »",
+        "email": "",
+        "phones": {
+          "0": "0550000163",
+          "1": "",
+          "2": "",
+          "3": ""
+        },
+        "address": "Adresse test 16C",
+        "commune": "Cheraga",
+        "horaires": "Sam–Jeu, 8h30–18h00"
+      }
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 554,
+        "nom": "Alger Centre",
+        "wilaya_id": 16,
+        "code_postal": "16001",
+        "is_active": 1
+      },
+      {
+        "id": 574,
+        "nom": "Bab Azzouar",
+        "wilaya_id": 16,
+        "code_postal": "16021",
+        "is_active": 1
+      },
+      {
+        "id": 583,
+        "nom": "Bordj El Kiffan",
+        "wilaya_id": 16,
+        "code_postal": "16030",
+        "is_active": 1
+      },
+      {
+        "id": 600,
+        "nom": "Commune Test Inactive",
+        "wilaya_id": 16,
+        "code_postal": "16099",
+        "is_active": 0
+      }
+    ]
+  }
+]

@@ -3,7 +3,7 @@ export { ShippingError, isShippingError, codeFromHttpStatus } from './errors';
 export type { ShippingErrorOptions } from './errors';
 export { createStatusMapper, normalizeStatusKey } from './status';
 export type { StatusMapper, StatusMapperOptions } from './status';
-export { normalizeAlgerianPhone } from './utils';
+export { normalizeAlgerianPhone, looseNameKey, findLocationLoosely } from './utils';
 export type { ShippingProvider } from './providers/types';
 export {
   ZRExpressProvider,
@@ -43,15 +43,19 @@ export {
   resolveEcotrackBaseUrl,
   ECOTRACK_COURIERS,
 } from './providers/ecotrack';
+export { NoestProvider, mapNoestStatus, NOEST_DEFAULT_BASE_URL } from './providers/noest';
+export { EcomProvider, mapEcomStatus, ECOM_DEFAULT_BASE_URL } from './providers/ecom';
 export { PARCEL_STATUSES } from './types';
 export type {
   BaseClientConfig,
+  EcomConfig,
   EcotrackConfig,
   FeeQuery,
   FeeQuote,
   HealthCheckResult,
   Location,
   MaystroConfig,
+  NoestConfig,
   Parcel,
   ParcelInput,
   ParcelListPage,

@@ -1,0 +1,56 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 523,
+        "id_wilaya": 16,
+        "commune": "Alger Centre",
+        "code_postal": 16001,
+        "livrable": true
+      },
+      {
+        "id": 545,
+        "id_wilaya": 16,
+        "commune": "Bab Ezzouar",
+        "code_postal": 16021,
+        "livrable": true
+      },
+      {
+        "id": 566,
+        "id_wilaya": 16,
+        "commune": "Ain Benian",
+        "code_postal": 16044,
+        "livrable": true
+      },
+      {
+        "id": 599,
+        "id_wilaya": 16,
+        "commune": "Commune Test",
+        "code_postal": 16099,
+        "livrable": false
+      }
+    ]
+  },
+  {
+    "status": 422,
+    "headers": {},
+    "body": {
+      "error": {
+        "code": "validation",
+        "message": "Données invalides",
+        "details": [
+          {
+            "champ": "0.nom_complet",
+            "raison": "Field required"
+          },
+          {
+            "champ": "0.id_wilaya",
+            "raison": "Input should be less than or equal to 58"
+          }
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "status": 201,
+    "headers": {},
+    "body": {
+      "total": 1,
+      "crees": 1,
+      "echecs": 0,
+      "resultats": [
+        {
+          "index": 0,
+          "ok": true,
+          "tracking": "ECTEST02",
+          "id_colis": 827841,
+          "tarif_si_livrer": 450,
+          "tarif_si_annuler": 0,
+          "code_stopdesk": "16B",
+          "nom_stopdesk": "Bab Ezzouar",
+          "erreur": null
+        }
+      ]
+    }
+  }
+]

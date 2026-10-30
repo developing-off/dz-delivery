@@ -1,0 +1,20 @@
+[
+  {
+    "method": "POST",
+    "path": "/api_v2/colis",
+    "headers": {
+      "X-API-Key": "test-api-key",
+      "X-API-Token": "test-api-token"
+    },
+    "body": [
+      {
+        "stopdesk": 1,
+        "code_stopdesk": "16B",
+        "id_wilaya": 16,
+        "article": "Casque audio",
+        "quantite": 1,
+        "total": 4500
+      }
+    ]
+  }
+]

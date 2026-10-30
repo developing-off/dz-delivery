@@ -3,6 +3,17 @@
 All notable changes to `@dz-delivery/core` (npm) and `dz-delivery/sdk` (Composer).
 The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, minor versions may change the API.
 
+## [Unreleased]
+
+### Added
+- NoEST provider (`noest`) in TypeScript and PHP: create (optional `autoValidate`), track, fees, wilayas, communes, stop desks (stations), cancel (orders not validated yet) and health check. `listParcels` throws `NOT_SUPPORTED`. Built from the NOEST Public API docs v2.3 and checked against live responses. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#noest).
+- Spelling-tolerant commune matching for NoEST (`Bab Ezzouar` → NOEST's `Bab Azzouar`): exported helpers `looseNameKey` / `findLocationLoosely` (TS) and `Text::looseKey` / `Text::findLoosely` (PHP). Only used after the exact id / name lookup fails, and only for an unambiguous match.
+
+- E-com Delivery provider (`ecom`, API v2) in TypeScript and PHP: create (optional `autoValidate` → `confirmee`), track, fees, wilayas, communes (deliverable only), stop desks, **`listParcels`** (`GET /colis`, `updatedSince` via `type_date=action`), cancel (parcels still "En Préparation") and health check. See [`docs/PROVIDERS.md`](./docs/PROVIDERS.md#ecom). Checked live on a test account: reads, unvalidated create (home + stop desk) then delete, and error bodies; live-only states `Récupérer` (payment collected → `delivered`), `Retour Fournisseur` / `Retour Stock` (→ `returned`) are mapped, and history notes keep the previous status.
+
+### Changed
+- Composer metadata: `authors` filled in.
+
 ## [0.1.8] — 2026-10-24
 
 ### Changed

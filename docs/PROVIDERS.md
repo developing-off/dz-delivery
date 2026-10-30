@@ -9,7 +9,8 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 | Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
 | Maystro Delivery | `maystro` | built from the public API docs (2026-10-20), implemented in PHP and TS; `track` / `cancelParcel` not supported |
 | Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
-| Ecom (ecom-dz.net) | `ecom` | **out of MVP / backlog** — see [below](#ecom-out-of-mvp--backlog); legacy app company-id `19` (`Delivery/EcomDelivery.php`) |
+| NoEST | `noest` | NOEST Public API docs v2.3 + live read-only checks (2026-10-30), implemented in PHP and TS; `listParcels` not supported |
+| E-com Delivery | `ecom` | API v2 docs (v2.153, 2026-10-30), implemented in PHP and TS, including `listParcels` |
 
 ---
 
@@ -417,7 +418,9 @@ Cross-check of live tariff sources in Confirmation-api vs this SDK (orders / cre
 | **ZRExpress** | Tariffs from **DB only** in Confirmation; the guide has **no** fees HTTP endpoint | SDK uses live `GET /api/v1/delivery-pricing/rates/{toTerritoryId}` ✓ |
 | **Ecotrack** (DHD, Anderson, …) | `GET /api/v1/get/fees` | Already in SDK ✓ |
 | **Maystro** | `GET https://backend.maystro-delivery.com/api/stores/delivery_price/?commune=&delivery_type=&express=` | SDK primary path (this change); orders-management options/prices kept as fallback ✓ |
-| **NoEST / MDM / Ecom** | — | Still backlog (see below) |
+| **NoEST** | `GET https://app.noest-dz.com/api/public/fees` | SDK uses the live grid ✓ |
+| **Ecom** | `GET https://ecom-dz.com/api_v2/tarifs` | SDK uses the live grid ✓ |
+| **MDM** | — | Still backlog (see below) |
 
 ---
 
@@ -538,52 +541,185 @@ Only the stable **keys** are mapped (activity keys and order status enum keys); 
 
 ---
 
+## NoEST
+
+> Built from the **NOEST Public API documentation v2.3** (May 2026, PDF given to partners, not committed) and checked against live responses (2026-10-30: wilayas, communes, desks, fees, unknown tracking, and the error bodies of create / delete / valid on a suspended account). No order could be created on that account, so the **success** bodies of create, validation and deletion still follow the documentation only.
+
+- Base URL: `https://app.noest-dz.com/api/public` (paths below are relative to it).
+- Rate limit: 60 requests / minute; server timeout 30 s.
+
+### Auth
+
+| Option | Value | Notes |
+|--------|-------|-------|
+| `apiToken` | API token from the NOEST partner dashboard | Sent as `Authorization: Bearer <apiToken>` (a `Bearer ` prefix in the value is stripped). Without it: HTTP 401 `{"error":"Unauthenticated."}`. |
+| `userGuid` | partner GUID from the same dashboard | Sent as `user_guid` in every POST body. GET endpoints do not need it. |
+| `autoValidate` | `false` (default) | `true` → `POST valid/order` right after creation. Unvalidated orders stay editable and deletable but are not picked up. |
+
+> The legacy app (`Confirmation-api`) sent `api_token` in the JSON body, even on GETs. The Bearer header from the v2.3 docs works on every endpoint tested; the SDK uses it.
+
+### Method mapping
+
+| Unified method | Native endpoint | Notes |
+|----------------|-----------------|-------|
+| `createParcel` | `POST create/order` (JSON body) | Commune resolved first through `get/communes/{wilaya}` (NOEST spelling). Response `{ success, tracking, reference, regional_hub_name, wilaya_rank }` → `trackingNumber`; status `pending` (or `created` with `autoValidate`). |
+| `track` | `POST get/trackings/info` `{ user_guid, trackings: [t] }` | Response keyed by tracking: `{ OrderInfo, activity: [...], deliveryAttempts }`. Unknown tracking → HTTP **404** `{"message":"Trackings non trouvés"}` → `NOT_FOUND`. |
+| `getFees` | `GET fees` | `tarifs.delivery` / `tarifs.return`, keyed by wilaya: `tarif` (home), `tarif_stopdesk`. No row (wilayas 50, 54 at test time) → `NOT_FOUND`. Not commune- or weight-dependent. |
+| `getWilayas` | `GET get/wilayas` | `[{ code, nom, is_active }]`; inactive wilayas are skipped. |
+| `getCommunes` | `GET get/communes/{wilaya_id}` | `[{ id, nom, wilaya_id, code_postal, is_active }]`; `Location.id` = `code` = `code_postal`. |
+| `getStopDesks` | `GET desks` | All stations keyed `"16B"`: `{ code, name, address, commune, phones, horaires, map, email }`. Filtered by wilaya (digits of `code`); with `communeId`, by `commune` (same spelling as `get/communes`). `StopDesk.id` = `code` → `station_code`. |
+| `listParcels` | — | **`NOT_SUPPORTED`**: no list endpoint. |
+| `cancelParcel` | `POST delete/order` `{ user_guid, tracking }` | Only orders **not validated** yet; `{ success: false }` → `VALIDATION_ERROR`. After validation use the NOEST dashboard (`ask/return` is not mapped). |
+| `healthCheck` | `GET get/wilayas` | |
+
+Not mapped yet (documented by NOEST): bulk create / validate (`create/orders`, `valid/orders`, ≤ 100), `update/order`, `update/order/before/expedition`, `add/maj` (remark), `ask/new-tentative`, `ask/return`, `get/order/label` (PDF).
+
+### Field mapping (`createParcel`)
+
+| ParcelInput | NOEST | Notes |
+|-------------|-------|-------|
+| `recipientName` | `client` | ≤ 255 chars |
+| `phone` / `phone2` | `phone` / `phone_2` | Local format `0XXXXXXXXX` (9–10 digits) |
+| `address` | `adresse` | ≤ 255 chars |
+| `wilayaId` / `wilayaName` | `wilaya_id` | Official code `1`–`58` |
+| `communeId` / `communeName` | `commune` | NOEST name, resolved by id, exact name, then spelling-tolerant match (see below) |
+| `price` | `montant` | Amount collected, delivery included |
+| `productName` / `productList` | `produit` | `"Mug x2, T-shirt"` |
+| — | `type_id` | Always `1` (delivery). Exchange (`2`) and pick-up (`3`) are not exposed. |
+| `isStopDesk` / `stopDeskId` | `stop_desk` / `station_code` | `station_code` must belong to the destination wilaya |
+| `weight` | `poids` | Sent only when set |
+| `remark` | `remarque` | ≤ 255 chars |
+| `orderId` | `reference` | ≥ 5 chars; NOEST rejects duplicates (`duplicate_order`) |
+
+### Commune names
+
+NOEST spells some communes differently from the usual form (`Bab Azzouar` for `Bab Ezzouar`), the same way in `get/communes` and `desks`. `createParcel` and `getStopDesks` resolve `communeId` / `communeName` in this order:
+
+1. exact `Location.id` (postal code, e.g. `16021`);
+2. exact name, case / accent / separator-insensitive;
+3. **spelling-tolerant** name: vowels dropped and doubled letters collapsed (`looseNameKey` / `Text::looseKey`: `Bab Ezzouar` and `Bab Azzouar` → `bzr`). Used only when exactly one commune of the wilaya matches and the key has ≥ 3 letters, so it never picks between two communes; otherwise `NOT_FOUND` as before. Cases: [`fixtures/loose-names.json`](./fixtures/loose-names.json).
+
+Steps 1–2 behave as before; step 3 only turns former `NOT_FOUND` errors into a match.
+
+### Status mapping
+
+From `activity[].event_key`; when a row has no key, from the English `event` label (`Delivered`, …). French display labels (`Validé`) are not mapped. Remark events (`edited_informations`, `edit_price`, `edit_wilaya`, `extra_fee`) keep the previous status. Full table: [`fixtures/noest/statuses.json`](./fixtures/noest/statuses.json).
+
+| Native | Unified |
+|--------|---------|
+| `upload` | `pending` |
+| `customer_validation` | `created` |
+| `validation_collect_colis`, `validation_reception_admin`, `validation_reception`, `fdr_activated`, `sent_to_redispatch`, `nouvel_tentative_asked_by_customer`, `mise_a_jour`, `colis_suspendu`, `return_redispatched_to_livraison`, `pickedup`, `valid_return_pickup` | `in_transit` |
+| `livre`, `livred`, `verssement_*`, `validation_reception_cash_by_partener`, `echange_valide`, `echange_valid_by_hub`, `pickup_picked_recu`, `colis_pickup_transmit_to_partner` | `delivered` |
+| `return_*`, `retour_dispatched_to_partenaires`, `colis_retour_transmit_to_partner`, `annulation_dispatch_retour`, `cancel_return_dispatched_to_partenaire`, `livraison_echoue_recu` (except `return_redispatched_to_livraison`) | `returned` |
+| `ask_to_delete_by_admin`, `ask_to_delete_by_hub` | `cancelled` |
+
+### Errors
+
+| NOEST | Unified |
+|-------|---------|
+| HTTP 401 `{"error":"Unauthenticated."}` (bad / missing token) | `AUTH_FAILED` |
+| HTTP 404 `{"success":false,"message":"Partenaire introuvable"}` (bad `userGuid`, any POST) | `AUTH_FAILED` — *live* |
+| HTTP 422 `{"success":false,"errors":{"account_suspended":"Compte suspendu"}}` | `AUTH_FAILED`, `details[0].code = "account_suspended"` — *live* |
+| HTTP 422 `{ success: false, errors: { <business code>: "<message>" } }` | `VALIDATION_ERROR` for the codes below, `details[].code` = the key |
+| HTTP 422 `{ message, errors: { field: [..] } }` | `VALIDATION_ERROR`, `details[].field` mapped to `ParcelInput` names (`commune` → `communeId`, `client` → `recipientName`, …) |
+| HTTP 422 `errors.tracking` on `delete/order` (unknown tracking) | `NOT_FOUND` — *live* |
+| HTTP 404 `{"message":"Trackings non trouvés"}` on `get/trackings/info` | `NOT_FOUND` — *live* |
+| HTTP 200 `{ success: false, message }` | `PROVIDER_ERROR` (or the mapped code when the body carries a known error code) |
+| `duplicate_order`, `inactive_commune`, `zip_code`, `max_amount_exceeded`, `stopdesk_disabled`, `station_code`, `out_of_stock`, `already_validated`, … | `VALIDATION_ERROR` |
+| HTTP 429 | `RATE_LIMITED` |
+
+### Limitations and assumptions
+
+- No sandbox: the **success** fixtures of `createParcel`, `cancelParcel` and `valid/order` replay the documented examples (the error fixtures marked *live* above are real). Reports with anonymized real responses are welcome.
+- The documented tracking examples mostly omit `event_key`; the SDK falls back to the English label. Real accounts may return French labels, mapped to `unknown` until fixtures exist.
+- `zip_code` (postal code instead of wilaya + commune), `stock` / `quantite`, `remboursement`, `shop_name` and `station_expedition` are not exposed.
+
+---
+
+## Ecom
+
+> Built from the **E-com Delivery API v2** documentation (developer page of the partner dashboard, v2.153, read 2026-10-30). Fixtures replay the documented examples; no live response checked yet. Replaces the legacy `ecom-dz.net/Api_v1` notes (Confirmation-api `EcomDelivery.php`), which no longer apply.
+
+- Base URL: `https://ecom-dz.com/api_v2`. JSON (UTF-8), dates ISO 8601 (`2026-06-12 20:49:16+00:00`).
+- Rate limits: 50 / min, 2 000 / h, 20 000 / day → HTTP 429 (`X-RateLimit-Remaining-*` headers on every authenticated response).
+
+### Auth
+
+| Option | Value | Notes |
+|--------|-------|-------|
+| `apiKey` | `KEY` from the developer page | Sent as `X-API-Key`. |
+| `apiToken` | `Token` from the same page (regenerable) | Sent as `X-API-Token`. Bad / missing → HTTP 401 `api_non_autorise` / `identifiants_api_manquants`. |
+| `autoValidate` | `false` (default) | `true` → `confirmee: 1` at creation ("En Traitement", picked up). Otherwise parcels stay "En Préparation": editable and deletable. |
+
+### Method mapping
+
+| Unified method | Native endpoint | Notes |
+|----------------|-----------------|-------|
+| `createParcel` | `POST /colis` (array of 1) | Best-effort per line: HTTP **201** even when `resultats[0].ok === false` → `VALIDATION_ERROR` with the line `code` (e.g. `total_insuffisant` → `field: price`). `trackingNumber` = `resultats[0].tracking`. |
+| `track` | `GET /colis/{tracking}` | Parcel status from `situation` + `etat_logistique`, events from `historique[]`. 404 `colis_introuvable` → `NOT_FOUND`. |
+| `getFees` | `GET /tarifs` | `wilayas[]`: `domicile`, `stopdesk`, `annuler` (→ `returnFee`). `service` / `emballage` (account-wide, billed on top) stay in `raw`. |
+| `getWilayas` | `GET /wilayas` | `{ id, libelle, domicile, stopdesk }`; wilayas with neither mode are skipped. |
+| `getCommunes` | `GET /communes?id_wilaya=` | `{ id, commune, code_postal, livrable }`; only `livrable: true`. `Location.id` = E-com id, `code` = postal code. |
+| `getStopDesks` | `GET /stopdesks?id_wilaya=` | `StopDesk.id` = `code_stopdesk` (→ `stopDeskId`), first number of `tel_contact` → `phone`. `communeId` filters on the desk `commune`. |
+| `listParcels` | `GET /colis?page&limit` | ≤ 100 per page, newest first. `keyword` → `tracking` filter, `updatedSince` → `type_date=action&date_debut=<day, Algeria time>`, `orderId` / `status` filtered client-side. `total` only on page 1: later pages report a lower bound. Checked live: the *action* date is the last logistic move (dispatch, delivery, return, payment), so parcels never handled yet (still `En Préparation`, or only confirmed through the API) are **not** returned by `updatedSince`. |
+| `cancelParcel` | `DELETE /colis/{tracking}` | Soft delete, only "En Préparation". 409 → `VALIDATION_ERROR`, 404 → `NOT_FOUND`. |
+| `healthCheck` | `GET /wilayas` | (`GET /test` also exists and returns the account flags `stock`, `colis_0da`.) |
+
+Not mapped yet: `PUT /colis/{tracking}`, `POST /colis/confirmer`, bulk create (≤ 100), labels (`/colis/{tracking}/bordereau`, `/colis/bordereaux`, HTML), `/colis/historique`, `/colis/statuts`, `/colis/maj`, payments, products, pick-up requests, claims, webhooks (`PUT /webhook`, HMAC-SHA256 `x-webhook-signature`).
+
+### Field mapping (`createParcel`)
+
+| ParcelInput | E-com | Notes |
+|-------------|-------|-------|
+| `recipientName` | `nom_complet` | 1–60 chars |
+| `phone` / `phone2` | `mobile_1` / `mobile_2` | Local format `0XXXXXXXXX` |
+| `address` | `adresse` | ≤ 100 chars |
+| `wilayaId` / `wilayaName` | `id_wilaya` | 1–58 |
+| `communeId` / `communeName` | `commune` | Home delivery only. Resolved by id, postal code, name, then spelling-tolerant name (see [NoEST — Commune names](#commune-names)); `livrable: false` → `VALIDATION_ERROR` before sending. |
+| `isStopDesk` / `stopDeskId` | `stopdesk` / `code_stopdesk` | With `stopdesk: 1` E-com ignores `commune` (taken from the desk), so no commune lookup is made. |
+| `productName` / `productList` | `article`, `quantite`, `ref_article` | One product line → its name, its quantity and its `sku` as `ref_article` (stock accounts); several lines → one description, quantity 1. |
+| `price` | `total` | 0–150 000 DA. Accounts with `colis_0da: false` cannot go below the wilaya rate (`total_insuffisant`). |
+| `remark` | `note_fournisseur` | ≤ 255 chars |
+| `orderId` | `id_externe` | ≤ 20 chars |
+
+Unknown fields are refused (422) by E-com: the SDK only sends the fields above.
+
+### Status mapping
+
+Labels of `GET /situations` and `GET /etats-logistiques` (case / accent-insensitive). A parcel's status: a final **situation** (`Livrée`, `Annuler`, `Commande Annuler`, …) wins, then the **état logistique**, then any other situation. Full table: [`fixtures/ecom/statuses.json`](./fixtures/ecom/statuses.json).
+
+| Native | Unified |
+|--------|---------|
+| `En Préparation`, `Attend Confirmation`, `Commande Reporté`, `Commande a Relancé` | `pending` |
+| `En Traitement`, `Commande Confirmée` | `created` |
+| `Au Bureau`, `En livraison`, `Sortir en livraison`, `Dispatcher`, `Ne Réponde pas #1–3`, `En attente du client`, `Reporté*`, `Appel Tel`, `SMS Envoyé`, `WhatsApp OK` | `in_transit` |
+| `Livrée`, `Encaisser`, `Recouvert`, `Récupérer` (payment collected) | `delivered` |
+| `Annuler`, `Annuler x3`, `Retour de Dispatche`, `Retour Navette`, `Retour Fournisseur`, `Retour Stock` | `returned` |
+| `Commande Annuler`, `Supprimée` | `cancelled` |
+| `EnCours` (default situation), `BIZ`, `Suivi par E-com` | `unknown` |
+
+`Récupérer`, `Retour Fournisseur` and `Retour Stock` are missing from the docs but returned live (`GET /etats-logistiques`); `Récupérer` follows `Livrée` → `Encaisser` with a payment reference. In `track()` events, history notes (`Information`, `Type de Colis`, `Type de Livraison`, `BIZ`, steps without a situation) keep the previous status.
+
+### Errors
+
+All global errors: `{ "error": { "code", "message", "details"? } }` (the opening-hours refusals nest it under `detail`).
+
+| E-com | Unified |
+|-------|---------|
+| 401 `identifiants_api_manquants`, `api_non_autorise` | `AUTH_FAILED`, `details[0].code` = native code |
+| 404 `colis_introuvable` | `NOT_FOUND` |
+| 409 (delete) | `VALIDATION_ERROR` |
+| 422 `validation` with `details: [{ champ: "0.nom_complet", raison }]` | `VALIDATION_ERROR`, `details[].field` mapped to `ParcelInput` names |
+| 422 `total_insuffisant`, `trop_de_colis` | `VALIDATION_ERROR` (`total_insuffisant` → `field: price`) |
+| 429 `quota_depasse` | `RATE_LIMITED` |
+| 201 with `resultats[0].ok: false` | `VALIDATION_ERROR`, `details[0].code` = line `code` (live: unknown desk → `code: validation`, `stopdesk introuvable (code=…, wilaya=…)` → `field: stopDeskId`) |
+
+---
+
 ## Out of MVP / backlog
 
-Carriers present in the legacy `Delivery/` monolith but **not** implemented in the SDK yet. Do not add code until fixtures + a full method table exist (same bar as ZRExpress / Yalidine).
-
-### Ecom (out of MVP / backlog)
-
-> Audited against `Delivery/EcomDelivery.php` + `Delivery/DeliveryController.php` (2026-10-20). Legacy `delivery_companies.id = 19`, name `Ecom`. **Not trivial**: create/track hit the public API; fees / wilayas / communes / stop desks are served from local delivery DB tables (`ecom_delivery_prices`, `ecom_delivery_communes`, `ecom_delivery_stopdesks`) — no live location/fee HTTP endpoints in the adapter. No `sync_status_ecom_*.log` samples in-repo at audit time.
-
-- Base URL: `https://ecom-dz.net` (override env `ECOM_DELIVERY_BASE_URL`)
-- API prefix: prefer `/Api_v1/…` (create colis); tracking/list may need fallback `/API_v1/…` when the server returns 404/500 “aucun point d'entrée”
-
-#### Auth (proposed SDK config)
-
-| Header | Value | Config key |
-|--------|-------|------------|
-| `Key` | API key | `apiKey` (`ECOM_API_KEY`) |
-| `Token` | API token | `apiToken` (`ECOM_API_TOKEN`) |
-| `Page` | pagination (default `1`) | — |
-| `Accept` / `Content-Type` | `application/json` | — |
-
-#### Proposed method mapping
-
-| Unified method | Native / source in legacy | Notes for a future SDK provider |
-|----------------|---------------------------|----------------------------------|
-| `createParcel` | `POST /Api_v1/Colis` body `{ Colis: [ {…} ] }` | Response `Colis[0].Tracking` → `trackingNumber`. Map `ParcelInput` → `NomComplet`, `Mobile_1`/`Mobile_2`, `Adresse`, `Wilaya` (code), `Commune` (**exact name**), `Article`, `Ref_Article`, `Total`, `ID_Externe`, `Stopdesk`/`CodeStopdesk`, `Echange`, `NoteFournisseur`, `Source`. |
-| `track` | `GET …/Colis/Tracking/{tracking}` (+ `/API_v1/` fallback); optional `POST …/Colis/Liste` (≤100) | Parcel may be a single object or list under `Colis`/`colis`. Status from `Avancement` + `Situation`; `Date_Livrée`/`Date_Livree` non-null → `delivered`. |
-| `getFees` | **DB** `ecom_delivery_prices` (`tarif` / `tarif_stopdesk`) | No HTTP fee API in adapter → SDK either needs a documented native endpoint, or ships static/fixture data, or returns `NOT_SUPPORTED` until then. |
-| `getWilayas` | **DB** distinct `ecom_delivery_communes.wilaya_id` (+ names via `yalidine_wilayas`) | Same caveat as fees. |
-| `getCommunes` | **DB** `ecom_delivery_communes` | Includes derived `has_stop_desk` from stopdesk name match. |
-| `getStopDesks` | **DB** `ecom_delivery_stopdesks` | `stopdesk_code` → `StopDesk.id` / create `CodeStopdesk`. |
-| `cancelParcel` | — | **Not present** in legacy → likely `NOT_SUPPORTED`. |
-| `healthCheck` | probe `GET /Api_v1/Colis` or Tracking with dummy | TBD once live credentials exist. |
-
-#### Status mapping (draft from legacy `mapColisToPlatformStatus`)
-
-| Native signal | Unified |
-|---------------|---------|
-| non-empty `Date_Livrée` / `Date_Livree` | `delivered` |
-| text contains `perdu` | map via platform helper (failed / returned — confirm) |
-| other `Avancement` / `Situation` | normalize through shared status helper → often `in_transit` / `unknown` until fixtures exist |
-
-#### Blockers before implementation
-
-1. Capture anonymized JSON fixtures for create, track, and (if any) live wilayas/fees endpoints — or formally decide locations/fees are `NOT_SUPPORTED` / offline catalog.
-2. Confirm official PDF/docs for path casing and error bodies.
-3. Add `T6.1c` work only after the above; keep TS and PHP in lockstep with this table.
+Carriers present in the legacy `Delivery/` monolith but **not** implemented in the SDK yet: **MDM** (`api.mdm.express`, `x-api-key` / JWT, OpenAPI spec mentioned in `MdmController.php`) and **Elogistia** (`api.elogistia.com`). Do not add code until fixtures + a full method table exist (same bar as ZRExpress / Yalidine).
 
 ---
 

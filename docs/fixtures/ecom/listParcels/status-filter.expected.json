@@ -1,0 +1,16 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "ECTEST02",
+        "trackingNumber": "ECTEST02",
+        "status": "pending",
+        "provider": "ecom"
+      }
+    ],
+    "page": 1,
+    "pageSize": 50,
+    "totalCount": 2,
+    "hasNext": false
+  }
+}

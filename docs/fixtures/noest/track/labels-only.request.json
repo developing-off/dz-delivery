@@ -1,0 +1,15 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/public/get/trackings/info",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    },
+    "body": {
+      "user_guid": "TESTGUID",
+      "trackings": [
+        "NST-TST-00000001"
+      ]
+    }
+  }
+]

@@ -2,16 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { createClient, ShippingError, type ShippingProvider } from '../src';
 import { mapEcotrackStatus } from '../src/providers/ecotrack';
 import { mapMaystroStatus } from '../src/providers/maystro';
+import { mapNoestStatus } from '../src/providers/noest';
+import { mapEcomStatus } from '../src/providers/ecom';
 import { mapYalidineStatus } from '../src/providers/yalidine';
 import { mapZRExpressStatus } from '../src/providers/zrexpress';
 import { loadFixtureCases, mockFetch, readJson, stripRaw, subsetMismatches, type FixtureCase } from './helpers';
 
-const PROVIDERS = ['zrexpress', 'yalidine', 'maystro', 'ecotrack'] as const;
+const PROVIDERS = ['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom'] as const;
 const MAPPERS = {
   zrexpress: mapZRExpressStatus,
   yalidine: mapYalidineStatus,
   maystro: mapMaystroStatus,
   ecotrack: mapEcotrackStatus,
+  noest: mapNoestStatus,
+  ecom: mapEcomStatus,
 };
 
 function call(client: ShippingProvider, c: FixtureCase): Promise<unknown> {

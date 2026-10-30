@@ -1,0 +1,37 @@
+{
+  "result": {
+    "parcel": {
+      "id": "ECTEST01",
+      "trackingNumber": "ECTEST01",
+      "status": "delivered",
+      "provider": "ecom"
+    },
+    "events": [
+      {
+        "status": "pending",
+        "label": "En Préparation (Création Api_v2)",
+        "at": "2026-10-20T09:12:00+00:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Au Bureau",
+        "at": "2026-10-20T14:30:00+00:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Sortir en livraison",
+        "at": "2026-10-21T08:05:00+00:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Ne Réponde pas #1 (Client injoignable)",
+        "at": "2026-10-21T11:20:00+00:00"
+      },
+      {
+        "status": "delivered",
+        "label": "Livrée (Remis au client)",
+        "at": "2026-10-21T16:45:00+00:00"
+      }
+    ]
+  }
+}

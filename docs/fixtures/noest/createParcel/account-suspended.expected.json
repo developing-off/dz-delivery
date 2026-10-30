@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "AUTH_FAILED",
+    "httpStatus": 422,
+    "message": "Compte suspendu",
+    "details": [
+      {
+        "message": "Compte suspendu",
+        "code": "account_suspended"
+      }
+    ]
+  }
+}

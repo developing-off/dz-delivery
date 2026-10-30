@@ -1,0 +1,10 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/colis",
+    "query": {
+      "page": 1,
+      "limit": 50
+    }
+  }
+]

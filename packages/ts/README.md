@@ -20,6 +20,8 @@ Implements the shared contract in
 | Yalidine | `yalidine` | ✅ contrat unifié (mapping checked against the developer docs, see PROVIDERS.md) |
 | Maystro Delivery | `maystro` | ✅ createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
 | Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
+| NoEST | `noest` | ✅ contrat unifié — `listParcels` throws `NOT_SUPPORTED` (no list endpoint) |
+| E-com Delivery | `ecom` | ✅ contrat unifié, including `listParcels` |
 
 - ESM + CommonJS, bundled type definitions
 - Node.js ≥ 18 (uses global `fetch`), no runtime dependencies
@@ -122,7 +124,7 @@ An unmapped native status never throws — it maps to `unknown` and the native l
 Provider credentials: `zrexpress` → `apiKey`, `tenant`; `yalidine` → `apiId`, `apiToken`
 (+ `fromWilayaId` or `fromWilayaName`); `maystro` → `apiToken`; `ecotrack` → `token` + exactly one of
 `courier` (`dhd`, `anderson`, `worldexpress`, `48hrexpress`, `ecorapid`, `conexlog`, `msmgo`, `packers`, `rocketdelivery`; alias `andersondelivery`) or
-`baseUrl` (any tenant, `https` only), optional `autoValidate`.
+`baseUrl` (any tenant, `https` only), optional `autoValidate`; `noest` → `apiToken`, `userGuid`, optional `autoValidate`; `ecom` → `apiKey`, `apiToken`, optional `autoValidate`.
 
 ### Errors
 

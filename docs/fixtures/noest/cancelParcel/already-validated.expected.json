@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 200,
+    "message": "NOEST order NST-TST-00000001 cannot be cancelled: it does not exist or has already been validated (only orders not yet validated can be deleted)"
+  }
+}

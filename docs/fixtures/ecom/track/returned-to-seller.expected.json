@@ -1,0 +1,27 @@
+{
+  "result": {
+    "parcel": {
+      "id": "ECTEST03",
+      "trackingNumber": "ECTEST03",
+      "status": "returned",
+      "provider": "ecom"
+    },
+    "events": [
+      {
+        "status": "pending",
+        "label": "En Préparation (Création)",
+        "at": "2026-10-24T14:52:46+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Dispatcher (Confirmée et dispatchée)",
+        "at": "2026-10-24T14:53:38+01:00"
+      },
+      {
+        "status": "returned",
+        "label": "Retour Fournisseur",
+        "at": "2026-10-24T15:40:03+01:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+[
+  {
+    "method": "DELETE",
+    "path": "/api_v2/colis/ECTEST01"
+  }
+]

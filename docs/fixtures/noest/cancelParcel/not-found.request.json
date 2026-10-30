@@ -1,0 +1,9 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/public/delete/order",
+    "body": {
+      "tracking": "ZZZ-000-00000000"
+    }
+  }
+]

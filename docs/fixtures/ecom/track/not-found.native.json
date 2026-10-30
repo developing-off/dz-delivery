@@ -1,0 +1,12 @@
+[
+  {
+    "status": 404,
+    "headers": {},
+    "body": {
+      "error": {
+        "code": "colis_introuvable",
+        "message": "Colis introuvable"
+      }
+    }
+  }
+]

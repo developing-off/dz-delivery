@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "AUTH_FAILED",
+    "httpStatus": 404,
+    "message": "NOEST partner not found (check userGuid): Partenaire introuvable"
+  }
+}

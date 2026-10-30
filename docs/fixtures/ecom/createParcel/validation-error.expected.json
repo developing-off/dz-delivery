@@ -1,0 +1,17 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "httpStatus": 422,
+    "message": "Données invalides",
+    "details": [
+      {
+        "field": "recipientName",
+        "message": "Field required"
+      },
+      {
+        "field": "wilayaId",
+        "message": "Input should be less than or equal to 58"
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "code": 1,
+        "nom": "Adrar",
+        "is_active": 1
+      },
+      {
+        "code": 5,
+        "nom": "Batna",
+        "is_active": 1
+      },
+      {
+        "code": 16,
+        "nom": "Alger",
+        "is_active": 1
+      },
+      {
+        "code": 50,
+        "nom": "Bordj Badji Mokhtar",
+        "is_active": 0
+      }
+    ]
+  }
+]

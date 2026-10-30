@@ -1,0 +1,10 @@
+[
+  {
+    "method": "GET",
+    "path": "/api_v2/colis/ECTEST01",
+    "headers": {
+      "X-API-Key": "test-api-key",
+      "X-API-Token": "test-api-token"
+    }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "status": 201,
+    "headers": {},
+    "body": {
+      "total": 1,
+      "crees": 0,
+      "echecs": 1,
+      "resultats": [
+        {
+          "index": 0,
+          "ok": false,
+          "tracking": null,
+          "id_colis": null,
+          "tarif_si_livrer": null,
+          "tarif_si_annuler": null,
+          "code_stopdesk": null,
+          "nom_stopdesk": null,
+          "erreur": "stopdesk introuvable (code=ZZZ, wilaya=16)",
+          "code": "validation",
+          "details": null
+        }
+      ]
+    }
+  }
+]

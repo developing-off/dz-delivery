@@ -1,0 +1,22 @@
+{
+  "result": {
+    "parcel": {
+      "id": "NST-TST-00000001",
+      "trackingNumber": "NST-TST-00000001",
+      "status": "created",
+      "provider": "noest"
+    },
+    "events": [
+      {
+        "status": "pending",
+        "label": "Uploaded to system",
+        "at": "2026-10-20T12:45:04+01:00"
+      },
+      {
+        "status": "created",
+        "label": "Validated",
+        "at": "2026-10-20T13:20:15+01:00"
+      }
+    ]
+  }
+}

@@ -41,6 +41,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         'yalidine' => ['apiId' => 'test-api-id', 'apiToken' => 'test-api-token', 'fromWilayaId' => 5],
         'maystro' => ['apiToken' => 'test-api-token'],
         'ecotrack' => ['token' => 'test-api-token', 'baseUrl' => 'https://test.ecotrack.dz'],
+        'noest' => ['apiToken' => 'test-api-token', 'userGuid' => 'TESTGUID'],
+        'ecom' => ['apiKey' => 'test-api-key', 'apiToken' => 'test-api-token'],
     ];
 
     /** @var array<int, array{request: RequestInterface}> */

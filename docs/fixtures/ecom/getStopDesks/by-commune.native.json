@@ -1,0 +1,62 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 125,
+        "id_wilaya": 16,
+        "nom_bureau": "Bab Ezzouar",
+        "code_stopdesk": "16B",
+        "adresse": "Adresse test 16B",
+        "adresse_maps": "https://maps.app.goo.gl/test",
+        "tel_contact": "0550000162, 0770000162",
+        "commune": "Bab Ezzouar"
+      },
+      {
+        "id": 128,
+        "id_wilaya": 16,
+        "nom_bureau": "Centre - Sacré-Cœur",
+        "code_stopdesk": "16E",
+        "adresse": "Adresse test 16E",
+        "adresse_maps": "",
+        "tel_contact": "0550000165",
+        "commune": "Alger Centre"
+      }
+    ]
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 523,
+        "id_wilaya": 16,
+        "commune": "Alger Centre",
+        "code_postal": 16001,
+        "livrable": true
+      },
+      {
+        "id": 545,
+        "id_wilaya": 16,
+        "commune": "Bab Ezzouar",
+        "code_postal": 16021,
+        "livrable": true
+      },
+      {
+        "id": 566,
+        "id_wilaya": 16,
+        "commune": "Ain Benian",
+        "code_postal": 16044,
+        "livrable": true
+      },
+      {
+        "id": 599,
+        "id_wilaya": 16,
+        "commune": "Commune Test",
+        "code_postal": 16099,
+        "livrable": false
+      }
+    ]
+  }
+]

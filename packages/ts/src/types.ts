@@ -252,11 +252,37 @@ export interface EcotrackConfig extends BaseClientConfig {
   autoValidate?: boolean;
 }
 
+export interface NoestConfig extends BaseClientConfig {
+  /** API token from the NOEST partner dashboard, sent as `Authorization: Bearer <apiToken>`. */
+  apiToken: string;
+  /** Partner GUID from the NOEST partner dashboard (`user_guid`). */
+  userGuid: string;
+  /**
+   * Validate each order right after creation (`POST valid/order`), so NOEST picks it up.
+   * Default `false`: orders wait as `pending` (still editable) until validated.
+   */
+  autoValidate?: boolean;
+}
+
+export interface EcomConfig extends BaseClientConfig {
+  /** `KEY` from the E-com developer page, sent as `X-API-Key`. */
+  apiKey: string;
+  /** `Token` from the same page (regenerable), sent as `X-API-Token`. */
+  apiToken: string;
+  /**
+   * Create parcels already confirmed (`confirmee: 1`, "En Traitement"), so E-com picks them up.
+   * Default `false`: parcels stay `pending` ("En Préparation", still editable) until confirmed.
+   */
+  autoValidate?: boolean;
+}
+
 export interface ProviderConfigMap {
   zrexpress: ZRExpressConfig;
   yalidine: YalidineConfig;
   maystro: MaystroConfig;
   ecotrack: EcotrackConfig;
+  noest: NoestConfig;
+  ecom: EcomConfig;
 }
 
 export type ProviderName = keyof ProviderConfigMap;

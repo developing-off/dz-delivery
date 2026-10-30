@@ -1,0 +1,13 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/public/delete/order",
+    "headers": {
+      "Authorization": "Bearer test-api-token"
+    },
+    "body": {
+      "user_guid": "TESTGUID",
+      "tracking": "NST-TST-00000001"
+    }
+  }
+]

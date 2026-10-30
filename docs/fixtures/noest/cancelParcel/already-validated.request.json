@@ -1,0 +1,6 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/public/delete/order"
+  }
+]

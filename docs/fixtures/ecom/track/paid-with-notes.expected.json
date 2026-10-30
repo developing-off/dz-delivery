@@ -1,0 +1,67 @@
+{
+  "result": {
+    "parcel": {
+      "id": "ECTEST02",
+      "trackingNumber": "ECTEST02",
+      "status": "delivered",
+      "provider": "ecom"
+    },
+    "events": [
+      {
+        "status": "pending",
+        "label": "En Préparation (Création)",
+        "at": "2026-10-04T14:51:57+01:00"
+      },
+      {
+        "status": "created",
+        "label": "En Traitement (Prêt à expédier)",
+        "at": "2026-10-04T14:52:18+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "En livraison",
+        "at": "2026-10-04T15:44:51+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "A Relancé pour Domicile",
+        "at": "2026-10-05T10:36:03+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Type de Colis (Colis avec Echange)",
+        "at": "2026-10-05T10:38:14+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Type de Livraison (-> Domicile : Ain Taya)",
+        "at": "2026-10-05T10:38:52+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Reporté (09/10/2026)",
+        "at": "2026-10-07T16:29:38+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "Information (Ex : 0)",
+        "at": "2026-10-07T16:55:09+01:00"
+      },
+      {
+        "status": "delivered",
+        "label": "Livrée",
+        "at": "2026-10-07T16:55:18+01:00"
+      },
+      {
+        "status": "delivered",
+        "label": "Encaisser (43110)",
+        "at": "2026-10-15T14:24:09+01:00"
+      },
+      {
+        "status": "delivered",
+        "label": "Récupérer (Paiement PMEP0000)",
+        "at": "2026-10-18T14:22:37+01:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "status": 429,
+    "headers": {},
+    "body": {
+      "error": {
+        "code": "quota_depasse",
+        "message": "Quota dépassé"
+      }
+    }
+  }
+]

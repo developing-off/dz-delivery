@@ -1,0 +1,36 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": [
+      {
+        "id": 523,
+        "id_wilaya": 16,
+        "commune": "Alger Centre",
+        "code_postal": 16001,
+        "livrable": true
+      },
+      {
+        "id": 545,
+        "id_wilaya": 16,
+        "commune": "Bab Ezzouar",
+        "code_postal": 16021,
+        "livrable": true
+      },
+      {
+        "id": 566,
+        "id_wilaya": 16,
+        "commune": "Ain Benian",
+        "code_postal": 16044,
+        "livrable": true
+      },
+      {
+        "id": 599,
+        "id_wilaya": 16,
+        "commune": "Commune Test",
+        "code_postal": 16099,
+        "livrable": false
+      }
+    ]
+  }
+]
