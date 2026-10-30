@@ -6,12 +6,14 @@
  *
  * - Auth header `Authorization: Bearer <api_token>`; the partner `user_guid` goes in every
  *   POST body. GET endpoints need the token only.
- * - Validation failures come back as HTTP 422 Laravel `{ message, errors: { field: [..] } }`,
- *   some business failures as HTTP 200 `{ success: false, ... }`.
+ * - Validation failures come back as HTTP 422 Laravel `{ message, errors: { field: [..] } }`;
+ *   business failures as HTTP 422 `{ success: false, errors: { <code>: "<message>" } }`
+ *   (e.g. `account_suspended`) or HTTP 200 `{ success: false, message }`. An unknown
+ *   `user_guid` is HTTP 404 `{ success: false, message: "Partenaire introuvable" }`.
  * - Orders stay editable until validated (`POST valid/order`): see `autoValidate`.
  */
 import { ShippingError } from '../errors';
-import { HttpClient, type ErrorBodyParser, type HttpResponse } from '../http';
+import { HttpClient, type ErrorBodyParser, type HttpRequest, type HttpResponse } from '../http';
 import { createStatusMapper, normalizeStatusKey } from '../status';
 import type {
   FeeQuery,
@@ -31,6 +33,7 @@ import type {
 } from '../types';
 import {
   findLocationByName,
+  findLocationLoosely,
   isRecord,
   isWilayaCode,
   normalizeAlgerianPhone,
@@ -162,15 +165,39 @@ const FIELDS: Record<string, string> = {
   reference: 'orderId',
 };
 
+/** `errors` bag → details. Keys that are business error codes become `code`, not `field`. */
 function collectDetails(errors: unknown): ShippingErrorDetail[] {
   const details: ShippingErrorDetail[] = [];
   if (!isRecord(errors)) return details;
-  for (const [field, value] of Object.entries(errors)) {
+  for (const [key, value] of Object.entries(errors)) {
     for (const m of Array.isArray(value) ? value : [value]) {
-      if (typeof m === 'string') details.push({ field: FIELDS[field] ?? field, message: m });
+      if (typeof m !== 'string') continue;
+      details.push(BUSINESS_ERRORS[key] ? { message: m, code: key } : { field: FIELDS[key] ?? key, message: m });
     }
   }
   return details;
+}
+
+/**
+ * Re-classifies HTTP errors whose status alone is misleading: a business code in the
+ * details (`account_suspended` → `AUTH_FAILED`) and an unknown partner (HTTP 404
+ * `{ success: false }`, wrong `userGuid`) → `AUTH_FAILED`.
+ */
+function refineError(err: unknown): unknown {
+  if (!(err instanceof ShippingError)) return err;
+  const raw = isRecord(err.raw) ? err.raw : undefined;
+  let code: ShippingErrorCode | undefined;
+  let message = err.message;
+  if (err.httpStatus === 404 && raw?.success === false) {
+    code = 'AUTH_FAILED';
+    message = `NOEST partner not found (check userGuid): ${err.message}`;
+  } else {
+    const details = Array.isArray(err.details) ? err.details : [];
+    const business = details.map((d) => (d.code ? BUSINESS_ERRORS[d.code] : undefined)).find(Boolean);
+    if (business && business !== err.code) code = business;
+  }
+  if (!code) return err;
+  return new ShippingError(code, message, { httpStatus: err.httpStatus, details: err.details, raw: err.raw, provider: PROVIDER });
 }
 
 const parseNoestError: ErrorBodyParser = (body) => {
@@ -202,8 +229,10 @@ function isActive(row: Record<string, unknown>): boolean {
 
 /** `{ success: false, ... }` (HTTP 200) → ShippingError. */
 function businessError(body: Record<string, unknown>, httpStatus: number, fallback: string): ShippingError {
-  const nativeCode = [body.code, body.error_code, body.error].map(str).find((v) => v && BUSINESS_ERRORS[v]);
   const details = collectDetails(body.errors);
+  const nativeCode =
+    [body.code, body.error_code, body.error].map(str).find((v) => v && BUSINESS_ERRORS[v]) ??
+    details.find((d) => d.code)?.code;
   const message =
     str(body.message) ||
     (details.length > 0 ? details.map((d) => d.message).join('; ') : undefined) ||
@@ -278,7 +307,7 @@ export class NoestProvider implements ShippingProvider {
     if (input.remark?.trim()) body.remarque = input.remark.trim();
     if (input.orderId?.trim()) body.reference = input.orderId.trim();
 
-    const res = await this.http.request<unknown>({ method: 'POST', path: '/create/order', body });
+    const res = await this.send({ method: 'POST', path: '/create/order', body });
     const resBody = res.body;
     if (isRecord(resBody) && resBody.success === false) throw businessError(resBody, res.status, 'NOEST rejected the order');
     const tracking = isRecord(resBody) && hasValue(resBody.tracking) ? String(resBody.tracking).trim() : undefined;
@@ -307,7 +336,7 @@ export class NoestProvider implements ShippingProvider {
     let body: unknown;
     try {
       body = (
-        await this.http.request<unknown>({
+        await this.send({
           method: 'POST',
           path: '/get/trackings/info',
           body: { user_guid: this.userGuid, trackings: [tracking] },
@@ -315,7 +344,7 @@ export class NoestProvider implements ShippingProvider {
       ).body;
     } catch (err) {
       // Unknown trackings: HTTP 404 `{ message: "Trackings non trouvés" }`.
-      if (err instanceof ShippingError && err.httpStatus === 404) throw notFound(err.raw, 404);
+      if (err instanceof ShippingError && err.code === 'NOT_FOUND') throw notFound(err.raw, 404);
       throw err;
     }
     const info = isRecord(body) ? body[tracking] : undefined;
@@ -352,7 +381,7 @@ export class NoestProvider implements ShippingProvider {
     }
     const code = Number(await this.resolveWilayaCode(query.toWilayaId));
 
-    const res = await this.http.request<unknown>({ method: 'GET', path: '/fees' });
+    const res = await this.send({ method: 'GET', path: '/fees' });
     const body = res.body;
     const tarifs = isRecord(body) && isRecord(body.tarifs) ? body.tarifs : undefined;
     if (!tarifs || tarifs.delivery === undefined) {
@@ -386,8 +415,7 @@ export class NoestProvider implements ShippingProvider {
 
   /** `GET /get/wilayas`: active wilayas only (`is_active: 1`). */
   getWilayas(): Promise<Location[]> {
-    this.wilayasCache ??= this.http
-      .request<unknown>({ method: 'GET', path: '/get/wilayas' })
+    this.wilayasCache ??= this.send({ method: 'GET', path: '/get/wilayas' })
       .then(({ body }) => {
         if (!Array.isArray(body) && !isRecord(body)) {
           throw new ShippingError('PROVIDER_ERROR', 'Unexpected NOEST wilayas response', { provider: PROVIDER, raw: body });
@@ -440,11 +468,27 @@ export class NoestProvider implements ShippingProvider {
     const tracking = trackingNumberOrId?.trim();
     if (!tracking) throw new ShippingError('VALIDATION_ERROR', 'trackingNumberOrId is required', { provider: PROVIDER });
 
-    const res: HttpResponse<unknown> = await this.http.request<unknown>({
-      method: 'POST',
-      path: '/delete/order',
-      body: { user_guid: this.userGuid, tracking },
-    });
+    let res: HttpResponse<unknown>;
+    try {
+      res = await this.send({ method: 'POST', path: '/delete/order', body: { user_guid: this.userGuid, tracking } });
+    } catch (err) {
+      // Unknown tracking: HTTP 422 with `tracking` as the only invalid field.
+      if (
+        err instanceof ShippingError &&
+        err.httpStatus === 422 &&
+        Array.isArray(err.details) &&
+        err.details.length > 0 &&
+        err.details.every((d) => d.field === 'tracking')
+      ) {
+        throw new ShippingError('NOT_FOUND', `Unknown NOEST tracking number: ${tracking}`, {
+          httpStatus: 422,
+          details: err.details,
+          raw: err.raw,
+          provider: PROVIDER,
+        });
+      }
+      throw err;
+    }
     if (isRecord(res.body) && res.body.success === false) {
       throw new ShippingError(
         'VALIDATION_ERROR',
@@ -468,10 +512,17 @@ export class NoestProvider implements ShippingProvider {
 
   // --- internals -------------------------------------------------------------
 
+  /** Every HTTP call goes through here so `refineError` applies to all endpoints. */
+  private send(req: HttpRequest): Promise<HttpResponse<unknown>> {
+    return this.http.request<unknown>(req).catch((err: unknown) => {
+      throw refineError(err);
+    });
+  }
+
   /** `POST /valid/order` — hands the order over to NOEST logistics. */
   private async validateOrder(tracking: string): Promise<void> {
     try {
-      const res = await this.http.request<unknown>({
+      const res = await this.send({
         method: 'POST',
         path: '/valid/order',
         body: { user_guid: this.userGuid, tracking },
@@ -491,8 +542,7 @@ export class NoestProvider implements ShippingProvider {
 
   /** Every station, with its normalized `commune` for the `communeId` filter. */
   private desks(): Promise<Array<{ desk: StopDesk; commune: string }>> {
-    this.desksCache ??= this.http
-      .request<unknown>({ method: 'GET', path: '/desks' })
+    this.desksCache ??= this.send({ method: 'GET', path: '/desks' })
       .then(({ body }) => {
         if (!Array.isArray(body) && !isRecord(body)) {
           throw new ShippingError('PROVIDER_ERROR', 'Unexpected NOEST desks response', { provider: PROVIDER, raw: body });
@@ -520,8 +570,7 @@ export class NoestProvider implements ShippingProvider {
   private communesOf(wilayaCode: string): Promise<Location[]> {
     let cached = this.communesCache.get(wilayaCode);
     if (!cached) {
-      cached = this.http
-        .request<unknown>({ method: 'GET', path: `/get/communes/${wilayaCode}` })
+      cached = this.send({ method: 'GET', path: `/get/communes/${wilayaCode}` })
         .then(({ body }) => {
           if (!Array.isArray(body) && !isRecord(body)) {
             throw new ShippingError('PROVIDER_ERROR', 'Unexpected NOEST communes response', { provider: PROVIDER, raw: body });
@@ -560,7 +609,9 @@ export class NoestProvider implements ShippingProvider {
   private async resolveCommune(wilayaCode: string, ref: string | number): Promise<Location> {
     const value = String(ref).trim();
     const communes = await this.communesOf(wilayaCode);
-    const found = communes.find((c) => c.id === value) ?? findLocationByName(communes, value);
+    // Exact id, exact name, then a spelling-tolerant match ("Bab Ezzouar" → NOEST's "Bab Azzouar").
+    const found =
+      communes.find((c) => c.id === value) ?? findLocationByName(communes, value) ?? findLocationLoosely(communes, value);
     if (!found) {
       throw new ShippingError('NOT_FOUND', `Unknown commune: ${value} in wilaya ${wilayaCode}`, { provider: PROVIDER });
     }

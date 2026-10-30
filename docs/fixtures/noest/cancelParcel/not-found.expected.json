@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "httpStatus": 422,
+    "message": "Unknown NOEST tracking number: ZZZ-000-00000000"
+  }
+}

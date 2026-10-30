@@ -44,6 +44,27 @@ export function findLocationByName(locations: Location[], name: string): Locatio
 }
 
 /**
+ * Spelling-tolerant key for Algerian place names: `normalizeName`, then vowels dropped and
+ * doubled letters collapsed, so transliteration variants meet ("Bab Ezzouar" / "Bab Azzouar"
+ * → `bzr`). MUST stay identical to the PHP `Text::looseKey`.
+ */
+export function looseNameKey(name: string): string {
+  return normalizeName(name).replace(/[aeiouy]/g, '').replace(/(.)\1+/g, '$1');
+}
+
+/**
+ * The single location whose `looseNameKey` equals the one of `name`. `undefined` when none or
+ * several match, or when the key is too short (< 3) to be meaningful: never guesses between
+ * two communes. Use only after an exact match failed.
+ */
+export function findLocationLoosely(locations: Location[], name: string): Location | undefined {
+  const wanted = looseNameKey(name);
+  if (wanted.length < 3) return undefined;
+  const hits = locations.filter((l) => looseNameKey(l.name) === wanted);
+  return hits.length === 1 ? hits[0] : undefined;
+}
+
+/**
  * Converts a native timestamp to ISO 8601 with an explicit offset and second precision
  * (`2025-11-22T09:00:00.123Z` → `2025-11-22T09:00:00+00:00`). Values without an offset
  * get `defaultOffset`. Unparseable values are returned unchanged.

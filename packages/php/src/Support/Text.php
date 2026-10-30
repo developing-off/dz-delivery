@@ -32,4 +32,42 @@ final class Text
 
         return preg_replace('/[^a-z0-9]/', '', $value) ?? '';
     }
+
+    /**
+     * Spelling-tolerant key for Algerian place names: key(), then vowels dropped and doubled
+     * letters collapsed, so transliteration variants meet ("Bab Ezzouar" / "Bab Azzouar" →
+     * "bzr"). MUST stay identical to the TS `looseNameKey`.
+     */
+    public static function looseKey(string $value): string
+    {
+        $consonants = preg_replace('/[aeiouy]/', '', self::key($value)) ?? '';
+
+        return preg_replace('/(.)\1+/', '$1', $consonants) ?? '';
+    }
+
+    /**
+     * The single item whose name has the same looseKey() as $name. Null when none or several
+     * match, or when the key is too short (< 3) to be meaningful: never guesses between two
+     * communes. Use only after an exact match failed.
+     *
+     * @template T
+     * @param iterable<T> $items
+     * @param callable(T): string $nameOf
+     * @return T|null
+     */
+    public static function findLoosely(iterable $items, string $name, callable $nameOf): mixed
+    {
+        $wanted = self::looseKey($name);
+        if (strlen($wanted) < 3) {
+            return null;
+        }
+        $hits = [];
+        foreach ($items as $item) {
+            if (self::looseKey($nameOf($item)) === $wanted) {
+                $hits[] = $item;
+            }
+        }
+
+        return count($hits) === 1 ? $hits[0] : null;
+    }
 }

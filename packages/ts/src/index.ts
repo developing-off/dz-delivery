@@ -3,7 +3,7 @@ export { ShippingError, isShippingError, codeFromHttpStatus } from './errors';
 export type { ShippingErrorOptions } from './errors';
 export { createStatusMapper, normalizeStatusKey } from './status';
 export type { StatusMapper, StatusMapperOptions } from './status';
-export { normalizeAlgerianPhone } from './utils';
+export { normalizeAlgerianPhone, looseNameKey, findLocationLoosely } from './utils';
 export type { ShippingProvider } from './providers/types';
 export {
   ZRExpressProvider,

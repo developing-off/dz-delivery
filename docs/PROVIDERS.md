@@ -542,7 +542,7 @@ Only the stable **keys** are mapped (activity keys and order status enum keys); 
 
 ## NoEST
 
-> Built from the **NOEST Public API documentation v2.3** (May 2026, PDF given to partners, not committed) and checked against live **read-only** responses (2026-10-30: wilayas, communes, desks, fees, unknown tracking). Order creation, validation and deletion follow the documentation; confirm with a real order before relying on them.
+> Built from the **NOEST Public API documentation v2.3** (May 2026, PDF given to partners, not committed) and checked against live responses (2026-10-30: wilayas, communes, desks, fees, unknown tracking, and the error bodies of create / delete / valid on a suspended account). No order could be created on that account, so the **success** bodies of create, validation and deletion still follow the documentation only.
 
 - Base URL: `https://app.noest-dz.com/api/public` (paths below are relative to it).
 - Rate limit: 60 requests / minute; server timeout 30 s.
@@ -581,7 +581,7 @@ Not mapped yet (documented by NOEST): bulk create / validate (`create/orders`, `
 | `phone` / `phone2` | `phone` / `phone_2` | Local format `0XXXXXXXXX` (9–10 digits) |
 | `address` | `adresse` | ≤ 255 chars |
 | `wilayaId` / `wilayaName` | `wilaya_id` | Official code `1`–`58` |
-| `communeId` / `communeName` | `commune` | NOEST name (e.g. `Bab Azzouar`, not `Bab Ezzouar`) |
+| `communeId` / `communeName` | `commune` | NOEST name, resolved by id, exact name, then spelling-tolerant match (see below) |
 | `price` | `montant` | Amount collected, delivery included |
 | `productName` / `productList` | `produit` | `"Mug x2, T-shirt"` |
 | — | `type_id` | Always `1` (delivery). Exchange (`2`) and pick-up (`3`) are not exposed. |
@@ -589,6 +589,16 @@ Not mapped yet (documented by NOEST): bulk create / validate (`create/orders`, `
 | `weight` | `poids` | Sent only when set |
 | `remark` | `remarque` | ≤ 255 chars |
 | `orderId` | `reference` | ≥ 5 chars; NOEST rejects duplicates (`duplicate_order`) |
+
+### Commune names
+
+NOEST spells some communes differently from the usual form (`Bab Azzouar` for `Bab Ezzouar`), the same way in `get/communes` and `desks`. `createParcel` and `getStopDesks` resolve `communeId` / `communeName` in this order:
+
+1. exact `Location.id` (postal code, e.g. `16021`);
+2. exact name, case / accent / separator-insensitive;
+3. **spelling-tolerant** name: vowels dropped and doubled letters collapsed (`looseNameKey` / `Text::looseKey`: `Bab Ezzouar` and `Bab Azzouar` → `bzr`). Used only when exactly one commune of the wilaya matches and the key has ≥ 3 letters, so it never picks between two communes; otherwise `NOT_FOUND` as before. Cases: [`fixtures/loose-names.json`](./fixtures/loose-names.json).
+
+Steps 1–2 behave as before; step 3 only turns former `NOT_FOUND` errors into a match.
 
 ### Status mapping
 
@@ -607,17 +617,20 @@ From `activity[].event_key`; when a row has no key, from the English `event` lab
 
 | NOEST | Unified |
 |-------|---------|
-| HTTP 401 `{"error":"Unauthenticated."}` | `AUTH_FAILED` |
+| HTTP 401 `{"error":"Unauthenticated."}` (bad / missing token) | `AUTH_FAILED` |
+| HTTP 404 `{"success":false,"message":"Partenaire introuvable"}` (bad `userGuid`, any POST) | `AUTH_FAILED` — *live* |
+| HTTP 422 `{"success":false,"errors":{"account_suspended":"Compte suspendu"}}` | `AUTH_FAILED`, `details[0].code = "account_suspended"` — *live* |
+| HTTP 422 `{ success: false, errors: { <business code>: "<message>" } }` | `VALIDATION_ERROR` for the codes below, `details[].code` = the key |
 | HTTP 422 `{ message, errors: { field: [..] } }` | `VALIDATION_ERROR`, `details[].field` mapped to `ParcelInput` names (`commune` → `communeId`, `client` → `recipientName`, …) |
-| HTTP 200 `{ success: false, message }` | `PROVIDER_ERROR` (or the code below when the body carries a known error code) |
-| `account_suspended` | `AUTH_FAILED` |
+| HTTP 422 `errors.tracking` on `delete/order` (unknown tracking) | `NOT_FOUND` — *live* |
+| HTTP 404 `{"message":"Trackings non trouvés"}` on `get/trackings/info` | `NOT_FOUND` — *live* |
+| HTTP 200 `{ success: false, message }` | `PROVIDER_ERROR` (or the mapped code when the body carries a known error code) |
 | `duplicate_order`, `inactive_commune`, `zip_code`, `max_amount_exceeded`, `stopdesk_disabled`, `station_code`, `out_of_stock`, `already_validated`, … | `VALIDATION_ERROR` |
-| HTTP 404 on `get/trackings/info` | `NOT_FOUND` |
 | HTTP 429 | `RATE_LIMITED` |
 
 ### Limitations and assumptions
 
-- No sandbox: fixtures for `createParcel`, `cancelParcel` and `valid/order` replay the documented examples; the business-error body shape (`{ success: false, message }`) is assumed. Reports with anonymized real responses are welcome.
+- No sandbox: the **success** fixtures of `createParcel`, `cancelParcel` and `valid/order` replay the documented examples (the error fixtures marked *live* above are real). Reports with anonymized real responses are welcome.
 - The documented tracking examples mostly omit `event_key`; the SDK falls back to the English label. Real accounts may return French labels, mapped to `unknown` until fixtures exist.
 - `zip_code` (postal code instead of wilaya + commune), `stock` / `quantite`, `remboursement`, `shop_name` and `station_expedition` are not exposed.
 

@@ -1,0 +1,13 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/public/get/communes/16"
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/create/order",
+    "body": {
+      "commune": "Bab Azzouar"
+    }
+  }
+]

@@ -13,6 +13,7 @@ use DzDelivery\Providers\YalidineProvider;
 use DzDelivery\Providers\ZRExpressProvider;
 use DzDelivery\Support\Phone;
 use DzDelivery\Support\StatusMapper;
+use DzDelivery\Support\Text;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 final class SupportTest extends TestCase
@@ -42,6 +43,31 @@ final class SupportTest extends TestCase
         self::assertSame('+21321123456', Phone::toInternational('021 12 34 56'));
         self::assertSame('0550123456', Phone::toLocal('+213550123456'));
         self::assertNull(Phone::nationalNumber('12345'));
+    }
+
+    /** @return iterable<string, array{string, string}> docs/fixtures/loose-names.json, shared with the TS looseNameKey */
+    public static function looseNames(): iterable
+    {
+        foreach (self::fixture('loose-names.json') as $name => $key) {
+            yield (string) $name => [(string) $name, $key];
+        }
+    }
+
+    #[DataProvider('looseNames')]
+    public function testLooseKey(string $name, string $key): void
+    {
+        self::assertSame($key, Text::looseKey($name));
+    }
+
+    public function testFindLooselyOnlyReturnsAnUnambiguousMatch(): void
+    {
+        $names = ['Bab Azzouar', 'Draria', 'Ain Taya', 'Hussein Dey', 'Husein Dey'];
+        $find = static fn (string $name) => Text::findLoosely($names, $name, static fn (string $n) => $n);
+
+        self::assertSame('Bab Azzouar', $find('Bab Ezzouar'));
+        self::assertNull($find('Dreria'));      // key "dr" too short
+        self::assertNull($find('Hussein-Dey')); // two candidates
+        self::assertNull($find('Atlantis'));
     }
 
     public function testFactoryCreatesProviders(): void

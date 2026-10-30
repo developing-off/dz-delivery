@@ -33,6 +33,10 @@ use DzDelivery\Support\Text;
  * Options: 'apiToken' (sent as Authorization: Bearer), 'userGuid' (partner GUID, sent in
  * every POST body) and 'autoValidate' (default false: orders stay pending, still
  * editable, until validated).
+ *
+ * Business failures come back as HTTP 422 { success: false, errors: { <code>: "<message>" } }
+ * (e.g. account_suspended) or HTTP 200 { success: false, message }; an unknown user_guid
+ * is HTTP 404 { success: false, message: "Partenaire introuvable" }.
  */
 final class NoestProvider implements ShippingProviderInterface
 {
@@ -164,7 +168,7 @@ final class NoestProvider implements ShippingProviderInterface
             $order['reference'] = trim($input->orderId);
         }
 
-        $body = $this->http->request('POST', 'create/order', [], $order);
+        $body = $this->send('POST', 'create/order', $order);
         if (is_array($body) && ($body['success'] ?? null) === false) {
             throw $this->businessError($body, 200, 'NOEST rejected the order');
         }
@@ -202,10 +206,10 @@ final class NoestProvider implements ShippingProviderInterface
             self::NAME,
         );
         try {
-            $body = $this->http->request('POST', 'get/trackings/info', [], ['user_guid' => $this->userGuid, 'trackings' => [$tracking]]);
+            $body = $this->send('POST', 'get/trackings/info', ['user_guid' => $this->userGuid, 'trackings' => [$tracking]]);
         } catch (ShippingError $e) {
             // Unknown trackings: HTTP 404 { message: "Trackings non trouvés" }.
-            if ($e->httpStatus === 404) {
+            if ($e->code === ShippingError::NOT_FOUND) {
                 throw $notFound($e->raw, 404);
             }
             throw $e;
@@ -246,7 +250,7 @@ final class NoestProvider implements ShippingProviderInterface
         $query = FeeQuery::from($query, self::NAME);
         $code = (int) $this->resolveWilayaCode($query->toWilayaId);
 
-        $body = $this->http->request('GET', 'fees');
+        $body = $this->send('GET', 'fees');
         $tarifs = is_array($body) && is_array($body['tarifs'] ?? null) ? $body['tarifs'] : null;
         if ($tarifs === null || !array_key_exists('delivery', $tarifs)) {
             throw ShippingError::providerError('Unexpected NOEST fees response', self::NAME, $this->raw($body));
@@ -291,7 +295,7 @@ final class NoestProvider implements ShippingProviderInterface
     public function getWilayas(): array
     {
         if ($this->wilayas === null) {
-            $body = $this->http->request('GET', 'get/wilayas');
+            $body = $this->send('GET', 'get/wilayas');
             if (!is_array($body)) {
                 throw ShippingError::providerError('Unexpected NOEST wilayas response', self::NAME, $this->raw($body));
             }
@@ -349,7 +353,16 @@ final class NoestProvider implements ShippingProviderInterface
             throw ShippingError::validation('trackingNumberOrId is required', self::NAME, 'trackingNumberOrId');
         }
 
-        $body = $this->http->request('POST', 'delete/order', [], ['user_guid' => $this->userGuid, 'tracking' => $tracking]);
+        try {
+            $body = $this->send('POST', 'delete/order', ['user_guid' => $this->userGuid, 'tracking' => $tracking]);
+        } catch (ShippingError $e) {
+            // Unknown tracking: HTTP 422 with `tracking` as the only invalid field.
+            $details = $e->details ?? [];
+            if ($e->httpStatus === 422 && $details !== [] && array_filter($details, static fn ($d) => ($d['field'] ?? null) !== 'tracking') === []) {
+                throw new ShippingError(ShippingError::NOT_FOUND, "Unknown NOEST tracking number: $tracking", 422, $details, $e->raw, self::NAME);
+            }
+            throw $e;
+        }
         if (is_array($body) && ($body['success'] ?? null) === false) {
             throw new ShippingError(
                 ShippingError::VALIDATION_ERROR,
@@ -400,11 +413,49 @@ final class NoestProvider implements ShippingProviderInterface
 
     // --- internals ---------------------------------------------------------------
 
+    /** Every HTTP call goes through here so refineError() applies to all endpoints. */
+    private function send(string $method, string $path, mixed $json = null): mixed
+    {
+        try {
+            return $this->http->request($method, $path, [], $json);
+        } catch (ShippingError $e) {
+            throw self::refineError($e);
+        }
+    }
+
+    /**
+     * Re-classifies HTTP errors whose status alone is misleading: a business code in the
+     * details (account_suspended → AUTH_FAILED) and an unknown partner (HTTP 404
+     * { success: false }, wrong userGuid) → AUTH_FAILED.
+     */
+    private static function refineError(ShippingError $e): ShippingError
+    {
+        $code = null;
+        $message = $e->getMessage();
+        if ($e->httpStatus === 404 && is_array($e->raw) && ($e->raw['success'] ?? null) === false) {
+            $code = ShippingError::AUTH_FAILED;
+            $message = "NOEST partner not found (check userGuid): $message";
+        } else {
+            foreach ($e->details ?? [] as $detail) {
+                $business = self::BUSINESS_ERRORS[$detail['code'] ?? ''] ?? null;
+                if ($business !== null) {
+                    $code = $business !== $e->code ? $business : null;
+                    break;
+                }
+            }
+        }
+        if ($code === null) {
+            return $e;
+        }
+
+        return new ShippingError($code, $message, $e->httpStatus, $e->details, $e->raw, self::NAME, $e, $e->retryAfter);
+    }
+
     /** POST /valid/order — hands the order over to NOEST logistics. */
     private function validateOrder(string $tracking): void
     {
         try {
-            $body = $this->http->request('POST', 'valid/order', [], ['user_guid' => $this->userGuid, 'tracking' => $tracking]);
+            $body = $this->send('POST', 'valid/order', ['user_guid' => $this->userGuid, 'tracking' => $tracking]);
             if (is_array($body) && ($body['success'] ?? null) === false) {
                 throw $this->businessError($body, 200, 'NOEST refused to validate the order');
             }
@@ -425,6 +476,7 @@ final class NoestProvider implements ShippingProviderInterface
     /** `{ success: false, ... }` (HTTP 200) → ShippingError. */
     private function businessError(array $body, int $httpStatus, string $fallback): ShippingError
     {
+        $details = self::collectDetails($body['errors'] ?? null);
         $nativeCode = null;
         foreach (['code', 'error_code', 'error'] as $key) {
             $value = self::text($body[$key] ?? null);
@@ -433,7 +485,9 @@ final class NoestProvider implements ShippingProviderInterface
                 break;
             }
         }
-        $details = self::collectDetails($body['errors'] ?? null);
+        foreach ($details as $detail) {
+            $nativeCode ??= $detail['code'] ?? null;
+        }
         $message = self::text($body['message'] ?? null)
             ?? ($details !== [] ? implode('; ', array_column($details, 'message')) : null)
             ?? (is_string($body['error'] ?? null) && $body['error'] !== '' ? $body['error'] : null)
@@ -459,11 +513,16 @@ final class NoestProvider implements ShippingProviderInterface
         if (!is_array($errors) || array_is_list($errors)) {
             return $details;
         }
-        foreach ($errors as $field => $value) {
+        foreach ($errors as $key => $value) {
+            $key = (string) $key;
             foreach (is_array($value) ? $value : [$value] as $msg) {
-                if (is_string($msg)) {
-                    $details[] = ['field' => self::FIELDS[(string) $field] ?? (string) $field, 'message' => $msg];
+                if (!is_string($msg)) {
+                    continue;
                 }
+                // Keys that are business error codes become `code`, not `field`.
+                $details[] = isset(self::BUSINESS_ERRORS[$key])
+                    ? ['message' => $msg, 'code' => $key]
+                    : ['field' => self::FIELDS[$key] ?? $key, 'message' => $msg];
             }
         }
 
@@ -474,7 +533,7 @@ final class NoestProvider implements ShippingProviderInterface
     private function desks(): array
     {
         if ($this->desks === null) {
-            $body = $this->http->request('GET', 'desks');
+            $body = $this->send('GET', 'desks');
             if (!is_array($body)) {
                 throw ShippingError::providerError('Unexpected NOEST desks response', self::NAME, $this->raw($body));
             }
@@ -513,7 +572,7 @@ final class NoestProvider implements ShippingProviderInterface
     private function communesOf(string $wilayaCode): array
     {
         if (!isset($this->communes[$wilayaCode])) {
-            $body = $this->http->request('GET', "get/communes/$wilayaCode");
+            $body = $this->send('GET', "get/communes/$wilayaCode");
             if (!is_array($body)) {
                 throw ShippingError::providerError('Unexpected NOEST communes response', self::NAME, $this->raw($body));
             }
@@ -566,6 +625,11 @@ final class NoestProvider implements ShippingProviderInterface
             if (Text::key($c->name) === Text::key($value)) {
                 return $c;
             }
+        }
+        // Spelling-tolerant fallback ("Bab Ezzouar" → NOEST's "Bab Azzouar").
+        $loose = Text::findLoosely($communes, $value, static fn (Location $c) => $c->name);
+        if ($loose !== null) {
+            return $loose;
         }
 
         throw ShippingError::notFound("Unknown commune: $value in wilaya $wilayaCode", self::NAME);

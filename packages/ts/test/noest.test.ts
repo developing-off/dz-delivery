@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createClient, mapNoestStatus, ShippingError } from '../src';
-import { mockFetch } from './helpers';
+import { findLocationLoosely, looseNameKey } from '../src/utils';
+import { mockFetch, readJson } from './helpers';
 
 const WILAYAS = { status: 200, body: [{ code: 16, nom: 'Alger', is_active: 1 }] };
 const COMMUNES = { status: 200, body: [{ id: 571, nom: 'Bab Ezzouar', wilaya_id: 16, code_postal: '16018', is_active: 1 }] };
@@ -75,5 +76,27 @@ describe('noest', () => {
     expect(mapNoestStatus('Out for delivery')).toBe('in_transit');
     expect(mapNoestStatus('Validé')).toBe('unknown');
     expect(mapNoestStatus(undefined)).toBe('unknown');
+  });
+});
+
+describe('looseNameKey', () => {
+  it('matches docs/fixtures/loose-names.json (shared with PHP Text::looseKey)', () => {
+    for (const [name, key] of Object.entries(readJson<Record<string, string>>('loose-names.json'))) {
+      expect(looseNameKey(name), name).toBe(key);
+    }
+  });
+
+  it('only returns an unambiguous match with a meaningful key', () => {
+    const communes = [
+      { id: '1', name: 'Bab Azzouar' },
+      { id: '2', name: 'Draria' },
+      { id: '3', name: 'Ain Taya' },
+      { id: '4', name: 'Hussein Dey' },
+      { id: '5', name: 'Husein Dey' },
+    ];
+    expect(findLocationLoosely(communes, 'Bab Ezzouar')?.id).toBe('1');
+    expect(findLocationLoosely(communes, 'Dreria')).toBeUndefined(); // key "dr" too short
+    expect(findLocationLoosely(communes, 'Hussein-Dey')).toBeUndefined(); // two candidates
+    expect(findLocationLoosely(communes, 'Atlantis')).toBeUndefined();
   });
 });
