@@ -295,7 +295,7 @@ Same mapping as above, plus:
 | `cancelParcel` | `PATCH {backend}/api/shared/status/{id}/` with `{ "status": 50, "abort_reason": 21 }` | Takes the order UUID or the tracking number (resolved like `track`). Response `{ order_id, new_status, old_status }`; a `new_status` other than `50` → `VALIDATION_ERROR`. Cancelling an already aborted order succeeds (live). Unknown UUID → `NOT_FOUND`. |
 | `healthCheck` | `GET /api/base/wilayas/` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
-**Maystro extra — labels (bordereaux)**, on `MaystroProvider` (not on `ShippingProvider`): `getLabels(references)` → `{ contentType: 'application/pdf', data, labelCount }` (`data`: `Uint8Array` in TS, binary `string` in PHP; class `DzDeliveryProvidersMaystroMaystroLabels`).
+**Maystro extra — labels (bordereaux)**, on `MaystroProvider` (not on `ShippingProvider`): `getLabels(references)` → `{ contentType: 'application/pdf', data, labelCount }` (`data`: `Uint8Array` in TS, binary `string` in PHP; class `DzDelivery\Providers\Maystro\MaystroLabels`).
 
 | References | Native endpoint | Notes |
 |------------|-----------------|-------|
