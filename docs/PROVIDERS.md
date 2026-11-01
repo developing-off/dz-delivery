@@ -5,10 +5,10 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 
 | Provider | Key | Status |
 |----------|-----|--------|
-| ZRExpress | `zrexpress` | mapping drafted, implemented in PHP and TS — extras: [`ZREXPRESS.md`](./ZREXPRESS.md) |
-| Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
+| ZRExpress | `zrexpress` | mapping from the API reference + live checks (2026-11-01: geo, hubs, fees, create → track → cancel, unknown tracking), implemented in PHP and TS — extras: [`ZREXPRESS.md`](./ZREXPRESS.md) |
+| Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20) + live read-only checks (2026-11-01: geo, centers, fees, `listParcels`, unknown tracking, errors; creation refused, test account disabled), implemented in PHP and TS, including `listParcels` |
 | Maystro Delivery | `maystro` | public API docs (2026-10-20) + live checks on a test account (2026-11-01: create, `track`, `listParcels`, `cancelParcel`, errors), implemented in PHP and TS |
-| Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
+| Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20) + live checks on Anderson (2026-11-01: geo, fees, create → track → cancel, unknown tracking); one provider, tenant via `courier` / `baseUrl` |
 | NoEST | `noest` | NOEST Public API docs v2.3 + live checks (2026-10-30: reads and error bodies; creation not tried, account suspended), implemented in PHP and TS; `listParcels` not supported |
 | E-com Delivery | `ecom` | API v2 docs (v2.153) + live checks on a test account (2026-10-30: reads, create then delete, errors), implemented in PHP and TS, including `listParcels` |
 | MDM Express | `mdm` | OpenAPI spec (`/api/docs/swagger`) + live read-only checks on a seller account (2026-10-30: geo, offices, fees, list, track, errors; creation checked up to validation, no parcel created), implemented in PHP and TS; `cancelParcel` not supported |
@@ -186,6 +186,7 @@ Extra client option: **`fromWilayaId`** (code `1`–`58`) or **`fromWilayaName`*
 | `getWilayas` | `GET wilayas/` | Paginated (`page`, `page_size=1000` — the maximum, default is 100 — `has_more`). Wilaya `id` **is** the official code. Items with `is_deliverable = 0` skipped. |
 | `getCommunes` | `GET communes/?wilaya_id=` | Paginated (`page_size=1000`). Items with `is_deliverable = 0` skipped. |
 | `getStopDesks` | `GET centers/?wilaya_id=[&commune_id=]` | Paginated. `center_id` → `StopDesk.id` (Yalidine's `stopdesk_id`), `name`, `address`, `commune_id`, `wilaya_id`. `communeId` is optional (id or name). |
+| `listParcels` | `GET parcels/?page=&page_size=` | `page_size` ≤ 1000 (default 50), `has_more` → `hasNext`, `total_data` → `totalCount`. `keyword` → `tracking` (comma-separated list allowed; Yalidine has no free-text search), `orderId` → `order_id`. `status` and `updatedSince` (on `date_last_status`, Algeria time) are filtered client-side: a filtered page can be short while `hasNext` is `true`. Yalidine also accepts `date_last_status` as a filter, but its range format could not be confirmed on an account with parcels (it accepts any value), so the SDK does not send it. Live (2026-11-01): unknown filters → 400 `"There is one or more invalid filter"`; `tracking`, `order_id`, `last_status`, `date_last_status`, `date_creation`, `order_by` accepted. |
 | `cancelParcel` | `DELETE parcels/{tracking}` | Response `[{ tracking, deleted }]`. Only parcels in `En préparation` can be deleted; `deleted: false` → `VALIDATION_ERROR`. `id` = tracking for Yalidine. |
 | `healthCheck` | `GET wilayas/` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
 
@@ -214,6 +215,7 @@ Extra client option: **`fromWilayaId`** (code `1`–`58`) or **`fromWilayaName`*
 |---------|----------|
 | `Parcel.id`, `Parcel.trackingNumber` | `tracking` (e.g. `yal-ABC123`) |
 | `Parcel.status` | `last_status` → mapped |
+| `Parcel.labelUrl` | `label` (bordereau URL, e.g. `https://yalidine.app/app/bordereau.php?tracking=yal-…`), returned by `createParcel`, `track` and `listParcels` |
 | `TrackingEvent.status` | `status` → mapped |
 | `TrackingEvent.label` | `status` (+ ` (reason)` when `reason` is set) |
 | `TrackingEvent.at` | `date_status` (`YYYY-MM-DD HH:MM:SS`, interpreted as `Africa/Algiers`, i.e. `+01:00`) |
@@ -247,7 +249,7 @@ Compared case/accent-insensitively. Reference cases: [`fixtures/yalidine/statuse
 
 ### Errors / rate limits
 
-- Error bodies (not documented by Yalidine; assumed) look like `{ "error": { "code": 400, "message": "..." } }` → `ShippingError.message` ← `error.message`. HTTP status → `code` per `CONTRACT.md` §3.
+- Error bodies (not documented by Yalidine; confirmed live 2026-11-01 on 400, 401 and 429) look like `{ "error": { "code": 400, "message": "...", "description": "Bad Request" } }` → `ShippingError.message` ← `error.message`. HTTP status → `code` per `CONTRACT.md` §3.
 - Yalidine enforces per-second / minute / hour / day quotas (reported in `x-second-quota-left`, `x-minute-quota-left`, `x-hour-quota-left`, `x-day-quota-left` response headers). Defaults: 5/s, 50/min, 1 000/h, 10 000/day. `429` → `RATE_LIMITED`, with `ShippingError.retryAfter` set from the `Retry-After` header. The SDK does not retry automatically.
 
 ### Implementation notes (TS + PHP)
@@ -260,7 +262,8 @@ Same mapping as above, plus:
 - A parcel lookup that returns empty `data` throws `NOT_FOUND` without `httpStatus` (the HTTP call itself returned `200`).
 - The Delivery sync layer uses client-side quota throttling (5/s, 50/min, 1 000/h, 10 000/day) and `GET parcels/?tracking=`; the SDK maps `429` → `RATE_LIMITED` (with `retryAfter` from `Retry-After`) and tracks via `GET parcels/{tracking}` per the official docs. No automatic retry / client throttle in the SDK.
 - Confirmed by the docs: list endpoints accept `page` / `page_size`; `contact_phone` accepts comma-separated numbers; `freeshipping: true` = the sender pays the delivery fee; `stopdesk_id` is a `center_id` from `centers/`.
-- Still to confirm with real responses: error body format; whether Yalidine rounds the overweight kg.
+- Live (2026-11-01): a disabled account gets `401 "Your account is disabled and cannot create new parcels"` on create (→ `AUTH_FAILED`) while reads keep working; deleting an unknown tracking answers `deleted: false` (→ `VALIDATION_ERROR`, indistinguishable from an already-shipped parcel); an unknown tracking returns `200 { total_data: 0 }` (→ `NOT_FOUND`).
+- Still to confirm with real responses: whether Yalidine rounds the overweight kg; the status flow of a real parcel.
 
 ---
 

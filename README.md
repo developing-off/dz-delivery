@@ -39,7 +39,7 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 
 | Carrier | Key | TypeScript | PHP | Guide |
 |---------|-----|------------|-----|-------|
-| Yalidine | `yalidine` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/) |
+| Yalidine | `yalidine` | yes (+ `listParcels`, label URL) | yes (+ `listParcels`, label URL) | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/) |
 | GuepEx (Yalidine platform) | `yalidine` + GuepEx `baseUrl` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/#guepex) |
 | ZRExpress | `zrexpress` | yes (+ bulk, labels, webhooks) | yes (+ bulk, labels, webhooks) | [ZRExpress API](https://developing-off.github.io/dz-delivery/zrexpress/) |
 | Maystro Delivery | `maystro` | yes (+ `listParcels`, PDF labels) | yes (+ `listParcels`, PDF labels) | [Maystro API](https://developing-off.github.io/dz-delivery/maystro/) |
@@ -58,7 +58,7 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 | `getFees` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `getWilayas` / `getCommunes` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `getStopDesks` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| `listParcels` | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| `listParcels` | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
 | `cancelParcel` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | `healthCheck` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Labels (bordereaux) | 🟡 | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |

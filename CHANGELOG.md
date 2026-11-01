@@ -5,6 +5,15 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 
 ## [Unreleased]
 
+## [0.1.12] — 2026-11-01
+
+### Added
+- Yalidine `listParcels` (`GET /parcels/`, ≤ 1000 per page), in TypeScript and PHP: `keyword` → `tracking`, `orderId` → `order_id`; `status` and `updatedSince` (`date_last_status`) filtered client-side. It used to throw `NOT_SUPPORTED`. Checked live (read-only).
+- `Parcel.labelUrl` (optional): the shipping label (bordereau) URL when the carrier returns it with the parcel. Filled by Yalidine on `createParcel`, `track` and `listParcels` (its `label` field), in TypeScript and PHP (`Parcel::$labelUrl`, last constructor argument).
+
+### Changed
+- `docs/PROVIDERS.md`: live checks of 2026-11-01 on ZRExpress and Ecotrack (Anderson): create → track → cancel; Yalidine read-only, with its error body format now confirmed.
+
 ## [0.1.11] — 2026-11-01
 
 ### Added
@@ -77,7 +86,8 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 ### Added
 - First public release: unified `createParcel`, `track`, `getFees`, `getWilayas`, `getCommunes`, `getStopDesks`, `cancelParcel` for ZRExpress, Yalidine, Maystro and Ecotrack, in TypeScript and PHP.
 
-[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.11...HEAD
+[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.12...HEAD
+[0.1.12]: https://github.com/developing-off/dz-delivery/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/developing-off/dz-delivery/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/developing-off/dz-delivery/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/developing-off/dz-delivery/compare/v0.1.8...v0.1.9

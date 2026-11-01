@@ -1,0 +1,17 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "yal-000AAA",
+        "trackingNumber": "yal-000AAA",
+        "status": "delivered",
+        "provider": "yalidine",
+        "labelUrl": "https://yalidine.app/app/bordereau.php?tracking=yal-000AAA"
+      }
+    ],
+    "page": 1,
+    "pageSize": 1000,
+    "totalCount": 3,
+    "hasNext": false
+  }
+}

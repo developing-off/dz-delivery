@@ -85,6 +85,7 @@ Whether `price` includes the delivery fee is carrier-dependent; providers MUST d
 | `trackingNumber` | `string` | **yes** | Tracking number shown to customers. |
 | `status` | `ParcelStatus` | **yes** | Unified status (see §4). |
 | `provider` | `string` | **yes** | Provider key, e.g. `"zrexpress"`, `"yalidine"`. |
+| `labelUrl` | `string` | no | URL of the shipping label (bordereau) when the carrier returns one with the parcel (Yalidine). Carriers with a separate label endpoint expose it as a provider extra instead. |
 | `raw` | `unknown` / `mixed` | no | Native response. |
 
 ### 2.3 `TrackingEvent`

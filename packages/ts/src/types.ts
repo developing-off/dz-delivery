@@ -73,6 +73,11 @@ export interface Parcel {
   trackingNumber: string;
   status: ParcelStatus;
   provider: string;
+  /**
+   * URL of the shipping label (bordereau) when the carrier returns one with the parcel
+   * (Yalidine: `label`). Absent otherwise; carriers with a label endpoint expose it as an extra.
+   */
+  labelUrl?: string;
   raw?: unknown;
 }
 

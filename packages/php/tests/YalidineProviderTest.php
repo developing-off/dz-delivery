@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace DzDelivery\Tests;
 
 use DzDelivery\Errors\ShippingError;
+use DzDelivery\Models\Parcel;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class YalidineProviderTest extends TestCase
 {
@@ -66,7 +68,7 @@ final class YalidineProviderTest extends TestCase
             'orderId' => 'ORD-2001',
         ]);
 
-        self::assertSame(['id' => 'yal-ABC123', 'trackingNumber' => 'yal-ABC123', 'status' => 'pending', 'provider' => 'yalidine'], self::parcelToArray($parcel));
+        self::assertSame(['id' => 'yal-ABC123', 'trackingNumber' => 'yal-ABC123', 'status' => 'pending', 'provider' => 'yalidine', 'labelUrl' => 'https://yalidine.app/label'], self::parcelToArray($parcel));
         $body = json_decode((string) $this->history[2]['request']->getBody(), true);
         self::assertSame('/v1/parcels/', $this->history[2]['request']->getUri()->getPath());
         self::assertSubset([[
@@ -245,6 +247,37 @@ final class YalidineProviderTest extends TestCase
 
         $this->expectException(ShippingError::class);
         $client->cancelParcel('yal-ABC124');
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function listParcelsCases(): iterable
+    {
+        foreach (['first-page', 'filters', 'all-pages'] as $case) {
+            yield $case => [$case];
+        }
+    }
+
+    #[DataProvider('listParcelsCases')]
+    public function testListParcelsMatchesSharedFixtures(string $case): void
+    {
+        $dir = "yalidine/listParcels/$case";
+        $page = $this->client('yalidine', self::nativeResponses("$dir.native.json"))
+            ->listParcels(self::fixture("$dir.input.json"));
+
+        $this->assertRequests("$dir.request.json");
+        self::assertSame(self::fixture("$dir.expected.json")['result'], [
+            'parcels' => array_map(static fn (Parcel $p) => self::parcelToArray($p), $page->parcels),
+            'page' => $page->page,
+            'pageSize' => $page->pageSize,
+            'totalCount' => $page->totalCount,
+            'hasNext' => $page->hasNext,
+        ]);
+    }
+
+    public function testListParcelsRejectsInvalidUpdatedSince(): void
+    {
+        $this->expectExceptionObject(new ShippingError(ShippingError::VALIDATION_ERROR, 'updatedSince must be an ISO 8601 date'));
+        $this->client('yalidine', [])->listParcels(['updatedSince' => 'not-a-date']);
     }
 
     public function testRateLimitIsMapped(): void

@@ -135,7 +135,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /** @return array<string, mixed> */
     protected static function parcelToArray(Parcel $p): array
     {
-        return ['id' => $p->id, 'trackingNumber' => $p->trackingNumber, 'status' => $p->status, 'provider' => $p->provider];
+        $out = ['id' => $p->id, 'trackingNumber' => $p->trackingNumber, 'status' => $p->status, 'provider' => $p->provider];
+        if ($p->labelUrl !== null) {
+            $out['labelUrl'] = $p->labelUrl;
+        }
+
+        return $out;
     }
 
     /** @return array<string, mixed> */
