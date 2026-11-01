@@ -10,6 +10,8 @@ export interface HttpRequest {
   query?: Record<string, QueryValue>;
   body?: unknown;
   headers?: Record<string, string>;
+  /** `binary`: a successful body is returned as bytes (`Uint8Array`), e.g. a PDF label. Default `json`. */
+  responseType?: 'json' | 'binary';
 }
 
 export interface HttpResponse<T = unknown> {
@@ -83,6 +85,11 @@ export class HttpClient {
       );
     } finally {
       clearTimeout(timer);
+    }
+
+    if (req.responseType === 'binary' && res.ok) {
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      return { status: res.status, headers: res.headers, body: bytes as T };
     }
 
     const text = await res.text().catch(() => '');

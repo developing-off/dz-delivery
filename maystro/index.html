@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>API Maystro Delivery en Node.js et PHP — SDK dz-delivery</title>
-  <meta name="description" content="Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, et suivre les statuts par webhooks. Exemple complet avec dz-delivery." />
+  <meta name="description" content="Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, suivre, lister et annuler les commandes. Exemple complet avec dz-delivery." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://developing-off.github.io/dz-delivery/maystro/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
@@ -13,7 +13,7 @@
   <meta property="og:locale" content="fr_FR" />
   <meta property="og:url" content="https://developing-off.github.io/dz-delivery/maystro/" />
   <meta property="og:title" content="API Maystro Delivery en Node.js et PHP — SDK dz-delivery" />
-  <meta property="og:description" content="Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, et suivre les statuts par webhooks. Exemple complet avec dz-delivery." />
+  <meta property="og:description" content="Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, suivre, lister et annuler les commandes. Exemple complet avec dz-delivery." />
   <meta property="og:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://developing-off.github.io/dz-delivery/assets/og.png" />
@@ -28,7 +28,7 @@
       {
         "@type": "TechArticle",
         "headline": "API Maystro Delivery en Node.js et PHP",
-        "description": "Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, et suivre les statuts par webhooks. Exemple complet avec dz-delivery.",
+        "description": "Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, suivre, lister et annuler les commandes. Exemple complet avec dz-delivery.",
         "inLanguage": "fr",
         "url": "https://developing-off.github.io/dz-delivery/maystro/",
         "about": [
@@ -88,7 +88,7 @@
       </nav>
 
       <h1>API Maystro Delivery en Node.js et PHP</h1>
-      <p class="lead">Créez vos commandes Maystro, calculez les frais et listez les points relais avec le SDK dz-delivery. Le suivi passe par les webhooks Maystro, avec un mapping des statuts fourni.</p>
+      <p class="lead">Créez vos commandes Maystro, calculez les frais et listez les points relais avec le SDK dz-delivery. Suivez, listez et annulez les commandes par API, ou recevez les statuts par webhook.</p>
 
       <section id="install" aria-labelledby="install-title">
         <h2 id="install-title">Installer</h2>
@@ -131,7 +131,8 @@
     price: <span class="c-num">2500</span>,
     orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
   });
-  <span class="c-cmt">// parcel.id = id de commande Maystro, à garder pour les webhooks</span>
+  <span class="c-cmt">// parcel.trackingNumber (ou parcel.id) sert pour track / cancelParcel</span>
+  <span class="c-key">const</span> { events } = <span class="c-key">await</span> maystro.<span class="c-fn">track</span>(parcel.trackingNumber);
 } <span class="c-key">catch </span>(err) {
   <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
 }</pre></div>
@@ -159,13 +160,22 @@
     <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
     <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
 ]);
-<span class="c-cmt">// $parcel-&gt;id : à stocker pour relier les webhooks</span></pre></div>
+<span class="c-var">$tracked</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber); <span class="c-cmt">// ou $parcel-&gt;id</span></pre></div>
         <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
         <h2 id="support-title">Méthodes supportées</h2>
-        <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Statut renvoyé&nbsp;: <code>pending</code>.</td></tr><tr><td><code>track</code></td><td class="no">NOT_SUPPORTED</td><td>Pas d’API de suivi chez Maystro&nbsp;: utilisez les webhooks.</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Tarifs domicile et stop desk.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Le <code>id</code> de wilaya est le code officiel.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">oui</td><td>Stop desks et points relais, <code>communeId</code> obligatoire.</td></tr><tr><td><code>listParcels</code></td><td class="no">NOT_SUPPORTED</td><td>Pas d’API de liste chez Maystro.</td></tr><tr><td><code>cancelParcel</code></td><td class="no">NOT_SUPPORTED</td><td>Pas d’endpoint d’annulation documenté.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie le token (appel réel).</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Statut renvoyé&nbsp;: <code>pending</code>.</td></tr><tr><td><code>track</code></td><td class="ok">oui</td><td>Commande + historique des statuts. Id de commande ou numéro de suivi.</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Tarifs domicile et stop desk.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Le <code>id</code> de wilaya est le code officiel.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">oui</td><td>Stop desks et points relais, <code>communeId</code> obligatoire.</td></tr><tr><td><code>listParcels</code></td><td class="ok">oui</td><td>20 commandes par page&nbsp;; filtres statut, orderId, mot-clé et date appliqués côté SDK.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">oui</td><td>Annule la commande (statut 50). Id de commande ou numéro de suivi.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie le token (appel réel).</td></tr><tr><td><code>getLabels</code> (extra)</td><td class="ok">oui</td><td>Bordereaux en PDF, une page par commande. Sur <code>MaystroProvider</code>.</td></tr></tbody></table></div>
+        <h3>Imprimer les bordereaux (PDF)</h3>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { MaystroProvider } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+<span class="c-key">import</span> { writeFileSync } <span class="c-key">from</span> <span class="c-str">&#x27;node:fs&#x27;</span>;
+
+<span class="c-key">const</span> maystro = <span class="c-key">new</span> <span class="c-fn">MaystroProvider</span>({ apiToken: process.env.MAYSTRO_API_TOKEN! });
+<span class="c-key">const</span> { data, labelCount } = <span class="c-key">await</span> maystro.<span class="c-fn">getLabels</span>([parcel.trackingNumber]);
+<span class="c-fn">writeFileSync</span>(<span class="c-str">&#x27;bordereaux.pdf&#x27;</span>, data); <span class="c-cmt">// une page par commande trouvée</span></pre></div>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$labels</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">getLabels</span>([<span class="c-var">$parcel</span>-&gt;trackingNumber]); <span class="c-cmt">// MaystroProvider</span>
+<span class="c-key">return</span> <span class="c-fn">response</span>(<span class="c-var">$labels</span>-&gt;data, <span class="c-num">200</span>, [<span class="c-str">&#x27;Content-Type&#x27;</span> =&gt; <span class="c-str">&#x27;application/pdf&#x27;</span>]); <span class="c-cmt">// Laravel</span></pre></div>
       </section>
 
       <section id="webhooks" aria-labelledby="webhooks-title">
@@ -189,7 +199,8 @@
       <section id="notes" aria-labelledby="notes-title">
         <h2 id="notes-title">À savoir sur l’API Maystro</h2>
         <ul class="notes">
-          <li><strong>Pas de <code>track</code> ni <code>cancelParcel</code></strong>&nbsp;: ces méthodes lèvent <code>NOT_SUPPORTED</code> sans appel HTTP. Le suivi se fait par webhooks.</li>
+          <li><code>track</code> et <code>cancelParcel</code> acceptent l’id de commande (<code>parcel.id</code>) ou le numéro de suivi (le <code>display_id</code> Maystro, une requête de plus).</li>
+          <li><code>listParcels</code>&nbsp;: Maystro renvoie 20 commandes par page, sans filtre&nbsp;; le SDK filtre chaque page (statut, orderId, mot-clé, <code>updatedSince</code>).</li>
           <li><code>getStopDesks</code> exige un <code>communeId</code>&nbsp;; l’<code>id</code> renvoyé s’utilise comme <code>stopDeskId</code> à la création.</li>
           <li>Les frais viennent de l’API tarifaire Maystro, avec repli automatique sur l’ancienne API d’options de livraison.</li>
           <li>Les webhooks Maystro ne sont pas signés&nbsp;: protégez l’URL (par exemple avec un secret long dans la query string).</li>
@@ -202,7 +213,7 @@
         <div class="faq">
           <details>
             <summary>Comment suivre un colis Maystro par API&nbsp;?</summary>
-            <p>Maystro n’expose pas d’endpoint de suivi&nbsp;: les changements de statut arrivent par webhook. Le SDK fournit <code>mapMaystroStatus</code> / <code>StatusMapper::maystro()</code> pour les convertir en statuts unifiés.</p>
+            <p>Avec <code>track()</code>&nbsp;: le SDK lit la commande et son historique (<code>history_order</code>) et renvoie des statuts unifiés. Pour être notifié sans interroger l’API, utilisez les webhooks&nbsp;: le SDK fournit <code>mapMaystroStatus</code> / <code>StatusMapper::maystro()</code> pour les convertir en statuts unifiés.</p>
           </details>
           <details>
             <summary>Où trouver le token API Maystro&nbsp;?</summary>

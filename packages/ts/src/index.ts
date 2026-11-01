@@ -35,7 +35,9 @@ export {
   mapMaystroStatus,
   MAYSTRO_DEFAULT_BASE_URL,
   MAYSTRO_BACKEND_BASE_URL,
+  MAYSTRO_HISTORY_BASE_URL,
   MAYSTRO_STATUS_CODES,
+  type MaystroLabels,
 } from './providers/maystro';
 export {
   EcotrackProvider,

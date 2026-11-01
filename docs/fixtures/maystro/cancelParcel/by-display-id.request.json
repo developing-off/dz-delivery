@@ -1,0 +1,17 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/stores/orders/",
+    "query": {
+      "display_id": "172316976800001"
+    }
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/shared/status/1394335a-4470-407c-a464-d90932de5510/",
+    "body": {
+      "status": 50,
+      "abort_reason": 21
+    }
+  }
+]

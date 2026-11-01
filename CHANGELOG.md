@@ -5,6 +5,14 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 
 ## [Unreleased]
 
+## [0.1.11] — 2026-11-01
+
+### Added
+- Maystro: `track` (order + status history from `history_order`), `listParcels` (`GET /api/stores/orders/`, 20 per page, `status` / `orderId` / `keyword` / `updatedSince` filtered client-side) and `cancelParcel` (`PATCH /api/shared/status/{id}/`, status `50`), in TypeScript and PHP. `track` and `cancelParcel` take the order id (`Parcel.id`) or the tracking number (the order `display_id`). They used to throw `NOT_SUPPORTED`: these endpoints are in Maystro's docs. Checked live on a test account (create → track → cancel → track, list, unknown references).
+- Maystro extra `getLabels(references)` on `MaystroProvider`: the shipping labels (bordereaux) of up to 100 orders as one PDF (`starter_bordureau`, by tracking number or by order id), with `labelCount`; no order found → `NOT_FOUND`. Checked live.
+- `HttpClient` can return a binary body: `responseType: 'binary'` (TS) and `requestBinary()` (PHP).
+- README: feature matrix (which function each carrier supports).
+
 ## [0.1.10] — 2026-10-30
 
 ### Added
@@ -69,7 +77,8 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 ### Added
 - First public release: unified `createParcel`, `track`, `getFees`, `getWilayas`, `getCommunes`, `getStopDesks`, `cancelParcel` for ZRExpress, Yalidine, Maystro and Ecotrack, in TypeScript and PHP.
 
-[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.10...HEAD
+[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.11...HEAD
+[0.1.11]: https://github.com/developing-off/dz-delivery/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/developing-off/dz-delivery/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/developing-off/dz-delivery/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/developing-off/dz-delivery/compare/v0.1.7...v0.1.8

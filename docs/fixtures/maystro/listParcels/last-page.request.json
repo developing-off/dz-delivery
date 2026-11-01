@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/stores/orders/",
+    "query": {
+      "page": 2
+    }
+  }
+]

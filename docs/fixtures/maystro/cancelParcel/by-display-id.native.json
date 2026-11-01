@@ -1,0 +1,42 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "list": {
+        "count": 1,
+        "next": null,
+        "previous": null,
+        "results": [
+          {
+            "id": "1394335a-4470-407c-a464-d90932de5510",
+            "display_id": "172316976800001",
+            "updated_at": "2026-10-21T10:05:00.200000+01:00",
+            "customer_name": "Test Client",
+            "customer_phone": "0666554433",
+            "wilaya": "Alger",
+            "commune": 554,
+            "commune_name": "Alger Centre",
+            "status": 31,
+            "price": 600,
+            "product_price": 2200,
+            "external_order_id": "ORDER-3001",
+            "ordered_at": "2026-10-20T09:12:13.034791+01:00",
+            "shipped_at": "2026-10-21T10:05:00.123456+01:00",
+            "delivered_at": null,
+            "abort_reason": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "order_id": "1394335a-4470-407c-a464-d90932de5510",
+      "new_status": 50,
+      "old_status": 31
+    }
+  }
+]

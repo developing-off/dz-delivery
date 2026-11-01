@@ -88,7 +88,7 @@ async function main() {
       await client.cancelParcel(parcel.trackingNumber);
       console.log('Cancelled', parcel.trackingNumber);
     } catch (err) {
-      // Maystro has no cancellation API.
+      // Some carriers (MDM, Elogistia) have no cancellation API.
       if (!isShippingError(err) || err.code !== 'NOT_SUPPORTED') throw err;
       console.log(`Cancellation not supported by ${client.name}: cancel ${parcel.trackingNumber} from its dashboard`);
     }

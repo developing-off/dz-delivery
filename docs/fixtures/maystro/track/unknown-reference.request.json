@@ -1,0 +1,9 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/stores/orders/",
+    "query": {
+      "display_id": "172316976899999"
+    }
+  }
+]

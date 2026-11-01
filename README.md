@@ -42,12 +42,33 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 | Yalidine | `yalidine` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/) |
 | GuepEx (Yalidine platform) | `yalidine` + GuepEx `baseUrl` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/#guepex) |
 | ZRExpress | `zrexpress` | yes (+ bulk, labels, webhooks) | yes (+ bulk, labels, webhooks) | [ZRExpress API](https://developing-off.github.io/dz-delivery/zrexpress/) |
-| Maystro Delivery | `maystro` | yes (track / cancel via webhooks) | yes (track / cancel via webhooks) | [Maystro API](https://developing-off.github.io/dz-delivery/maystro/) |
+| Maystro Delivery | `maystro` | yes (+ `listParcels`, PDF labels) | yes (+ `listParcels`, PDF labels) | [Maystro API](https://developing-off.github.io/dz-delivery/maystro/) |
 | Ecotrack (DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers, …) | `ecotrack` | yes | yes | [Ecotrack API](https://developing-off.github.io/dz-delivery/ecotrack/) |
 | NoEST | `noest` | yes (no `listParcels`) | yes (no `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#noest) |
 | E-com Delivery | `ecom` | yes (+ `listParcels`) | yes (+ `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#ecom) |
 | MDM Express | `mdm` | yes (products from the MDM catalog; no `cancelParcel`) | yes (same) | [PROVIDERS.md](./docs/PROVIDERS.md#mdm) |
 | Elogistia | `elogistia` | yes (no stop-desk list, `listParcels`, `cancelParcel`) | yes (same) | [PROVIDERS.md](./docs/PROVIDERS.md#elogistia) |
+
+## Feature matrix
+
+| Function | Yalidine | ZRExpress | Maystro | Ecotrack | NoEST | E-com | MDM | Elogistia |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `createParcel` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `track` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `getFees` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `getWilayas` / `getCommunes` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `getStopDesks` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| `listParcels` | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| `cancelParcel` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `healthCheck` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Labels (bordereaux) | 🟡 | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Webhooks | ❌ | ✅ | 🟡 | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+✅ supported · 🟡 partial · ❌ not in the SDK yet (the carrier's API doesn't offer it, or it hasn't been added)
+
+- Yalidine labels: the label link is returned only by `createParcel` (in `raw`).
+- Maystro webhooks: status mapper only (`mapMaystroStatus`).
+- ZRExpress / Maystro labels: extra methods on `ZRExpressProvider.generateLabels` / `MaystroProvider.getLabels`.
 
 ## The unified API
 
