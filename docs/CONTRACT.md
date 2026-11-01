@@ -85,7 +85,10 @@ Whether `price` includes the delivery fee is carrier-dependent; providers MUST d
 | `trackingNumber` | `string` | **yes** | Tracking number shown to customers. |
 | `status` | `ParcelStatus` | **yes** | Unified status (see §4). |
 | `provider` | `string` | **yes** | Provider key, e.g. `"zrexpress"`, `"yalidine"`. |
+| `labelUrl` | `string` | no | URL of the shipping label (bordereau) when the carrier returns one with the parcel (Yalidine). Carriers with a separate label endpoint expose it as a provider extra instead. |
 | `raw` | `unknown` / `mixed` | no | Native response. |
+
+> **Decision:** `labelUrl` is unified (not left in `raw`) because printing the bordereau is part of every shipping flow: an app can show a "print label" link whenever the field is set, without knowing the carrier. It stays optional; carriers whose labels need a separate call (ZRExpress, Maystro PDF) keep a provider extra, and may fill `labelUrl` later when they return a stable URL with the parcel.
 
 ### 2.3 `TrackingEvent`
 

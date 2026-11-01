@@ -12,6 +12,8 @@ final class Parcel
         public readonly string $status,
         public readonly string $provider,
         public readonly mixed $raw = null,
+        /** Shipping label (bordereau) URL when the carrier returns one with the parcel (Yalidine `label`). */
+        public readonly ?string $labelUrl = null,
     ) {
     }
 }

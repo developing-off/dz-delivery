@@ -134,7 +134,7 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 | `getFees` | yes | yes | yes | yes (per wilaya) | yes (per wilaya) | yes (per wilaya) | yes (per commune) | yes (per wilaya) |
 | `getWilayas` / `getCommunes` | yes | yes | yes | yes | yes | yes | yes | yes |
 | `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) | yes (stations) | yes (bureaux) | yes (partner offices) | `NOT_SUPPORTED` (Elogistia picks the desk) |
-| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | yes (20 per page, filters client-side) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` | yes (`GET /colis`) | yes (`parcels/search`) | `NOT_SUPPORTED` |
+| `listParcels` | yes (`parcels/search`) | yes (`GET parcels/`, `status` / `updatedSince` client-side) | yes (20 per page, filters client-side) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` | yes (`GET /colis`) | yes (`parcels/search`) | `NOT_SUPPORTED` |
 | `cancelParcel` | yes | yes (only parcels still `En préparation`) | yes (`PATCH` status `50`) | yes (only orders not validated yet) | yes (only orders not validated yet) | yes (only parcels "En Préparation") | `NOT_SUPPORTED` | `NOT_SUPPORTED` |
 | `healthCheck` | yes | yes | yes | yes | yes | yes | yes | yes |
 
@@ -382,7 +382,8 @@ foreach ($page->parcels as $parcel) {
 
 - **ZRExpress**: [`POST /api/v1/parcels/search`](https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint).
 - **Maystro**: `GET /api/stores/orders/` (fixed 20 per page); `status`, `orderId`, `keyword` and `updatedSince` filter each page client-side.
-- **Yalidine / Ecotrack**: `NOT_SUPPORTED` for now.
+- **Yalidine**: `GET parcels/` (≤ 1000 per page); `keyword` → `tracking` (comma-separated trackings allowed), `orderId` → `order_id`; `status` and `updatedSince` (`date_last_status`) filter each page client-side, so a short page can still have `hasNext` true: follow `hasNext`, not the page size.
+- **Ecotrack**: `NOT_SUPPORTED` for now.
 
 ### 3.8 `cancelParcel(string $trackingNumberOrId): void`
 

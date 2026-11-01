@@ -22,6 +22,8 @@ import type {
   Location,
   Parcel,
   ParcelInput,
+  ParcelListPage,
+  ParcelListQuery,
   ParcelStatus,
   StopDesk,
   StopDeskQuery,
@@ -29,6 +31,7 @@ import type {
   TrackResult,
   YalidineConfig,
 } from '../types';
+import { PARCEL_STATUSES } from '../types';
 import {
   findLocationByName,
   isRecord,
@@ -53,6 +56,11 @@ const ALGERIA_OFFSET = '+01:00';
 const MAX_PAGES = 50;
 /** Largest `page_size` accepted by list endpoints (saves quota: 50 requests/minute). */
 const PAGE_SIZE = 1000;
+/** `listParcels`: default `page_size` (capped at `PAGE_SIZE`) and page cap for `allPages`. */
+const LIST_DEFAULT_PAGE_SIZE = 50;
+const LIST_MAX_PAGES = 50;
+/** `updatedSince` must at least start like an ISO 8601 date (`YYYY-MM-DD`). */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ]|$)/;
 /** Weight included in the base price; each extra kg costs `oversize_fee`. */
 const FREE_WEIGHT_KG = 5;
 /** Volumetric weight (kg) = length × width × height (cm) × this factor. */
@@ -131,6 +139,7 @@ interface YParcel {
   tracking: string;
   last_status?: string;
   date_last_status?: string;
+  label?: string | null;
 }
 
 interface YHistory {
@@ -143,6 +152,7 @@ interface YCreateResult {
   success?: boolean;
   order_id?: string;
   tracking?: string | null;
+  label?: string | null;
   message?: string;
 }
 
@@ -309,11 +319,9 @@ export class YalidineProvider implements ShippingProvider {
 
     // New Yalidine parcels start in "En préparation"; no follow-up read to save API quota.
     const tracking = String(result.tracking);
-    return withRaw(
-      { id: tracking, trackingNumber: tracking, status: 'pending' as const, provider: PROVIDER },
-      result,
-      this.includeRaw,
-    );
+    const created: Parcel = { id: tracking, trackingNumber: tracking, status: 'pending', provider: PROVIDER };
+    if (hasValue(result.label)) created.labelUrl = String(result.label);
+    return withRaw(created, result, this.includeRaw);
   }
 
   /** `GET /parcels/{tracking}` + `GET /histories/{tracking}`. */
@@ -335,19 +343,7 @@ export class YalidineProvider implements ShippingProvider {
       ),
     );
 
-    return {
-      parcel: withRaw(
-        {
-          id: native.tracking,
-          trackingNumber: native.tracking,
-          status: mapYalidineStatus(native.last_status),
-          provider: PROVIDER,
-        },
-        native,
-        this.includeRaw,
-      ),
-      events: sortEventsAscending(events),
-    };
+    return { parcel: this.toParcel(native), events: sortEventsAscending(events) };
   }
 
   /**
@@ -461,15 +457,86 @@ export class YalidineProvider implements ShippingProvider {
   }
 
   /**
+   * `GET /parcels/?page=&page_size=` (≤ 1000, `has_more`). `keyword` → `tracking` filter
+   * (Yalidine has no free-text search; comma-separated trackings allowed), `orderId` →
+   * `order_id`. `updatedSince` (on `date_last_status`) and `status` are filtered client-side,
+   * so a filtered page can hold fewer parcels than `pageSize` while `hasNext` is `true`.
+   */
+  async listParcels(query: ParcelListQuery = {}): Promise<ParcelListPage> {
+    const page = query.page ?? 1;
+    if (!Number.isInteger(page) || page < 1) {
+      throw new ShippingError('VALIDATION_ERROR', 'page must be an integer >= 1', {
+        provider: PROVIDER,
+        details: [{ field: 'page', message: 'page must be an integer >= 1' }],
+      });
+    }
+    if (query.status !== undefined && !(PARCEL_STATUSES as readonly string[]).includes(query.status)) {
+      throw new ShippingError('VALIDATION_ERROR', 'status must be a unified ParcelStatus', {
+        provider: PROVIDER,
+        details: [{ field: 'status', message: 'status must be a unified ParcelStatus' }],
+      });
+    }
+    const requested = query.pageSize ?? LIST_DEFAULT_PAGE_SIZE;
+    if (!Number.isFinite(requested)) {
+      throw new ShippingError('VALIDATION_ERROR', 'pageSize must be a finite number', {
+        provider: PROVIDER,
+        details: [{ field: 'pageSize', message: 'pageSize must be a finite number' }],
+      });
+    }
+    const pageSize = Math.min(Math.max(Math.trunc(requested), 1), PAGE_SIZE);
+
+    const filter: Record<string, QueryValue> = {};
+    if (query.keyword?.trim()) filter.tracking = query.keyword.trim();
+    if (query.orderId?.trim()) filter.order_id = query.orderId.trim();
+    let since: number | undefined;
+    if (query.updatedSince !== undefined) {
+      // ISO 8601 only; a value without offset is read in Algeria time, like `date_last_status`.
+      since = ISO_DATE.test(query.updatedSince.trim()) ? Date.parse(yalidineDateToIso(query.updatedSince.trim())) : NaN;
+      if (Number.isNaN(since)) {
+        throw new ShippingError('VALIDATION_ERROR', 'updatedSince must be an ISO 8601 date', {
+          provider: PROVIDER,
+          details: [{ field: 'updatedSince', message: 'updatedSince must be an ISO 8601 date' }],
+        });
+      }
+    }
+
+    const keep = (row: YParcel): boolean => {
+      if (since !== undefined) {
+        const at = hasValue(row.date_last_status) ? Date.parse(yalidineDateToIso(String(row.date_last_status))) : NaN;
+        if (!(at >= since)) return false;
+      }
+      return query.status === undefined || mapYalidineStatus(row.last_status) === query.status;
+    };
+    const toParcels = (rows: YParcel[]) => rows.filter(keep).map((row) => this.toParcel(row));
+
+    if (query.allPages) {
+      const rows: YParcel[] = [];
+      let totalCount = 0;
+      let lastRaw: unknown;
+      let hasNext = true;
+      for (let n = 1; hasNext && n <= LIST_MAX_PAGES; n += 1) {
+        const result = await this.listPage(filter, n, pageSize);
+        rows.push(...result.rows);
+        if (n === 1) totalCount = result.totalCount;
+        lastRaw = result.raw;
+        hasNext = result.hasNext;
+      }
+      // `hasNext` stays true when the page cap cut the walk short.
+      return withRaw({ parcels: toParcels(rows), page: 1, pageSize, totalCount, hasNext }, lastRaw, this.includeRaw);
+    }
+
+    const result = await this.listPage(filter, page, pageSize);
+    return withRaw(
+      { parcels: toParcels(result.rows), page, pageSize, totalCount: result.totalCount, hasNext: result.hasNext },
+      result.raw,
+      this.includeRaw,
+    );
+  }
+
+  /**
    * `DELETE /parcels/{tracking}`. Yalidine only deletes parcels still "En préparation";
    * a `deleted: false` answer is reported as `VALIDATION_ERROR`.
    */
-  async listParcels(): Promise<never> {
-    throw new ShippingError('NOT_SUPPORTED', 'Yalidine listParcels is not implemented yet', {
-      provider: PROVIDER,
-    });
-  }
-
   async cancelParcel(trackingNumberOrId: string): Promise<void> {
     const tracking = trackingNumberOrId?.trim();
     if (!tracking) throw new ShippingError('VALIDATION_ERROR', 'trackingNumberOrId is required', { provider: PROVIDER });
@@ -499,6 +566,39 @@ export class YalidineProvider implements ShippingProvider {
   }
 
   // --- internals -------------------------------------------------------------
+
+  private toParcel(native: YParcel): Parcel {
+    const parcel: Parcel = {
+      id: native.tracking,
+      trackingNumber: native.tracking,
+      status: mapYalidineStatus(native.last_status),
+      provider: PROVIDER,
+    };
+    if (hasValue(native.label)) parcel.labelUrl = String(native.label);
+    return withRaw(parcel, native, this.includeRaw);
+  }
+
+  private async listPage(
+    filter: Record<string, QueryValue>,
+    page: number,
+    pageSize: number,
+  ): Promise<{ rows: YParcel[]; totalCount: number; hasNext: boolean; raw: unknown }> {
+    const { body } = await this.http.request<unknown>({
+      method: 'GET',
+      path: '/parcels/',
+      query: { ...filter, page, page_size: pageSize },
+    });
+    if (!isRecord(body) || !Array.isArray(body.data)) {
+      throw new ShippingError('PROVIDER_ERROR', 'Unexpected Yalidine parcel list response', { provider: PROVIDER, raw: body });
+    }
+    const rows = body.data.filter((r): r is YParcel => isRecord(r) && hasValue(r.tracking));
+    return {
+      rows,
+      totalCount: num(body.total_data) ?? (page - 1) * pageSize + body.data.length,
+      hasNext: Boolean(body.has_more) && body.data.length > 0,
+      raw: body,
+    };
+  }
 
   private async getParcel(tracking: string): Promise<YParcel> {
     const res = await this.http.request<unknown>({

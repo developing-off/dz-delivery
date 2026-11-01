@@ -1,0 +1,12 @@
+[
+  {
+    "method": "GET",
+    "path": "/v1/parcels/",
+    "query": {
+      "page": 1,
+      "page_size": 1000,
+      "tracking": "yal-000AAA,yal-000BBB,yal-000CCC",
+      "order_id": "ORDER-1"
+    }
+  }
+]

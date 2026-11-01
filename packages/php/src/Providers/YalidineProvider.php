@@ -14,6 +14,8 @@ use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
+use DzDelivery\Models\ParcelListPage;
+use DzDelivery\Models\ParcelListQuery;
 use DzDelivery\Models\ParcelStatus;
 use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\StopDeskQuery;
@@ -42,6 +44,8 @@ final class YalidineProvider implements ShippingProviderInterface
     private const MAX_PAGES = 50;
     /** Largest `page_size` accepted by list endpoints (saves quota: 50 requests/minute). */
     private const PAGE_SIZE = 1000;
+    /** listParcels: page cap for allPages (page size capped at PAGE_SIZE). */
+    private const LIST_MAX_PAGES = 50;
     private const FREE_WEIGHT_KG = 5;
     /** Volumetric weight (kg) = length × width × height (cm) × this factor. */
     private const VOLUMETRIC_FACTOR = 0.0002;
@@ -167,7 +171,7 @@ final class YalidineProvider implements ShippingProviderInterface
 
         $tracking = (string) $result['tracking'];
 
-        return new Parcel($tracking, $tracking, ParcelStatus::PENDING, self::NAME, $this->raw($result));
+        return new Parcel($tracking, $tracking, ParcelStatus::PENDING, self::NAME, $this->raw($result), self::labelUrl($result));
     }
 
     public function track(string $trackingNumber): TrackResult
@@ -303,9 +307,108 @@ final class YalidineProvider implements ShippingProviderInterface
         return $desks;
     }
 
-    public function listParcels(\DzDelivery\Models\ParcelListQuery|array|null $query = null): \DzDelivery\Models\ParcelListPage
+    /**
+     * GET parcels/?page=&page_size= (≤ 1000, has_more). keyword → tracking filter (no free-text
+     * search; comma-separated trackings allowed), orderId → order_id. updatedSince (on
+     * date_last_status) and status are filtered client-side, so a filtered page can hold fewer
+     * parcels than pageSize while hasNext is true.
+     */
+    public function listParcels(ParcelListQuery|array|null $query = null): ParcelListPage
     {
-        throw ShippingError::notSupported('Yalidine listParcels is not implemented yet', self::NAME);
+        $query = ParcelListQuery::from($query, self::NAME);
+        $since = null;
+        if ($query->updatedSince !== null) {
+            // ISO 8601 only; a value without offset is read in Algeria time, like date_last_status.
+            $value = trim($query->updatedSince);
+            try {
+                $since = preg_match('/^\d{4}-\d{2}-\d{2}(?:[T ]|$)/', $value) === 1
+                    ? new \DateTimeImmutable($value, new \DateTimeZone(self::TIMEZONE))
+                    : null;
+            } catch (\Exception) {
+                $since = null;
+            }
+            if ($since === null) {
+                throw ShippingError::validation('updatedSince must be an ISO 8601 date', self::NAME, 'updatedSince');
+            }
+        }
+        $pageSize = min(max($query->pageSize, 1), self::PAGE_SIZE);
+
+        $filter = [];
+        if ($query->keyword !== null && trim($query->keyword) !== '') {
+            $filter['tracking'] = trim($query->keyword);
+        }
+        if ($query->orderId !== null && trim($query->orderId) !== '') {
+            $filter['order_id'] = trim($query->orderId);
+        }
+
+        $toParcels = function (array $rows) use ($query, $since): array {
+            $parcels = [];
+            foreach ($rows as $row) {
+                if ($since !== null) {
+                    $last = $row['date_last_status'] ?? null;
+                    try {
+                        $at = is_string($last) && trim($last) !== '' ? new \DateTimeImmutable(Dates::toIso($last, self::TIMEZONE)) : null;
+                    } catch (\Exception) {
+                        $at = null;
+                    }
+                    if ($at === null || $at < $since) {
+                        continue;
+                    }
+                }
+                $parcel = $this->toParcel($row);
+                if ($query->status === null || $parcel->status === $query->status) {
+                    $parcels[] = $parcel;
+                }
+            }
+
+            return $parcels;
+        };
+
+        if ($query->allPages) {
+            $rows = [];
+            $totalCount = 0;
+            $lastRaw = null;
+            $hasNext = true;
+            for ($n = 1; $hasNext && $n <= self::LIST_MAX_PAGES; $n++) {
+                [$pageRows, $count, $hasNext, $lastRaw] = $this->listPage($filter, $n, $pageSize);
+                array_push($rows, ...$pageRows);
+                if ($n === 1) {
+                    $totalCount = $count;
+                }
+            }
+
+            // hasNext stays true when the page cap cut the walk short.
+            return new ParcelListPage($toParcels($rows), 1, $pageSize, $totalCount, $hasNext, $this->raw($lastRaw));
+        }
+
+        [$rows, $totalCount, $hasNext, $raw] = $this->listPage($filter, $query->page, $pageSize);
+
+        return new ParcelListPage($toParcels($rows), $query->page, $pageSize, $totalCount, $hasNext, $this->raw($raw));
+    }
+
+    /**
+     * @param array<string, string> $filter
+     * @return array{0: list<array<string, mixed>>, 1: int, 2: bool, 3: mixed}
+     */
+    private function listPage(array $filter, int $page, int $pageSize): array
+    {
+        $response = $this->http->request('GET', 'parcels/', $filter + ['page' => $page, 'page_size' => $pageSize]);
+        if (!is_array($response) || !isset($response['data']) || !is_array($response['data'])) {
+            throw ShippingError::providerError('Unexpected Yalidine parcel list response', self::NAME, $this->raw($response));
+        }
+        $data = $response['data'];
+        $rows = array_values(array_filter(
+            $data,
+            static fn ($r) => is_array($r) && isset($r['tracking']) && trim((string) $r['tracking']) !== '',
+        ));
+        $total = self::number($response['total_data'] ?? null);
+
+        return [
+            $rows,
+            $total !== null ? (int) $total : ($page - 1) * $pageSize + count($data),
+            !empty($response['has_more']) && $data !== [],
+            $response,
+        ];
     }
 
     public function cancelParcel(string $trackingNumberOrId): void
@@ -361,7 +464,16 @@ final class YalidineProvider implements ShippingProviderInterface
             status: StatusMapper::yalidine($native['last_status'] ?? null),
             provider: self::NAME,
             raw: $this->raw($native),
+            labelUrl: self::labelUrl($native),
         );
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function labelUrl(array $row): ?string
+    {
+        $label = $row['label'] ?? null;
+
+        return is_string($label) && trim($label) !== '' ? $label : null;
     }
 
     /** @return Location[] */

@@ -4,7 +4,8 @@
       "id": "yal-000TST",
       "trackingNumber": "yal-000TST",
       "status": "in_transit",
-      "provider": "yalidine"
+      "provider": "yalidine",
+      "labelUrl": "https://yalidine.app/app/bordereau.php?tracking=yal-000TST"
     },
     "events": [
       { "status": "pending", "label": "En préparation", "at": "2025-12-23T15:23:54+01:00" },

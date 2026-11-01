@@ -1,0 +1,47 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "has_more": true,
+      "total_data": 3,
+      "data": [
+        {
+          "tracking": "yal-000AAA",
+          "order_id": "ORDER-1",
+          "firstname": "Test",
+          "familyname": "Client",
+          "contact_phone": "0550123456",
+          "to_wilaya_id": 16,
+          "to_wilaya_name": "Alger",
+          "to_commune_name": "Bab Ezzouar",
+          "price": 3200,
+          "is_stopdesk": 0,
+          "date_creation": "2026-10-28 10:00:00",
+          "date_last_status": "2026-10-30 14:00:00",
+          "last_status": "Livré",
+          "label": "https://yalidine.app/app/bordereau.php?tracking=yal-000AAA"
+        },
+        {
+          "tracking": "yal-000BBB",
+          "order_id": "ORDER-1",
+          "firstname": "Test",
+          "familyname": "Client",
+          "contact_phone": "0550123456",
+          "to_wilaya_id": 16,
+          "to_wilaya_name": "Alger",
+          "to_commune_name": "Bab Ezzouar",
+          "price": 3200,
+          "is_stopdesk": 0,
+          "date_creation": "2026-10-28 10:00:00",
+          "date_last_status": "2026-10-31 09:00:00",
+          "last_status": "En préparation"
+        }
+      ],
+      "links": {
+        "self": "https://api.yalidine.app/v1/parcels/",
+        "next": "https://api.yalidine.app/v1/parcels/?page=2"
+      }
+    }
+  }
+]

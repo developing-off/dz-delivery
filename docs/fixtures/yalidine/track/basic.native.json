@@ -17,7 +17,8 @@
           "price": 3200,
           "is_stopdesk": 0,
           "last_status": "Sorti en livraison",
-          "date_last_status": "2025-12-30 13:24:34"
+          "date_last_status": "2025-12-30 13:24:34",
+          "label": "https://yalidine.app/app/bordereau.php?tracking=yal-000TST"
         }
       ]
     }

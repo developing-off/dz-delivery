@@ -3,6 +3,7 @@
     "id": "yal-000TST",
     "trackingNumber": "yal-000TST",
     "status": "pending",
-    "provider": "yalidine"
+    "provider": "yalidine",
+    "labelUrl": "https://yalidine.app/app/bordereau.php?tracking=yal-000TST"
   }
 }
