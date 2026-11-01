@@ -382,7 +382,7 @@ foreach ($page->parcels as $parcel) {
 
 - **ZRExpress**: [`POST /api/v1/parcels/search`](https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint).
 - **Maystro**: `GET /api/stores/orders/` (fixed 20 per page); `status`, `orderId`, `keyword` and `updatedSince` filter each page client-side.
-- **Yalidine**: `GET parcels/` (≤ 1000 per page); `keyword` → `tracking` (comma-separated trackings allowed), `orderId` → `order_id`; `status` and `updatedSince` (`date_last_status`) filter each page client-side.
+- **Yalidine**: `GET parcels/` (≤ 1000 per page); `keyword` → `tracking` (comma-separated trackings allowed), `orderId` → `order_id`; `status` and `updatedSince` (`date_last_status`) filter each page client-side, so a short page can still have `hasNext` true: follow `hasNext`, not the page size.
 - **Ecotrack**: `NOT_SUPPORTED` for now.
 
 ### 3.8 `cancelParcel(string $trackingNumberOrId): void`

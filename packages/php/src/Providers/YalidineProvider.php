@@ -44,8 +44,7 @@ final class YalidineProvider implements ShippingProviderInterface
     private const MAX_PAGES = 50;
     /** Largest `page_size` accepted by list endpoints (saves quota: 50 requests/minute). */
     private const PAGE_SIZE = 1000;
-    /** listParcels: Yalidine caps list pages at 1000; page cap for allPages. */
-    private const LIST_MAX_PAGE_SIZE = 1000;
+    /** listParcels: page cap for allPages (page size capped at PAGE_SIZE). */
     private const LIST_MAX_PAGES = 50;
     private const FREE_WEIGHT_KG = 5;
     /** Volumetric weight (kg) = length × width × height (cm) × this factor. */
@@ -319,8 +318,12 @@ final class YalidineProvider implements ShippingProviderInterface
         $query = ParcelListQuery::from($query, self::NAME);
         $since = null;
         if ($query->updatedSince !== null) {
+            // ISO 8601 only; a value without offset is read in Algeria time, like date_last_status.
+            $value = trim($query->updatedSince);
             try {
-                $since = strtotime($query->updatedSince) === false ? null : new \DateTimeImmutable($query->updatedSince);
+                $since = preg_match('/^\d{4}-\d{2}-\d{2}(?:[T ]|$)/', $value) === 1
+                    ? new \DateTimeImmutable($value, new \DateTimeZone(self::TIMEZONE))
+                    : null;
             } catch (\Exception) {
                 $since = null;
             }
@@ -328,7 +331,7 @@ final class YalidineProvider implements ShippingProviderInterface
                 throw ShippingError::validation('updatedSince must be an ISO 8601 date', self::NAME, 'updatedSince');
             }
         }
-        $pageSize = min(max($query->pageSize, 1), self::LIST_MAX_PAGE_SIZE);
+        $pageSize = min(max($query->pageSize, 1), self::PAGE_SIZE);
 
         $filter = [];
         if ($query->keyword !== null && trim($query->keyword) !== '') {

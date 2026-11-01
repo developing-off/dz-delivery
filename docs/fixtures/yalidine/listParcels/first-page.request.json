@@ -4,7 +4,7 @@
     "path": "/v1/parcels/",
     "query": {
       "page": 1,
-      "page_size": 50
+      "page_size": 2
     }
   }
 ]

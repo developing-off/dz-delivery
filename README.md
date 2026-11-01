@@ -66,7 +66,7 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 
 ✅ supported · 🟡 partial · ❌ not in the SDK yet (the carrier's API doesn't offer it, or it hasn't been added)
 
-- Yalidine labels: the label link is returned only by `createParcel` (in `raw`).
+- Yalidine labels: the bordereau link is `Parcel.labelUrl` (from `createParcel`, `track` and `listParcels`); there is no PDF endpoint.
 - Maystro webhooks: status mapper only (`mapMaystroStatus`).
 - ZRExpress / Maystro labels: extra methods on `ZRExpressProvider.generateLabels` / `MaystroProvider.getLabels`.
 

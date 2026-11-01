@@ -56,11 +56,12 @@ const ALGERIA_OFFSET = '+01:00';
 const MAX_PAGES = 50;
 /** Largest `page_size` accepted by list endpoints (saves quota: 50 requests/minute). */
 const PAGE_SIZE = 1000;
-/** Weight included in the base price; each extra kg costs `oversize_fee`. */
-/** `listParcels`: default and maximum `page_size` (Yalidine caps list pages at 1000), page cap for `allPages`. */
+/** `listParcels`: default `page_size` (capped at `PAGE_SIZE`) and page cap for `allPages`. */
 const LIST_DEFAULT_PAGE_SIZE = 50;
-const LIST_MAX_PAGE_SIZE = 1000;
 const LIST_MAX_PAGES = 50;
+/** `updatedSince` must at least start like an ISO 8601 date (`YYYY-MM-DD`). */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ]|$)/;
+/** Weight included in the base price; each extra kg costs `oversize_fee`. */
 const FREE_WEIGHT_KG = 5;
 /** Volumetric weight (kg) = length × width × height (cm) × this factor. */
 const VOLUMETRIC_FACTOR = 0.0002;
@@ -475,14 +476,22 @@ export class YalidineProvider implements ShippingProvider {
         details: [{ field: 'status', message: 'status must be a unified ParcelStatus' }],
       });
     }
-    const pageSize = Math.min(Math.max(Math.trunc(query.pageSize ?? LIST_DEFAULT_PAGE_SIZE), 1), LIST_MAX_PAGE_SIZE);
+    const requested = query.pageSize ?? LIST_DEFAULT_PAGE_SIZE;
+    if (!Number.isFinite(requested)) {
+      throw new ShippingError('VALIDATION_ERROR', 'pageSize must be a finite number', {
+        provider: PROVIDER,
+        details: [{ field: 'pageSize', message: 'pageSize must be a finite number' }],
+      });
+    }
+    const pageSize = Math.min(Math.max(Math.trunc(requested), 1), PAGE_SIZE);
 
     const filter: Record<string, QueryValue> = {};
     if (query.keyword?.trim()) filter.tracking = query.keyword.trim();
     if (query.orderId?.trim()) filter.order_id = query.orderId.trim();
     let since: number | undefined;
     if (query.updatedSince !== undefined) {
-      since = Date.parse(query.updatedSince);
+      // ISO 8601 only; a value without offset is read in Algeria time, like `date_last_status`.
+      since = ISO_DATE.test(query.updatedSince.trim()) ? Date.parse(yalidineDateToIso(query.updatedSince.trim())) : NaN;
       if (Number.isNaN(since)) {
         throw new ShippingError('VALIDATION_ERROR', 'updatedSince must be an ISO 8601 date', {
           provider: PROVIDER,
