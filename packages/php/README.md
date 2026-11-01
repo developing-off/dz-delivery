@@ -74,7 +74,8 @@ $client = ClientFactory::create('zrexpress', [
 
 // Maystro only needs a store token (sent as `Authorization: Token <apiToken>`):
 // ClientFactory::create('maystro', ['apiToken' => getenv('MAYSTRO_API_TOKEN')]);
-// It has no tracking API: map webhook statuses with StatusMapper::maystro($payload['status']).
+// track() / cancelParcel() take $parcel->id or the tracking number; for Maystro webhooks,
+// map statuses with StatusMapper::maystro($payload['status']).
 
 try {
     $parcel = $client->createParcel([

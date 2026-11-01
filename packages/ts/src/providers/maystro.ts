@@ -705,11 +705,23 @@ export class MaystroProvider implements ShippingProvider {
     }
 
     const byUuid = refs.every((r) => UUID_RE.test(r));
+    // Mixed: UUIDs become tracking numbers; an unknown UUID is dropped, like Maystro drops
+    // unknown tracking numbers, so the other labels are still returned.
     const ids = byUuid
       ? refs
-      : await Promise.all(
-          refs.map(async (r) => (UUID_RE.test(r) ? String((await this.resolveOrder(r)).display_id ?? r) : r)),
-        );
+      : (
+          await Promise.all(
+            refs.map(async (r) => {
+              if (!UUID_RE.test(r)) return r;
+              try {
+                return String((await this.resolveOrder(r)).display_id ?? r);
+              } catch (err) {
+                if (err instanceof ShippingError && err.code === 'NOT_FOUND') return undefined;
+                throw err;
+              }
+            }),
+          )
+        ).filter((r): r is string => r !== undefined);
     const res = await this.backendHttp.request<Uint8Array>({
       method: 'POST',
       path: byUuid ? '/api/delivery/starter/v2/starter_bordureau/' : '/api/delivery/starter/starter_bordureau/',

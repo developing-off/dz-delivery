@@ -609,10 +609,25 @@ final class MaystroProvider implements ShippingProviderInterface
         }
 
         $byUuid = array_reduce($refs, static fn (bool $all, string $r) => $all && preg_match(self::UUID_RE, $r) === 1, true);
-        $ids = $byUuid ? $refs : array_map(
-            fn (string $r) => preg_match(self::UUID_RE, $r) === 1 ? (string) ($this->resolveOrder($r)['display_id'] ?? $r) : $r,
-            $refs,
-        );
+        $ids = $refs;
+        if (!$byUuid) {
+            // Mixed: UUIDs become tracking numbers; an unknown UUID is dropped, like Maystro drops
+            // unknown tracking numbers, so the other labels are still returned.
+            $ids = [];
+            foreach ($refs as $r) {
+                if (preg_match(self::UUID_RE, $r) !== 1) {
+                    $ids[] = $r;
+                    continue;
+                }
+                try {
+                    $ids[] = (string) ($this->resolveOrder($r)['display_id'] ?? $r);
+                } catch (ShippingError $e) {
+                    if ($e->code !== ShippingError::NOT_FOUND) {
+                        throw $e;
+                    }
+                }
+            }
+        }
         $response = $this->backendHttp->requestBinary(
             'POST',
             $byUuid ? 'api/delivery/starter/v2/starter_bordureau/' : 'api/delivery/starter/starter_bordureau/',
@@ -783,7 +798,8 @@ final class MaystroProvider implements ShippingProviderInterface
 
         $orderId = $query->orderId !== null ? trim($query->orderId) : null;
         $keyword = $query->keyword !== null ? mb_strtolower(trim($query->keyword)) : null;
-        $since = $query->updatedSince !== null ? strtotime($query->updatedSince) : null;
+        // DateTimeImmutable keeps the microseconds of Maystro's `updated_at` (strtotime() would not).
+        $since = $query->updatedSince !== null ? new \DateTimeImmutable($query->updatedSince) : null;
 
         $parcels = [];
         foreach ($items as $order) {
@@ -794,8 +810,12 @@ final class MaystroProvider implements ShippingProviderInterface
                 continue;
             }
             if ($since !== null) {
-                $updated = is_string($order['updated_at'] ?? null) ? strtotime($order['updated_at']) : false;
-                if ($updated === false || $updated < $since) {
+                try {
+                    $updated = is_string($order['updated_at'] ?? null) ? new \DateTimeImmutable($order['updated_at']) : null;
+                } catch (\Exception) {
+                    $updated = null;
+                }
+                if ($updated === null || $updated < $since) {
                     continue;
                 }
             }

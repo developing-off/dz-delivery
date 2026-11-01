@@ -4,7 +4,7 @@
     "headers": {},
     "body": {
       "list": {
-        "count": 23,
+        "count": 4,
         "next": "https://backend.maystro-delivery.com/api/stores/orders/?page=2",
         "previous": null,
         "results": [

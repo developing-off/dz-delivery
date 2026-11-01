@@ -172,9 +172,10 @@
 <span class="c-key">import</span> { writeFileSync } <span class="c-key">from</span> <span class="c-str">&#x27;node:fs&#x27;</span>;
 
 <span class="c-key">const</span> maystro = <span class="c-key">new</span> <span class="c-fn">MaystroProvider</span>({ apiToken: process.env.MAYSTRO_API_TOKEN! });
-<span class="c-key">const</span> { data, labelCount } = <span class="c-key">await</span> maystro.<span class="c-fn">getLabels</span>([parcel.trackingNumber]);
+<span class="c-key">const</span> { data, labelCount } = <span class="c-key">await</span> maystro.<span class="c-fn">getLabels</span>([<span class="c-str">&#x27;172316976800001&#x27;</span>]); <span class="c-cmt">// numéros de suivi ou parcel.id</span>
 <span class="c-fn">writeFileSync</span>(<span class="c-str">&#x27;bordereaux.pdf&#x27;</span>, data); <span class="c-cmt">// une page par commande trouvée</span></pre></div>
-        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$labels</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">getLabels</span>([<span class="c-var">$parcel</span>-&gt;trackingNumber]); <span class="c-cmt">// MaystroProvider</span>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$maystro</span> = <span class="c-key">new</span> <span class="c-fn">MaystroProvider</span>(<span class="c-fn">ClientOptions::fromArray</span>([<span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_API_TOKEN&#x27;</span>)]));
+<span class="c-var">$labels</span>  = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">getLabels</span>([<span class="c-str">&#x27;172316976800001&#x27;</span>]); <span class="c-cmt">// numéros de suivi ou $parcel-&gt;id</span>
 <span class="c-key">return</span> <span class="c-fn">response</span>(<span class="c-var">$labels</span>-&gt;data, <span class="c-num">200</span>, [<span class="c-str">&#x27;Content-Type&#x27;</span> =&gt; <span class="c-str">&#x27;application/pdf&#x27;</span>]); <span class="c-cmt">// Laravel</span></pre></div>
       </section>
 

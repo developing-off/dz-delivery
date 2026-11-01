@@ -169,6 +169,17 @@ final class MaystroProviderTest extends TestCase
         self::assertSame(['orders_ids' => ['172316976800001', '172316976800002']], json_decode((string) $this->history[1]['request']->getBody(), true));
     }
 
+    public function testGetLabelsDropsAnUnknownUuidFromAMixedRequest(): void
+    {
+        $labels = $this->maystro([
+            self::json(404, ['detail' => 'Pas trouvé.', 'status_code' => 404]),
+            new Response(200, [], self::labelPdf(1)),
+        ])->getLabels(['1394335a-4470-407c-a464-d90932de5510', '172316976800002']);
+
+        self::assertSame(['orders_ids' => ['172316976800002']], json_decode((string) $this->history[1]['request']->getBody(), true));
+        self::assertSame(1, $labels->labelCount);
+    }
+
     public function testGetLabelsThrowsNotFoundOnTheBlankPage(): void
     {
         $blank = "%PDF-1.4\n3 0 obj <</Type /Page /Parent 2 0 R>> endobj\n2 0 obj <</Type /Pages /Count 1>> endobj\n%%EOF";

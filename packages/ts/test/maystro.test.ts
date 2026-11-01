@@ -72,6 +72,29 @@ describe('maystro', () => {
       expect(mock.calls[1]!.body).toEqual({ orders_ids: ['172316976800001', '172316976800002'] });
     });
 
+    it('drops an unknown UUID from a mixed request and still returns the other labels', async () => {
+      const mock = mockFetch([
+        { status: 404, body: { detail: 'Pas trouvé.', status_code: 404 } },
+        { status: 200, rawBody: pdf(1) },
+      ]);
+      const labels = await provider(mock).getLabels([id, '172316976800002']);
+      expect(mock.calls[1]!.body).toEqual({ orders_ids: ['172316976800002'] });
+      expect(labels.labelCount).toBe(1);
+    });
+
+    it('maps a failed or timed-out PDF download to NETWORK_ERROR', async () => {
+      const fetchImpl = (async (_url: unknown, init?: RequestInit) =>
+        ({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          arrayBuffer: () =>
+            new Promise((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted')))),
+        }) as unknown as Response) as typeof fetch;
+      const slow = new MaystroProvider({ apiToken: 't', fetch: fetchImpl, timeoutMs: 20 });
+      await expect(slow.getLabels(['1'])).rejects.toMatchObject({ code: 'NETWORK_ERROR', message: 'Request timed out after 20 ms' });
+    });
+
     it('throws NOT_FOUND on the blank page Maystro returns when no order matches', async () => {
       const mock = mockFetch([{ status: 200, rawBody: blank }]);
       await expect(provider(mock).getLabels(['111'])).rejects.toMatchObject({ code: 'NOT_FOUND', provider: 'maystro' });

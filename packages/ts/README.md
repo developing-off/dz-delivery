@@ -119,7 +119,7 @@ Every provider implements `ShippingProvider`:
 | `getWilayas()` | `Promise<Location[]>` (cached per client) |
 | `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
 | `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (ZRExpress hubs: prefer wilaya-only; Yalidine centers; Maystro needs `communeId`; Ecotrack communes with a stop desk). Optional fields: `phone`, `openingHours`, `lat`, `lng`, `type`. |
-| `listParcels(query?)` | `Promise<ParcelListPage>` — paginated account parcels + unified status (ZRExpress via `parcels/search`, E-com via `GET /colis`, MDM via `parcels/search`; others `NOT_SUPPORTED` for now). No event history — use `track()`. |
+| `listParcels(query?)` | `Promise<ParcelListPage>` — paginated account parcels + unified status (ZRExpress via `parcels/search`, Maystro via `GET /api/stores/orders/` — 20 per page, filters applied client-side —, E-com via `GET /colis`, MDM via `parcels/search`; others `NOT_SUPPORTED` for now). No event history — use `track()`. |
 | `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
 | `healthCheck()` | `Promise<{ ok: true, provider, latencyMs }>` — authenticated connectivity probe (wilayas listing, cache bypassed) |
 
