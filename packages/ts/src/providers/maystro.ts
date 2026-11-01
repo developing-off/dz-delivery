@@ -10,8 +10,10 @@
  * - Orders are created in bulk (`POST /api/orders/` takes a list); each result row carries
  *   `success` and numeric `errors` codes.
  * - Wilaya ids are the official codes `1`–`58`; wilayas come back as `[id, name]` pairs.
- * - There is no documented endpoint to read, track or cancel an order (status updates are
- *   pushed by webhooks only): `track` and `cancelParcel` throw `NOT_SUPPORTED`.
+ * - Orders are read, listed and cancelled on the backend host (`/api/stores/orders/`,
+ *   `/api/shared/status/{id}/`); their status history is on `https://b.maystro-delivery.com`
+ *   (`/api/stores/history_order/{id}`). These calls take the order UUID (`Parcel.id`) or the
+ *   tracking number (the order `display_id`, looked up with `?display_id=`).
  */
 import { ShippingError } from '../errors';
 import { HttpClient, type ErrorBodyParser } from '../http';
@@ -24,21 +26,64 @@ import type {
   MaystroConfig,
   Parcel,
   ParcelInput,
+  ParcelListPage,
+  ParcelListQuery,
   ParcelStatus,
   ShippingErrorCode,
   ShippingErrorDetail,
   StopDesk,
   StopDeskQuery,
+  TrackingEvent,
   TrackResult,
 } from '../types';
-import { findLocationByName, isRecord, normalizeAlgerianPhone, str, validateParcelInput, withRaw } from '../utils';
+import { PARCEL_STATUSES } from '../types';
+import {
+  findLocationByName,
+  isRecord,
+  normalizeAlgerianPhone,
+  sortEventsAscending,
+  str,
+  toIsoDate,
+  validateParcelInput,
+  withRaw,
+} from '../utils';
 import { probeWilayasHealth } from './health';
 import type { ShippingProvider } from './types';
 
 export const MAYSTRO_DEFAULT_BASE_URL = 'https://orders-management.maystro-delivery.com';
 /** Live tariffs host used by Confirmation-api (`getDeliveryPrice`). Orders stay on `MAYSTRO_DEFAULT_BASE_URL`. */
 export const MAYSTRO_BACKEND_BASE_URL = 'https://backend.maystro-delivery.com';
+/** Host of the order history endpoint (`/api/stores/history_order/{id}`), as documented by Maystro. */
+export const MAYSTRO_HISTORY_BASE_URL = 'https://b.maystro-delivery.com';
 const PROVIDER = 'maystro';
+
+/** Maystro serves a fixed 20 orders per page on `GET /api/stores/orders/`. */
+const LIST_PAGE_SIZE = 20;
+const LIST_MAX_PAGES = 100;
+/** `PATCH /api/shared/status/{id}/` body that aborts an order (docs: status 50, abort_reason 21). */
+const STATUS_ABORTED = 50;
+const ABORT_REASON = 21;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Orders per `getLabels` call (keeps the generated PDF and the request reasonable). */
+const LABELS_MAX = 100;
+
+/** Maystro extra: shipping labels (bordereaux) as one PDF, a page per order found. */
+export interface MaystroLabels {
+  contentType: 'application/pdf';
+  /** PDF bytes: write them to a file or send them as the HTTP response body. */
+  data: Uint8Array;
+  /** Labels in the PDF. Lower than the references sent when some were not found. */
+  labelCount: number;
+}
+
+/**
+ * Pages of a Maystro label PDF that carry a label. Each label page embeds its barcode as an
+ * image; the blank page Maystro returns when no order matched has none (checked live).
+ */
+function countPdfLabels(pdf: string): number {
+  if (!/\/Subtype\s*\/Image/.test(pdf)) return 0;
+  return (pdf.match(/\/Type\s*\/Page(?!s)/g) ?? []).length;
+}
 
 const DELIVERY_HOME = 1;
 const DELIVERY_STOP_DESK = 2;
@@ -192,6 +237,23 @@ function hasValue(value: unknown): boolean {
   return value !== undefined && value !== null && String(value).trim() !== '';
 }
 
+/**
+ * `GET /api/stores/orders/` page → rows. The docs wrap the DRF page in `list`
+ * (`{ list: { count, next, previous, results } }`); a bare DRF page or a plain array is accepted too.
+ */
+function ordersPage(body: unknown): { items: Record<string, unknown>[]; count?: number; hasNext?: boolean } {
+  const pageBody = isRecord(body) && isRecord(body.list) ? body.list : body;
+  if (Array.isArray(pageBody)) return { items: pageBody.filter(isRecord) };
+  if (!isRecord(pageBody) || !Array.isArray(pageBody.results)) {
+    throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro orders response', { provider: PROVIDER, raw: body });
+  }
+  return {
+    items: pageBody.results.filter(isRecord),
+    count: num(pageBody.count),
+    hasNext: 'next' in pageBody ? hasValue(pageBody.next) : undefined,
+  };
+}
+
 /** Numeric strings → numbers (Maystro ids are integers), anything else unchanged. */
 function idValue(value: string): string | number {
   return /^\d+$/.test(value) ? Number(value) : value;
@@ -202,6 +264,8 @@ export class MaystroProvider implements ShippingProvider {
   private readonly http: HttpClient;
   /** Same token as `http`, pointed at `MAYSTRO_BACKEND_BASE_URL` for live `delivery_price`. */
   private readonly backendHttp: HttpClient;
+  /** Same token, pointed at `MAYSTRO_HISTORY_BASE_URL` for the order history. */
+  private readonly historyHttp: HttpClient;
   private readonly includeRaw: boolean;
   private wilayasCache?: Promise<Location[]>;
   private readonly communesCache = new Map<string, Promise<Location[]>>();
@@ -231,6 +295,10 @@ export class MaystroProvider implements ShippingProvider {
     this.backendHttp = new HttpClient({
       ...shared,
       baseUrl: MAYSTRO_BACKEND_BASE_URL,
+    });
+    this.historyHttp = new HttpClient({
+      ...shared,
+      baseUrl: MAYSTRO_HISTORY_BASE_URL,
     });
   }
 
@@ -298,13 +366,41 @@ export class MaystroProvider implements ShippingProvider {
     );
   }
 
-  /** Not available: Maystro documents no order read/tracking endpoint (webhooks only). */
-  async track(_trackingNumber: string): Promise<TrackResult> {
-    throw new ShippingError(
-      'NOT_SUPPORTED',
-      'Maystro has no tracking endpoint; use its webhooks (OrderStatusChanged) with mapMaystroStatus',
-      { provider: PROVIDER },
-    );
+  /**
+   * Order (`GET {backend}/api/stores/orders/{id}/`) + status history
+   * (`GET {b}/api/stores/history_order/{id}`, oldest first). `trackingNumber` is the order
+   * UUID (`Parcel.id` from `createParcel`) or its `display_id` (the tracking number `createParcel` returns).
+   */
+  async track(trackingNumber: string): Promise<TrackResult> {
+    const ref = trackingNumber?.trim();
+    if (!ref) throw new ShippingError('VALIDATION_ERROR', 'trackingNumber is required', { provider: PROVIDER });
+
+    const order = await this.resolveOrder(ref);
+    const orderId = String(order.id);
+    const { body } = await this.historyHttp.request<unknown>({
+      method: 'GET',
+      path: `/api/stores/history_order/${encodeURIComponent(orderId)}`,
+    });
+    const rows = Array.isArray(body) ? body : isRecord(body) && Array.isArray(body.results) ? body.results : undefined;
+    if (!rows) {
+      throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro order history response', { provider: PROVIDER, raw: body });
+    }
+    const events: TrackingEvent[] = rows.filter(isRecord).map((row) => {
+      const code = row.status;
+      const name = typeof code === 'number' || (typeof code === 'string' && /^\d+$/.test(code.trim()))
+        ? MAYSTRO_STATUS_CODES[Number(code)]
+        : str(code);
+      const base = name ?? (hasValue(code) ? String(code).trim() : '');
+      const comment = str(row.comment);
+      const label = base && comment ? `${base} (${comment})` : base || comment || '';
+      return withRaw(
+        { status: mapMaystroStatus(code as string | number | null | undefined), label, at: toIsoDate(str(row.created_at) ?? '') },
+        row,
+        this.includeRaw,
+      );
+    });
+
+    return { parcel: this.toParcel(order), events: sortEventsAscending(events) };
   }
 
   /**
@@ -508,15 +604,142 @@ export class MaystroProvider implements ShippingProvider {
     });
   }
 
-  /** Not available: Maystro documents no order cancellation endpoint. */
-  async listParcels(): Promise<never> {
-    throw new ShippingError('NOT_SUPPORTED', 'Maystro has no parcels listing API (use webhooks)', {
-      provider: PROVIDER,
-    });
+  /**
+   * `GET {backend}/api/stores/orders/?page=` (Maystro serves a fixed 20 orders per page, so
+   * `pageSize` is always 20). `status`, `orderId` (`external_order_id`), `keyword`
+   * (display id, tracking, customer name or phone) and `updatedSince` (order `updated_at`)
+   * filter the fetched page client-side: the API has no such query parameters.
+   */
+  async listParcels(query: ParcelListQuery = {}): Promise<ParcelListPage> {
+    const page = query.page ?? 1;
+    if (!Number.isInteger(page) || page < 1) {
+      throw new ShippingError('VALIDATION_ERROR', 'page must be >= 1', {
+        provider: PROVIDER,
+        details: [{ field: 'page', message: 'page must be >= 1' }],
+      });
+    }
+    if (query.status !== undefined && !(PARCEL_STATUSES as readonly string[]).includes(query.status)) {
+      throw new ShippingError('VALIDATION_ERROR', 'status must be a unified ParcelStatus', {
+        provider: PROVIDER,
+        details: [{ field: 'status', message: 'status must be a unified ParcelStatus' }],
+      });
+    }
+    if (query.updatedSince !== undefined && Number.isNaN(Date.parse(query.updatedSince))) {
+      throw new ShippingError('VALIDATION_ERROR', 'updatedSince must be an ISO 8601 date', {
+        provider: PROVIDER,
+        details: [{ field: 'updatedSince', message: 'updatedSince must be an ISO 8601 date' }],
+      });
+    }
+
+    if (query.allPages) {
+      const all: Parcel[] = [];
+      let totalCount = 0;
+      let lastRaw: unknown;
+      let hasNext = true;
+      for (let n = 1; hasNext && n <= LIST_MAX_PAGES; n += 1) {
+        const result = await this.listPage(query, n);
+        all.push(...result.parcels);
+        if (n === 1) totalCount = result.totalCount;
+        lastRaw = result.raw;
+        hasNext = result.hasNext;
+      }
+      // `hasNext` stays true when the page cap cut the walk short.
+      return withRaw({ parcels: all, page: 1, pageSize: LIST_PAGE_SIZE, totalCount, hasNext }, lastRaw, this.includeRaw);
+    }
+
+    const result = await this.listPage(query, page);
+    return withRaw(
+      { parcels: result.parcels, page, pageSize: LIST_PAGE_SIZE, totalCount: result.totalCount, hasNext: result.hasNext },
+      result.raw,
+      this.includeRaw,
+    );
   }
 
-  async cancelParcel(_trackingNumberOrId: string): Promise<void> {
-    throw new ShippingError('NOT_SUPPORTED', 'Maystro has no order cancellation endpoint', { provider: PROVIDER });
+  /**
+   * `PATCH {backend}/api/shared/status/{id}/` with `{ status: 50, abort_reason: 21 }` (abort).
+   * Takes the order UUID (`Parcel.id`) or the tracking number (`display_id`). Unknown order → `NOT_FOUND`;
+   * an answer whose `new_status` is not 50 → `VALIDATION_ERROR` (the order was not aborted).
+   */
+  async cancelParcel(trackingNumberOrId: string): Promise<void> {
+    const ref = trackingNumberOrId?.trim();
+    if (!ref) throw new ShippingError('VALIDATION_ERROR', 'trackingNumberOrId is required', { provider: PROVIDER });
+
+    const orderId = UUID_RE.test(ref) ? ref : String((await this.resolveOrder(ref)).id);
+    const { body } = await this.backendHttp.request<unknown>({
+      method: 'PATCH',
+      path: `/api/shared/status/${encodeURIComponent(orderId)}/`,
+      body: { status: STATUS_ABORTED, abort_reason: ABORT_REASON },
+    });
+    if (isRecord(body) && hasValue(body.new_status) && Number(body.new_status) !== STATUS_ABORTED) {
+      throw new ShippingError('VALIDATION_ERROR', `Maystro did not cancel order ${ref} (status ${String(body.new_status)})`, {
+        provider: PROVIDER,
+        raw: body,
+      });
+    }
+  }
+
+  /**
+   * Maystro extra (not on `ShippingProvider`): the shipping labels (bordereaux) of one or more
+   * orders, as one PDF with a page per order.
+   *
+   * - Tracking numbers (`display_id`) → `POST {backend}/api/delivery/starter/starter_bordureau/`;
+   *   order UUIDs (`Parcel.id`) → `POST {backend}/api/delivery/starter/v2/starter_bordureau/`
+   *   (`{ orders_ids: [...] }`). A mix is sent as tracking numbers (each UUID costs one order read).
+   * - Maystro silently drops unknown references and dedupes repeats: `labelCount` is the number of
+   *   labels in the PDF, so `labelCount < references.length` means some were not found. When none
+   *   is found Maystro returns a blank page: that throws `NOT_FOUND`.
+   */
+  async getLabels(references: string[]): Promise<MaystroLabels> {
+    const refs = [...new Set((Array.isArray(references) ? references : []).map((r) => String(r ?? '').trim()).filter(Boolean))];
+    if (refs.length === 0) {
+      throw new ShippingError('VALIDATION_ERROR', 'getLabels requires at least one order reference', {
+        provider: PROVIDER,
+        details: [{ field: 'references', message: 'at least one tracking number or order id is required' }],
+      });
+    }
+    if (refs.length > LABELS_MAX) {
+      throw new ShippingError('VALIDATION_ERROR', `getLabels accepts at most ${LABELS_MAX} orders per call`, {
+        provider: PROVIDER,
+        details: [{ field: 'references', message: `at most ${LABELS_MAX} orders per call` }],
+      });
+    }
+
+    const byUuid = refs.every((r) => UUID_RE.test(r));
+    // Mixed: UUIDs become tracking numbers; an unknown UUID is dropped, like Maystro drops
+    // unknown tracking numbers, so the other labels are still returned.
+    const ids = byUuid
+      ? refs
+      : (
+          await Promise.all(
+            refs.map(async (r) => {
+              if (!UUID_RE.test(r)) return r;
+              try {
+                return String((await this.resolveOrder(r)).display_id ?? r);
+              } catch (err) {
+                if (err instanceof ShippingError && err.code === 'NOT_FOUND') return undefined;
+                throw err;
+              }
+            }),
+          )
+        ).filter((r): r is string => r !== undefined);
+    const res = await this.backendHttp.request<Uint8Array>({
+      method: 'POST',
+      path: byUuid ? '/api/delivery/starter/v2/starter_bordureau/' : '/api/delivery/starter/starter_bordureau/',
+      body: { orders_ids: ids },
+      // Maystro answers HTTP 406 to `Accept: application/pdf` (checked live); `*/*` gets the PDF.
+      headers: { Accept: '*/*' },
+      responseType: 'binary',
+    });
+    const data = res.body;
+    const text = new TextDecoder('latin1').decode(data);
+    if (!text.startsWith('%PDF')) {
+      throw new ShippingError('PROVIDER_ERROR', 'Maystro did not return a PDF label', { provider: PROVIDER, httpStatus: res.status });
+    }
+    const labelCount = countPdfLabels(text);
+    if (labelCount === 0) {
+      throw new ShippingError('NOT_FOUND', `No Maystro order found for: ${refs.join(', ')}`, { provider: PROVIDER });
+    }
+    return { contentType: 'application/pdf', data, labelCount };
   }
 
   /** Probes `GET /api/base/wilayas/` (bypasses cache). */
@@ -531,6 +754,87 @@ export class MaystroProvider implements ShippingProvider {
   }
 
   // --- internals -------------------------------------------------------------
+
+  /**
+   * Order UUID → `GET {backend}/api/stores/orders/{id}/` (404 → `NOT_FOUND`). A numeric
+   * reference is looked up with `GET {backend}/api/stores/orders/?display_id=`.
+   */
+  private async resolveOrder(ref: string): Promise<Record<string, unknown>> {
+    if (UUID_RE.test(ref)) {
+      const { body } = await this.backendHttp.request<unknown>({
+        method: 'GET',
+        path: `/api/stores/orders/${encodeURIComponent(ref)}/`,
+      });
+      if (!isRecord(body) || !hasValue(body.id)) {
+        throw new ShippingError('PROVIDER_ERROR', 'Unexpected Maystro order response', { provider: PROVIDER, raw: body });
+      }
+      return body;
+    }
+    if (/^\d+$/.test(ref)) {
+      const { body } = await this.backendHttp.request<unknown>({
+        method: 'GET',
+        path: '/api/stores/orders/',
+        query: { display_id: ref },
+      });
+      const found = ordersPage(body).items.find(
+        (o) => hasValue(o.id) && (String(o.display_id ?? '').trim() === ref || String(o.tracking ?? '').trim() === ref),
+      );
+      if (found) return found;
+    }
+    throw new ShippingError(
+      'NOT_FOUND',
+      `Unknown Maystro order: ${ref} (pass Parcel.id or the tracking number returned by createParcel)`,
+      { provider: PROVIDER },
+    );
+  }
+
+  private async listPage(
+    query: ParcelListQuery,
+    page: number,
+  ): Promise<{ parcels: Parcel[]; totalCount: number; hasNext: boolean; raw: unknown }> {
+    const { body } = await this.backendHttp.request<unknown>({ method: 'GET', path: '/api/stores/orders/', query: { page } });
+    const { items, count, hasNext } = ordersPage(body);
+    const orderId = query.orderId?.trim();
+    const keyword = query.keyword?.trim().toLowerCase();
+    const since = query.updatedSince ? Date.parse(query.updatedSince) : undefined;
+    const parcels = items
+      .filter((o) => hasValue(o.id))
+      .filter((o) => !orderId || String(o.external_order_id ?? '').trim() === orderId)
+      .filter((o) => since === undefined || Date.parse(String(o.updated_at ?? '')) >= since)
+      .filter(
+        (o) =>
+          !keyword ||
+          [o.display_id, o.tracking, o.customer_name, o.customer_phone, o.external_order_id].some((v) =>
+            hasValue(v) ? String(v).toLowerCase().includes(keyword) : false,
+          ),
+      )
+      .map((o) => this.toParcel(o))
+      .filter((p) => !query.status || p.status === query.status);
+    return {
+      parcels,
+      totalCount: count ?? (page - 1) * LIST_PAGE_SIZE + items.length,
+      hasNext: hasNext ?? items.length === LIST_PAGE_SIZE,
+      raw: body,
+    };
+  }
+
+  /**
+   * Order row → `Parcel`. `id` is the order UUID; the tracking number is its `display_id`
+   * (the number `createParcel` returns as `tracking`), or `tracking` when a row carries one.
+   */
+  private toParcel(order: Record<string, unknown>): Parcel {
+    const id = String(order.id);
+    const trackingNumber = hasValue(order.tracking)
+      ? String(order.tracking).trim()
+      : hasValue(order.display_id)
+        ? String(order.display_id).trim()
+        : id;
+    return withRaw(
+      { id, trackingNumber, status: mapMaystroStatus(order.status as string | number | null | undefined), provider: PROVIDER },
+      order,
+      this.includeRaw,
+    );
+  }
 
   private communesOf(wilayaId: string): Promise<Location[]> {
     let cached = this.communesCache.get(wilayaId);

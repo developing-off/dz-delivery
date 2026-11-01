@@ -1,0 +1,51 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "list": {
+        "count": 4,
+        "next": "https://backend.maystro-delivery.com/api/stores/orders/?page=2",
+        "previous": null,
+        "results": [
+          {
+            "id": "1394335a-4470-407c-a464-d90932de5510",
+            "display_id": "172316976800001",
+            "updated_at": "2026-10-21T10:05:00.200000+01:00",
+            "customer_name": "Test Client",
+            "customer_phone": "0666554433",
+            "wilaya": "Alger",
+            "commune": 554,
+            "commune_name": "Alger Centre",
+            "status": 31,
+            "price": 600,
+            "product_price": 2200,
+            "external_order_id": "ORDER-3001",
+            "ordered_at": "2026-10-20T09:12:13.034791+01:00",
+            "shipped_at": "2026-10-21T10:05:00.123456+01:00",
+            "delivered_at": null,
+            "abort_reason": null
+          },
+          {
+            "id": "2a6f1c3e-9b7d-4e21-8c55-0f3b6d9e1a42",
+            "display_id": "172316976800002",
+            "updated_at": "2026-10-23T14:30:00.000000+01:00",
+            "customer_name": "Autre Client",
+            "customer_phone": "0770000000",
+            "status": 41,
+            "external_order_id": "ORDER-3002"
+          },
+          {
+            "id": "3b7a2d4f-0c8e-4f32-9d66-1a4c7e0f2b53",
+            "display_id": "172316976800003",
+            "updated_at": "2026-10-19T08:00:00.000000+01:00",
+            "customer_name": "Troisième Client",
+            "customer_phone": "0550000000",
+            "status": 50,
+            "external_order_id": null
+          }
+        ]
+      }
+    }
+  }
+]

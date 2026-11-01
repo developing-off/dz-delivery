@@ -931,7 +931,7 @@ $guepex = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'y
           </div>
 
           <h3 class="sub" id="track">track</h3>
-          <p class="prose">Retourne le colis courant + historique d’événements (plus ancien → plus récent). Maystro : <span class="mono">NOT_SUPPORTED</span> (webhooks).</p>
+          <p class="prose">Retourne le colis courant + historique d’événements (plus ancien → plus récent). Maystro : <span class="mono">parcel.id</span> (UUID Maystro) ou numéro de suivi, pas votre <span class="mono">orderId</span> (webhooks en option).</p>
           <div class="panel code-block" data-tabs>
             <div class="tabs" role="tablist" aria-label="track">
               <button type="button" class="tab" role="tab" aria-controls="tr-ts" aria-selected="true">TypeScript</button>
@@ -1323,7 +1323,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="prose"><span class="mono">fromWilayaId</span> obligatoire à la construction. Annulation seulement en « En préparation ». GuepEx = même API, autre <span class="mono">baseUrl</span>.</p>
 
           <h3 class="sub"><a href="maystro/">Maystro</a></h3>
-          <p class="prose">Pas d’API track/cancel — configurer les webhooks Maystro et mapper avec <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> exige <span class="mono">communeId</span>.</p>
+          <p class="prose"><span class="mono">track</span> / <span class="mono">cancelParcel</span> / <span class="mono">listParcels</span> et bordereaux PDF (<span class="mono">getLabels</span>) ; webhooks en option avec <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> exige <span class="mono">communeId</span>.</p>
 
           <h3 class="sub"><a href="ecotrack/">Ecotrack</a></h3>
           <p class="prose">Un provider, plusieurs coursiers via <span class="mono">courier</span> (<span class="mono">dhd</span>, <span class="mono">anderson</span>, <span class="mono">worldexpress</span>…) ou <span class="mono">baseUrl</span> HTTPS du tenant. Option <span class="mono">autoValidate</span> pour valider juste après création.</p>

@@ -1,0 +1,10 @@
+[
+  {
+    "status": 404,
+    "headers": {},
+    "body": {
+      "detail": "Pas trouvé.",
+      "status_code": 404
+    }
+  }
+]

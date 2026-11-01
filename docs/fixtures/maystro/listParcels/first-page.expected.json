@@ -1,0 +1,28 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "1394335a-4470-407c-a464-d90932de5510",
+        "trackingNumber": "172316976800001",
+        "status": "in_transit",
+        "provider": "maystro"
+      },
+      {
+        "id": "2a6f1c3e-9b7d-4e21-8c55-0f3b6d9e1a42",
+        "trackingNumber": "172316976800002",
+        "status": "delivered",
+        "provider": "maystro"
+      },
+      {
+        "id": "3b7a2d4f-0c8e-4f32-9d66-1a4c7e0f2b53",
+        "trackingNumber": "172316976800003",
+        "status": "cancelled",
+        "provider": "maystro"
+      }
+    ],
+    "page": 1,
+    "pageSize": 20,
+    "totalCount": 4,
+    "hasNext": true
+  }
+}

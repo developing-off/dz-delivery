@@ -1,0 +1,16 @@
+{
+  "result": {
+    "parcels": [
+      {
+        "id": "2a6f1c3e-9b7d-4e21-8c55-0f3b6d9e1a42",
+        "trackingNumber": "172316976800002",
+        "status": "delivered",
+        "provider": "maystro"
+      }
+    ],
+    "page": 1,
+    "pageSize": 20,
+    "totalCount": 4,
+    "hasNext": true
+  }
+}

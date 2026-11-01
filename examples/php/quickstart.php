@@ -67,7 +67,6 @@ try {
         ]);
         printf("Created %s (%s)\n", $parcel->trackingNumber, $parcel->status);
 
-        // Maystro has no tracking / cancellation API (NOT_SUPPORTED): skip those steps.
         try {
             $tracked = $client->track($parcel->trackingNumber);
             foreach ($tracked->events as $event) {

@@ -9,9 +9,12 @@ use DzDelivery\Errors\ShippingError;
 use DzDelivery\Models\FeeQuote;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
+use DzDelivery\Models\ParcelListPage;
 use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\TrackResult;
+use DzDelivery\Providers\MaystroProvider;
 use DzDelivery\Support\StatusMapper;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 final class MaystroProviderTest extends TestCase
@@ -93,6 +96,124 @@ final class MaystroProviderTest extends TestCase
         self::assertSame('Token abc', $this->history[0]['request']->getHeaderLine('Authorization'));
     }
 
+    public function testOrdersAndHistoryUseTheDocumentedHosts(): void
+    {
+        $id = '1394335a-4470-407c-a464-d90932de5510';
+        $client = $this->client('maystro', [
+            self::json(200, ['id' => $id, 'display_id' => '172316976800001', 'status' => 4]),
+            self::json(200, [['status' => 4, 'created_at' => '2026-10-20T09:12:13+01:00', 'comment' => null]]),
+            self::json(200, ['order_id' => $id, 'new_status' => 50, 'old_status' => 4]),
+        ]);
+        $client->track($id);
+        $client->cancelParcel($id);
+
+        self::assertSame("https://backend.maystro-delivery.com/api/stores/orders/$id/", (string) $this->history[0]['request']->getUri());
+        self::assertSame("https://b.maystro-delivery.com/api/stores/history_order/$id", (string) $this->history[1]['request']->getUri());
+        self::assertSame("https://backend.maystro-delivery.com/api/shared/status/$id/", (string) $this->history[2]['request']->getUri());
+    }
+
+    /** Shapes seen live: a label page embeds its barcode image; "no order found" is one blank page. */
+    private static function labelPdf(int $pages): string
+    {
+        $body = '';
+        for ($i = 0; $i < $pages; $i++) {
+            $body .= ($i + 3) . " 0 obj <</Type /Page /Parent 2 0 R>> endobj\n<</Subtype /Image>>\n";
+        }
+
+        return "%PDF-1.4\n{$body}2 0 obj <</Type /Pages /Count $pages>> endobj\n%%EOF";
+    }
+
+    private function maystro(array $responses): MaystroProvider
+    {
+        $client = $this->client('maystro', $responses);
+        self::assertInstanceOf(MaystroProvider::class, $client);
+
+        return $client;
+    }
+
+    public function testGetLabelsPostsTrackingNumbersAndReturnsThePdf(): void
+    {
+        $labels = $this->maystro([new Response(200, ['Content-Type' => 'application/pdf'], self::labelPdf(2))])
+            ->getLabels(['172316976800001', ' 172316976800002 ', '172316976800001']);
+
+        $request = $this->history[0]['request'];
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('https://backend.maystro-delivery.com/api/delivery/starter/starter_bordureau/', (string) $request->getUri());
+        self::assertSame(['orders_ids' => ['172316976800001', '172316976800002']], json_decode((string) $request->getBody(), true));
+        self::assertSame('*/*', $request->getHeaderLine('Accept')); // `application/pdf` gets HTTP 406 live
+        self::assertSame('application/pdf', $labels->contentType);
+        self::assertSame(2, $labels->labelCount);
+        self::assertSame(self::labelPdf(2), $labels->data);
+    }
+
+    public function testGetLabelsPostsOrderUuidsToTheV2Endpoint(): void
+    {
+        $id = '1394335a-4470-407c-a464-d90932de5510';
+        $labels = $this->maystro([new Response(200, [], self::labelPdf(1))])->getLabels([$id]);
+
+        self::assertSame('/api/delivery/starter/v2/starter_bordureau/', $this->history[0]['request']->getUri()->getPath());
+        self::assertSame(['orders_ids' => [$id]], json_decode((string) $this->history[0]['request']->getBody(), true));
+        self::assertSame(1, $labels->labelCount);
+    }
+
+    public function testGetLabelsTurnsUuidsIntoTrackingNumbersWhenReferencesAreMixed(): void
+    {
+        $id = '1394335a-4470-407c-a464-d90932de5510';
+        $this->maystro([
+            self::json(200, ['id' => $id, 'display_id' => '172316976800001', 'status' => 4]),
+            new Response(200, [], self::labelPdf(2)),
+        ])->getLabels([$id, '172316976800002']);
+
+        self::assertSame("/api/stores/orders/$id/", $this->history[0]['request']->getUri()->getPath());
+        self::assertSame('/api/delivery/starter/starter_bordureau/', $this->history[1]['request']->getUri()->getPath());
+        self::assertSame(['orders_ids' => ['172316976800001', '172316976800002']], json_decode((string) $this->history[1]['request']->getBody(), true));
+    }
+
+    public function testGetLabelsDropsAnUnknownUuidFromAMixedRequest(): void
+    {
+        $labels = $this->maystro([
+            self::json(404, ['detail' => 'Pas trouvé.', 'status_code' => 404]),
+            new Response(200, [], self::labelPdf(1)),
+        ])->getLabels(['1394335a-4470-407c-a464-d90932de5510', '172316976800002']);
+
+        self::assertSame(['orders_ids' => ['172316976800002']], json_decode((string) $this->history[1]['request']->getBody(), true));
+        self::assertSame(1, $labels->labelCount);
+    }
+
+    public function testGetLabelsThrowsNotFoundOnTheBlankPage(): void
+    {
+        $blank = "%PDF-1.4\n3 0 obj <</Type /Page /Parent 2 0 R>> endobj\n2 0 obj <</Type /Pages /Count 1>> endobj\n%%EOF";
+        try {
+            $this->maystro([new Response(200, [], $blank)])->getLabels(['111']);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::NOT_FOUND, $e->code);
+            self::assertSame('maystro', $e->provider);
+        }
+    }
+
+    public function testGetLabelsRejectsAnEmptyListWithoutCallingMaystro(): void
+    {
+        try {
+            $this->maystro([])->getLabels([' ']);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
+            self::assertCount(0, $this->history);
+        }
+    }
+
+    public function testGetLabelsMapsAJsonErrorBody(): void
+    {
+        try {
+            $this->maystro([self::json(401, ['detail' => 'Token non valide.', 'status_code' => 401])])->getLabels(['1']);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::AUTH_FAILED, $e->code);
+            self::assertSame('Token non valide.', $e->getMessage());
+        }
+    }
+
     public function testMissingTokenIsAuthFailed(): void
     {
         try {
@@ -135,6 +256,7 @@ final class MaystroProviderTest extends TestCase
             'getWilayas' => $client->getWilayas(),
             'getCommunes' => $client->getCommunes($input['wilayaId']),
             'getStopDesks' => $client->getStopDesks($input),
+            'listParcels' => $client->listParcels($input),
             'cancelParcel' => $client->cancelParcel($input['trackingNumberOrId']),
         };
     }
@@ -146,6 +268,13 @@ final class MaystroProviderTest extends TestCase
         return match (true) {
             $result instanceof Parcel => self::parcelToArray($result),
             $result instanceof TrackResult => self::trackToArray($result),
+            $result instanceof ParcelListPage => [
+                'parcels' => array_map(static fn (Parcel $p) => self::parcelToArray($p), $result->parcels),
+                'page' => $result->page,
+                'pageSize' => $result->pageSize,
+                'totalCount' => $result->totalCount,
+                'hasNext' => $result->hasNext,
+            ],
             $result instanceof FeeQuote => $withoutNulls([
                 'deliveryFee' => $result->deliveryFee,
                 'returnFee' => $result->returnFee,

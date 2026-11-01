@@ -1,0 +1,24 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "list": {
+        "count": 4,
+        "next": null,
+        "previous": "https://backend.maystro-delivery.com/api/stores/orders/",
+        "results": [
+          {
+            "id": "4c8b3e5a-1d9f-4a43-8e77-2b5d8f1a3c64",
+            "display_id": "172316976800004",
+            "updated_at": "2026-10-22T11:00:00.000000+01:00",
+            "customer_name": "Quatrième Client",
+            "customer_phone": "0660000000",
+            "status": 41,
+            "external_order_id": "ORDER-3004"
+          }
+        ]
+      }
+    }
+  }
+]

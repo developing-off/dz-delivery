@@ -1,0 +1,27 @@
+{
+  "result": {
+    "parcel": {
+      "id": "1394335a-4470-407c-a464-d90932de5510",
+      "trackingNumber": "172316976800001",
+      "status": "in_transit",
+      "provider": "maystro"
+    },
+    "events": [
+      {
+        "status": "pending",
+        "label": "CREATED",
+        "at": "2026-10-20T09:12:13+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "READY_TO_SHIP (Colis récupéré)",
+        "at": "2026-10-20T16:40:00+01:00"
+      },
+      {
+        "status": "in_transit",
+        "label": "SHIPPED",
+        "at": "2026-10-21T10:05:00+01:00"
+      }
+    ]
+  }
+}

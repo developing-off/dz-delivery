@@ -7,7 +7,7 @@ TS and PHP implementations MUST follow these tables. Update this file **before**
 |----------|-----|--------|
 | ZRExpress | `zrexpress` | mapping drafted, implemented in PHP and TS — extras: [`ZREXPRESS.md`](./ZREXPRESS.md) |
 | Yalidine | `yalidine` | mapping checked against the developer docs (2026-10-20), implemented in PHP and TS |
-| Maystro Delivery | `maystro` | built from the public API docs (2026-10-20), implemented in PHP and TS; `track` / `cancelParcel` not supported |
+| Maystro Delivery | `maystro` | public API docs (2026-10-20) + live checks on a test account (2026-11-01: create, `track`, `listParcels`, `cancelParcel`, errors), implemented in PHP and TS |
 | Ecotrack (DHD, Anderson, World Express, 48Hr, …) | `ecotrack` | Postman notes + Delivery tenant hosts (2026-10-20); one provider, tenant via `courier` / `baseUrl` |
 | NoEST | `noest` | NOEST Public API docs v2.3 + live checks (2026-10-30: reads and error bodies; creation not tried, account suspended), implemented in PHP and TS; `listParcels` not supported |
 | E-com Delivery | `ecom` | API v2 docs (v2.153) + live checks on a test account (2026-10-30: reads, create then delete, errors), implemented in PHP and TS, including `listParcels` |
@@ -266,7 +266,7 @@ Same mapping as above, plus:
 
 ## Maystro Delivery
 
-> Built from the public API docs (saved in [`vendor/maystro/maystro-api-full.md`](./vendor/maystro/maystro-api-full.md)) on 2026-10-20, then aligned with Confirmation-api live fees (`MaystroController::getDeliveryPrice`) on 2026-10-20. No sandbox response has been captured yet: fixtures are derived from the doc examples + Confirmation production paths.
+> Built from the public API docs (saved in [`vendor/maystro/maystro-api-full.md`](./vendor/maystro/maystro-api-full.md)) on 2026-10-20, then aligned with Confirmation-api live fees (`MaystroController::getDeliveryPrice`) on 2026-10-20. `track`, `listParcels` and `cancelParcel` were checked live on a test account on 2026-11-01 (create → track → cancel → track, list, unknown references); their fixtures follow the live response shapes.
 
 - Docs: <https://maystro.gitbook.io/maystro-delivery-documentation/reference/maystro-delivery-api-reference>
 - Orders / locations base URL: `https://orders-management.maystro-delivery.com` (`MAYSTRO_DEFAULT_BASE_URL` / `MaystroProvider::DEFAULT_BASE_URL`; keep the trailing `/` on `api/base/...` and `api/orders/`)
@@ -285,14 +285,24 @@ Same mapping as above, plus:
 
 | Unified method | Native endpoint | Notes |
 |----------------|-----------------|-------|
-| `createParcel` | `POST /api/orders/` | Body is a **list** of orders (bulk, we send one). Trailing `/` matches the live orders-management URL. Response: `[{ id, external_id, tracking, success, delivery_price, errors: [] }]`. `success: false` or non-empty `errors` → `ShippingError` (see Errors). No follow-up read (no read endpoint): status is always `pending`. |
-| `track` | — | **Not supported** (`NOT_SUPPORTED`, no HTTP call). Maystro documents no order read/tracking endpoint; status changes are pushed by webhooks (`OrderStatusChanged`, `payload.status` = numeric code). Map them with `mapMaystroStatus` (TS) / `StatusMapper::maystro()` (PHP). |
+| `createParcel` | `POST /api/orders/` | Body is a **list** of orders (bulk, we send one). Trailing `/` matches the live orders-management URL. Response: `[{ id, external_id, tracking, success, delivery_price, errors: [] }]`. `success: false` or non-empty `errors` → `ShippingError` (see Errors). No follow-up read: status is always `pending`. `tracking` is the order `display_id`. |
+| `track` | `GET {backend}/api/stores/orders/{id}/` then `GET https://b.maystro-delivery.com/api/stores/history_order/{id}` | Takes the order UUID (`Parcel.id`) or the tracking number: a non-UUID numeric reference is resolved with `GET {backend}/api/stores/orders/?display_id=` (no match → `NOT_FOUND`). Unknown UUID → `404` `Pas trouvé.` → `NOT_FOUND`. History rows `[{ status, created_at, comment, agent }]` come newest first live; the SDK sorts them oldest first. `label` = status name (`CREATED`, `ABORTED`, …) + ` (comment)`. Webhooks (`OrderStatusChanged`) remain the push alternative. |
 | `getFees` | **Primary:** `GET {backend}/api/stores/delivery_price/?commune=&delivery_type=&express=false` (home=`1`, stop desk=`2`). **Fallback:** orders-management `GET /api/base/delivery-options/?commune=` then `GET /api/base/delivery-prices/?commune=&delivery_type=` | Matches Confirmation-api live tariffs. Response shape `{ delivery_price: number }`. SDK calls type `1` and `2` to fill `deliveryFee` + `stopDeskFee`. On `NOT_FOUND` / `NETWORK_ERROR` from the backend host, falls back to legacy `delivery-options` (all modes in one call) then `delivery-prices` (`1` home, `2` stop desk, `3` pickup). `createParcel` stays on orders-management. |
 | `getWilayas` | `GET /api/base/wilayas/?language=fr&country=1` | Current response: objects `{ code, display_id, name_lt, name_ar, … }` (`code` → `Location.id`). Legacy `[id, name]` tuples and `{ id, name }` are still accepted. Wilaya id **is** the official code. Not paginated. |
 | `getCommunes` | `GET /api/base/communes/?wilaya=<id>` | Response: `[{ id, wilaya, name, postcode, zone }]`. A DRF page `{ results: [...] }` is also accepted (first page only). |
 | `getStopDesks` | `GET /api/base/pickup-points?commune=<id>` | **`communeId` required** (`VALIDATION_ERROR` otherwise). Response `[{ name_lt, name_ar, commune, pickup_point, delivery_type, active }]`. Stop desk (`delivery_type: 2`, `pickup_point: null`) → `id` = commune id; pickup point (`delivery_type: 3`) → `id` = `pickup_point`. `active: false` skipped. |
-| `cancelParcel` | — | **Not supported** (`NOT_SUPPORTED`, no HTTP call): no documented cancellation endpoint. |
+| `listParcels` | `GET {backend}/api/stores/orders/?page=` | Fixed 20 orders per page (`pageSize` is always `20`). Response `{ list: { count, next, previous, results } }` (`next` → `hasNext`). `status`, `orderId` (`external_order_id`), `keyword` (display id, customer name, phone, external id) and `updatedSince` (`updated_at`) filter the fetched page client-side. `allPages` follows `next` (≤ 100 pages). |
+| `cancelParcel` | `PATCH {backend}/api/shared/status/{id}/` with `{ "status": 50, "abort_reason": 21 }` | Takes the order UUID or the tracking number (resolved like `track`). Response `{ order_id, new_status, old_status }`; a `new_status` other than `50` → `VALIDATION_ERROR`. Cancelling an already aborted order succeeds (live). Unknown UUID → `NOT_FOUND`. |
 | `healthCheck` | `GET /api/base/wilayas/` | Same probe as `getWilayas`, but **always** hits the network (cache bypassed). |
+
+**Maystro extra — labels (bordereaux)**, on `MaystroProvider` (not on `ShippingProvider`): `getLabels(references)` → `{ contentType: 'application/pdf', data, labelCount }` (`data`: `Uint8Array` in TS, binary `string` in PHP; class `DzDelivery\Providers\Maystro\MaystroLabels`).
+
+| References | Native endpoint | Notes |
+|------------|-----------------|-------|
+| tracking numbers (`display_id`) | `POST {backend}/api/delivery/starter/starter_bordureau/` `{ "orders_ids": [...] }` | One PDF, one page per order found. |
+| order UUIDs only | `POST {backend}/api/delivery/starter/v2/starter_bordureau/` `{ "orders_ids": [...] }` | Same PDF. A UUID / tracking mix is sent as tracking numbers (one order read per UUID). |
+
+Checked live (2026-11-01): Maystro answers **HTTP 406 to `Accept: application/pdf`**, so the SDK sends `Accept: */*`. Unknown references are dropped silently and repeats deduped (`labelCount` < references ⇒ some not found); with no order found Maystro returns a blank one-page PDF without image → `NOT_FOUND`. Labels are generated for cancelled orders too. At most 100 references per call (SDK limit). `all_created: true` (every `CREATED` order) is not exposed.
 
 ### `ParcelInput` → `POST /api/orders/` body
 
@@ -320,7 +330,7 @@ Same mapping as above, plus:
 | Unified | Maystro |
 |---------|---------|
 | `id` | `id` (UUID; falls back to `tracking`) |
-| `trackingNumber` | `tracking` (e.g. `172316976800001`) |
+| `trackingNumber` | `tracking` (e.g. `172316976800001`; it is the order `display_id`, so read rows map `display_id`) |
 | `status` | always `pending` (the response has no status; new orders start as `4` / `CREATED` → `pending`) |
 | `provider` | `"maystro"` |
 
@@ -401,12 +411,13 @@ Other error bodies are assumed to follow DRF: `{ "detail": "..." }` → `message
 
 ### Limitations and assumptions
 
-- **No `track` / `cancelParcel`** (`NOT_SUPPORTED`): use Maystro webhooks + the exported status mapper.
+- `track` / `cancelParcel` need the order UUID; a tracking number costs one extra lookup (`?display_id=`).
+- `listParcels` filters client-side: with a filter, a page can hold fewer than 20 parcels (or none) while `hasNext` is `true`.
 - `createParcel` always returns `pending`; Premium stores may actually start at `15` (`READY_TO_SHIP`, as in the `orderCreated` webhook example).
-- Auth header format `Token <token>` (see Auth). Same token is sent to both hosts.
+- Auth header format `Token <token>` (see Auth). Same token is sent to every host (orders-management, backend, `b.`).
 - Wilaya ids are assumed to equal the official codes `1`–`58` (true for every id in the docs example), so `code = id`.
 - Error entry shape (`40` vs `{ code, message }`) and non-order error bodies are not documented (see Errors).
-- Bulk create, exchanges, refunds, products/stock, pickup points listing, order slips and webhook management are out of MVP scope.
+- Bulk create, exchanges, refunds, products/stock, pickup points listing and webhook management are out of MVP scope.
 
 ---
 

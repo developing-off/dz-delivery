@@ -130,12 +130,12 @@ All methods accept either an **array** or the matching model object (`ParcelInpu
 | Method | ZRExpress | Yalidine | Maystro | Ecotrack | NoEST | E-com | MDM | Elogistia |
 |--------|-----------|----------|---------|----------|-------|-------|-----|-----------|
 | `createParcel` | yes | yes | yes | yes (`pending` until validated, see `autoValidate`) | yes (same, `autoValidate`) | yes (same, `autoValidate`) | yes (MDM catalog products, `storeId`) | yes |
-| `track` | yes | yes | `NOT_SUPPORTED` (use [webhooks](#7-maystro-webhooks)) | yes | yes | yes | yes | yes |
+| `track` | yes | yes | yes (or [webhooks](#7-maystro-webhooks)) | yes | yes | yes | yes | yes |
 | `getFees` | yes | yes | yes | yes (per wilaya) | yes (per wilaya) | yes (per wilaya) | yes (per commune) | yes (per wilaya) |
 | `getWilayas` / `getCommunes` | yes | yes | yes | yes | yes | yes | yes | yes |
 | `getStopDesks` | yes (hubs / pickup points) | yes (centers) | yes (needs `communeId`) | yes (communes with a stop desk) | yes (stations) | yes (bureaux) | yes (partner offices) | `NOT_SUPPORTED` (Elogistia picks the desk) |
-| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` (webhooks) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` | yes (`GET /colis`) | yes (`parcels/search`) | `NOT_SUPPORTED` |
-| `cancelParcel` | yes | yes (only parcels still `En préparation`) | `NOT_SUPPORTED` | yes (only orders not validated yet) | yes (only orders not validated yet) | yes (only parcels "En Préparation") | `NOT_SUPPORTED` | `NOT_SUPPORTED` |
+| `listParcels` | yes (`parcels/search`) | `NOT_SUPPORTED` (soon) | yes (20 per page, filters client-side) | `NOT_SUPPORTED` (soon) | `NOT_SUPPORTED` | yes (`GET /colis`) | yes (`parcels/search`) | `NOT_SUPPORTED` |
+| `cancelParcel` | yes | yes (only parcels still `En préparation`) | yes (`PATCH` status `50`) | yes (only orders not validated yet) | yes (only orders not validated yet) | yes (only parcels "En Préparation") | `NOT_SUPPORTED` | `NOT_SUPPORTED` |
 | `healthCheck` | yes | yes | yes | yes | yes | yes | yes | yes |
 
 ### 3.1 `createParcel(ParcelInput|array $input): Parcel`
@@ -244,7 +244,7 @@ Output (`TrackResult`):
 | `at` | `string` | ISO 8601 date with offset, e.g. `2025-12-30T13:24:34+01:00`. |
 | `raw` | `mixed` | Native event. |
 
-An unknown tracking number throws `NOT_FOUND`. Maystro throws `NOT_SUPPORTED`.
+An unknown tracking number throws `NOT_FOUND`. Maystro accepts the order id (`$parcel->id`) or the tracking number.
 
 ### 3.3 `getFees(FeeQuery|array $query): FeeQuote`
 
@@ -381,7 +381,8 @@ foreach ($page->parcels as $parcel) {
 | `allPages` | Follow pagination (safety-capped). |
 
 - **ZRExpress**: [`POST /api/v1/parcels/search`](https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint).
-- **Yalidine / Maystro / Ecotrack**: `NOT_SUPPORTED` for now (Maystro: use webhooks).
+- **Maystro**: `GET /api/stores/orders/` (fixed 20 per page); `status`, `orderId`, `keyword` and `updatedSince` filter each page client-side.
+- **Yalidine / Ecotrack**: `NOT_SUPPORTED` for now.
 
 ### 3.8 `cancelParcel(string $trackingNumberOrId): void`
 
@@ -391,7 +392,7 @@ $client->cancelParcel($parcel->trackingNumber);
 
 - **ZRExpress**: accepts the UUID or the tracking number.
 - **Yalidine**: only parcels still in `En préparation` can be deleted; otherwise `VALIDATION_ERROR`.
-- **Maystro**: `NOT_SUPPORTED`.
+- **Maystro**: accepts the order id or the tracking number; aborts the order (`PATCH /api/shared/status/{id}/`, status `50`).
 
 ### 3.9 `healthCheck(): HealthCheckResult`
 
@@ -581,7 +582,7 @@ Several carriers at once? Bind a small factory instead (e.g. `fn (string $p) => 
 
 ## 7. Maystro webhooks
 
-Maystro has no tracking endpoint: status changes are **pushed** to an HTTPS URL you configure in the Maystro web app (Settings → Webhooks). The event that matters is `OrderStatusChanged`, whose `payload` is `{ "id": "<order uuid>", "status": <numeric code> }`. `payload.id` is the order id returned as `$parcel->id` by `createParcel`.
+`track()` reads a Maystro order and its history on demand. To be notified instead of polling, Maystro also **pushes** status changes to an HTTPS URL you configure in the Maystro web app (Settings → Webhooks). The event that matters is `OrderStatusChanged`, whose `payload` is `{ "id": "<order uuid>", "status": <numeric code> }`. `payload.id` is the order id returned as `$parcel->id` by `createParcel`.
 
 What the Maystro docs say about the request body (we have not captured a real request yet, so treat this as unverified):
 

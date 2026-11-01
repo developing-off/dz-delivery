@@ -31,7 +31,7 @@ Implements the shared contract in
 |----------|-----|--------|
 | ZRExpress | `zrexpress` | ✅ contrat unifié (create, track, fees, locations, stop desks, list, cancel, health) + [extras](https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md) (bulk, labels, webhooks) |
 | Yalidine | `yalidine` | ✅ contrat unifié (mapping checked against the developer docs, see PROVIDERS.md) |
-| Maystro Delivery | `maystro` | ✅ createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
+| Maystro Delivery | `maystro` | ✅ createParcel, track, getFees, getWilayas, getCommunes, getStopDesks, listParcels, cancelParcel — extra `getLabels` (PDF bordereaux) on `MaystroProvider` |
 | Ecotrack (DHD, Conexlog, …) | `ecotrack` | ✅ contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
 | NoEST | `noest` | ✅ contrat unifié — `listParcels` throws `NOT_SUPPORTED` (no list endpoint) |
 | E-com Delivery | `ecom` | ✅ contrat unifié, including `listParcels` |
@@ -69,7 +69,7 @@ const yalidine = createClient('yalidine', {
 const maystro = createClient('maystro', {
   apiToken: process.env.MAYSTRO_API_TOKEN!, // sent as `Authorization: Token <apiToken>`
 });
-// Maystro has no tracking API: map webhook statuses yourself.
+// track / cancelParcel take Parcel.id or the tracking number. For Maystro webhooks:
 // mapMaystroStatus(payload.status) → 'delivered' for 41
 
 const dhd = createClient('ecotrack', {
@@ -119,7 +119,7 @@ Every provider implements `ShippingProvider`:
 | `getWilayas()` | `Promise<Location[]>` (cached per client) |
 | `getCommunes(wilayaId)` | `Promise<Location[]>` (cached per client) |
 | `getStopDesks({ wilayaId, communeId? })` | `Promise<StopDesk[]>` — `id` is the `stopDeskId` to send (ZRExpress hubs: prefer wilaya-only; Yalidine centers; Maystro needs `communeId`; Ecotrack communes with a stop desk). Optional fields: `phone`, `openingHours`, `lat`, `lng`, `type`. |
-| `listParcels(query?)` | `Promise<ParcelListPage>` — paginated account parcels + unified status (ZRExpress via `parcels/search`, E-com via `GET /colis`, MDM via `parcels/search`; others `NOT_SUPPORTED` for now). No event history — use `track()`. |
+| `listParcels(query?)` | `Promise<ParcelListPage>` — paginated account parcels + unified status (ZRExpress via `parcels/search`, Maystro via `GET /api/stores/orders/` — 20 per page, filters applied client-side —, E-com via `GET /colis`, MDM via `parcels/search`; others `NOT_SUPPORTED` for now). No event history — use `track()`. |
 | `cancelParcel(trackingNumberOrId)` | `Promise<void>` |
 | `healthCheck()` | `Promise<{ ok: true, provider, latencyMs }>` — authenticated connectivity probe (wilayas listing, cache bypassed) |
 

@@ -1,0 +1,12 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/stores/orders/",
+    "query": {
+      "page": 1
+    },
+    "headers": {
+      "Authorization": "Token test-api-token"
+    }
+  }
+]

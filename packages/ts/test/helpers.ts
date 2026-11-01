@@ -8,6 +8,8 @@ export interface MockResponse {
   status: number;
   headers?: Record<string, string>;
   body?: unknown;
+  /** Raw (non-JSON) body sent as-is, e.g. PDF bytes as a latin1 string. */
+  rawBody?: string;
 }
 
 export interface RecordedRequest {
@@ -32,6 +34,9 @@ export function mockFetch(responses: MockResponse[]) {
     });
     const next = queue.shift();
     if (!next) throw new Error(`Unexpected request #${calls.length}: ${init?.method} ${String(input)}`);
+    if (next.rawBody !== undefined) {
+      return new Response(Buffer.from(next.rawBody, 'latin1'), { status: next.status, headers: { ...next.headers } });
+    }
     const noBody = next.status === 204 || next.body === null || next.body === undefined;
     return new Response(noBody ? null : JSON.stringify(next.body), {
       status: next.status,

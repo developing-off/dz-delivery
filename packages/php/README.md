@@ -32,7 +32,7 @@ Implements the shared contract in
 |----------|-----|--------|
 | ZRExpress | `zrexpress` | contrat unifié (`getStopDesks`, `listParcels`, …) + [extras](https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md) (bulk, labels, webhooks) |
 | Yalidine | `yalidine` | contrat unifié, checked against the developer docs |
-| Maystro Delivery | `maystro` | createParcel, getFees, getWilayas, getCommunes, getStopDesks — `track` / `cancelParcel` throw `NOT_SUPPORTED` (webhooks only) |
+| Maystro Delivery | `maystro` | createParcel, track, getFees, getWilayas, getCommunes, getStopDesks, listParcels, cancelParcel — extra `getLabels()` (PDF bordereaux) on `MaystroProvider` |
 | Ecotrack (DHD, Anderson, World Express, …) | `ecotrack` | contrat unifié — one provider for every courier on the Ecotrack platform (`courier` or `baseUrl`) |
 | NoEST | `noest` | contrat unifié — `listParcels` throws `NOT_SUPPORTED` (no list endpoint) |
 | E-com Delivery | `ecom` | contrat unifié, including `listParcels` |
@@ -74,7 +74,8 @@ $client = ClientFactory::create('zrexpress', [
 
 // Maystro only needs a store token (sent as `Authorization: Token <apiToken>`):
 // ClientFactory::create('maystro', ['apiToken' => getenv('MAYSTRO_API_TOKEN')]);
-// It has no tracking API: map webhook statuses with StatusMapper::maystro($payload['status']).
+// track() / cancelParcel() take $parcel->id or the tracking number; for Maystro webhooks,
+// map statuses with StatusMapper::maystro($payload['status']).
 
 try {
     $parcel = $client->createParcel([

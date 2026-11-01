@@ -1,0 +1,14 @@
+[
+  {
+    "status": 200,
+    "headers": {},
+    "body": {
+      "list": {
+        "count": 0,
+        "next": null,
+        "previous": null,
+        "results": []
+      }
+    }
+  }
+]

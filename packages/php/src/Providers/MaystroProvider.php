@@ -14,12 +14,18 @@ use DzDelivery\Models\HealthCheckResult;
 use DzDelivery\Models\Location;
 use DzDelivery\Models\Parcel;
 use DzDelivery\Models\ParcelInput;
+use DzDelivery\Models\ParcelListPage;
+use DzDelivery\Models\ParcelListQuery;
 use DzDelivery\Models\ParcelStatus;
 use DzDelivery\Models\StopDesk;
 use DzDelivery\Models\StopDeskQuery;
+use DzDelivery\Models\TrackingEvent;
 use DzDelivery\Models\TrackResult;
+use DzDelivery\Providers\Maystro\MaystroLabels;
+use DzDelivery\Support\Dates;
 use DzDelivery\Support\Health;
 use DzDelivery\Support\Phone;
+use DzDelivery\Support\StatusMapper;
 use DzDelivery\Support\Text;
 
 /**
@@ -27,9 +33,11 @@ use DzDelivery\Support\Text;
  * live fees: https://backend.maystro-delivery.com (BACKEND_BASE_URL).
  * Mapping: docs/PROVIDERS.md#maystro-delivery.
  *
- * Maystro documents no endpoint to read, track or cancel an order (status updates
- * are pushed by webhooks only): track() and cancelParcel() throw NOT_SUPPORTED.
- * Map webhook statuses with StatusMapper::maystro().
+ * Orders are read, listed and cancelled on the backend host (api/stores/orders/,
+ * api/shared/status/{id}/); their status history is on HISTORY_BASE_URL
+ * (api/stores/history_order/{id}). These calls take the order UUID (Parcel::$id) or the
+ * tracking number (the order display_id, looked up with ?display_id=). Map webhook
+ * statuses with StatusMapper::maystro().
  */
 final class MaystroProvider implements ShippingProviderInterface
 {
@@ -37,6 +45,18 @@ final class MaystroProvider implements ShippingProviderInterface
     public const DEFAULT_BASE_URL = 'https://orders-management.maystro-delivery.com';
     /** Live tariffs host used by Confirmation-api (`getDeliveryPrice`). Orders stay on `DEFAULT_BASE_URL`. */
     public const BACKEND_BASE_URL = 'https://backend.maystro-delivery.com';
+    /** Host of the order history endpoint (`api/stores/history_order/{id}`), as documented by Maystro. */
+    public const HISTORY_BASE_URL = 'https://b.maystro-delivery.com';
+
+    /** Maystro serves a fixed 20 orders per page on GET api/stores/orders/. */
+    private const LIST_PAGE_SIZE = 20;
+    private const LIST_MAX_PAGES = 100;
+    /** PATCH api/shared/status/{id}/ body that aborts an order (docs: status 50, abort_reason 21). */
+    private const STATUS_ABORTED = 50;
+    private const ABORT_REASON = 21;
+    private const UUID_RE = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+    /** Orders per getLabels() call (keeps the generated PDF and the request reasonable). */
+    private const LABELS_MAX = 100;
 
     private const DELIVERY_HOME = 1;
     private const DELIVERY_STOP_DESK = 2;
@@ -62,6 +82,8 @@ final class MaystroProvider implements ShippingProviderInterface
     private HttpClient $http;
     /** Same token as `$http`, pointed at `BACKEND_BASE_URL` for live `delivery_price`. */
     private HttpClient $backendHttp;
+    /** Same token, pointed at `HISTORY_BASE_URL` for the order history. */
+    private HttpClient $historyHttp;
     private bool $includeRaw;
 
     /** @var Location[]|null */
@@ -94,6 +116,15 @@ final class MaystroProvider implements ShippingProviderInterface
         );
         $this->backendHttp = new HttpClient(
             baseUrl: self::BACKEND_BASE_URL,
+            provider: self::NAME,
+            headers: $headers,
+            timeoutMs: $options->timeoutMs,
+            includeRaw: $options->includeRaw,
+            handler: $handler,
+            errorParser: [self::class, 'parseError'],
+        );
+        $this->historyHttp = new HttpClient(
+            baseUrl: self::HISTORY_BASE_URL,
             provider: self::NAME,
             headers: $headers,
             timeoutMs: $options->timeoutMs,
@@ -184,12 +215,52 @@ final class MaystroProvider implements ShippingProviderInterface
         );
     }
 
+    /**
+     * Order (GET {backend}/api/stores/orders/{id}/) + status history
+     * (GET {b}/api/stores/history_order/{id}, oldest first). $trackingNumber is the order
+     * UUID (Parcel::$id from createParcel) or its display_id (the tracking number createParcel returns).
+     */
     public function track(string $trackingNumber): TrackResult
     {
-        throw ShippingError::notSupported(
-            'Maystro has no tracking endpoint; use its webhooks (OrderStatusChanged) with StatusMapper::maystro()',
-            self::NAME,
-        );
+        $ref = trim($trackingNumber);
+        if ($ref === '') {
+            throw ShippingError::validation('trackingNumber is required', self::NAME, 'trackingNumber');
+        }
+
+        $order = $this->resolveOrder($ref);
+        $body = $this->historyHttp->request('GET', 'api/stores/history_order/' . rawurlencode((string) $order['id']));
+        $rows = is_array($body) && array_is_list($body)
+            ? $body
+            : (is_array($body) && is_array($body['results'] ?? null) ? array_values($body['results']) : null);
+        if ($rows === null) {
+            throw ShippingError::providerError('Unexpected Maystro order history response', self::NAME, $this->raw($body));
+        }
+
+        $sorted = [];
+        foreach ($rows as $i => $row) {
+            if (is_array($row) && !array_is_list($row)) {
+                $sorted[] = ['row' => $row, 'i' => $i, 'at' => Dates::toIso(is_scalar($row['created_at'] ?? null) ? (string) $row['created_at'] : '')];
+            }
+        }
+        usort($sorted, static fn (array $x, array $y) => Dates::compare($x['at'], $y['at']) ?: $x['i'] <=> $y['i']);
+
+        $events = [];
+        foreach ($sorted as ['row' => $row, 'at' => $at]) {
+            $code = $row['status'] ?? null;
+            $codeText = is_scalar($code) ? trim((string) $code) : '';
+            $name = ctype_digit($codeText) ? (StatusMapper::MAYSTRO_STATUS_CODES[(int) $codeText] ?? null) : ($codeText !== '' ? $codeText : null);
+            $base = $name ?? $codeText;
+            $comment = is_scalar($row['comment'] ?? null) ? (string) $row['comment'] : '';
+            $label = $base !== '' && $comment !== '' ? "$base ($comment)" : ($base !== '' ? $base : $comment);
+            $events[] = new TrackingEvent(
+                status: StatusMapper::maystro(is_int($code) || is_string($code) ? $code : null),
+                label: $label,
+                at: $at,
+                raw: $this->raw($row),
+            );
+        }
+
+        return new TrackResult($this->toParcel($order), $events);
     }
 
     public function getFees(FeeQuery|array $query): FeeQuote
@@ -442,14 +513,152 @@ final class MaystroProvider implements ShippingProviderInterface
         return $desks;
     }
 
-    public function listParcels(\DzDelivery\Models\ParcelListQuery|array|null $query = null): \DzDelivery\Models\ParcelListPage
+    /**
+     * GET {backend}/api/stores/orders/?page= (Maystro serves a fixed 20 orders per page, so
+     * pageSize is always 20). status, orderId (external_order_id), keyword (display id,
+     * tracking, customer name or phone) and updatedSince (order updated_at) filter the
+     * fetched page client-side: the API has no such query parameters.
+     */
+    public function listParcels(ParcelListQuery|array|null $query = null): ParcelListPage
     {
-        throw ShippingError::notSupported('Maystro has no parcels listing API (use webhooks)', self::NAME);
+        $query = ParcelListQuery::from($query, self::NAME);
+        if ($query->updatedSince !== null && strtotime($query->updatedSince) === false) {
+            throw ShippingError::validation('updatedSince must be an ISO 8601 date', self::NAME, 'updatedSince');
+        }
+
+        if ($query->allPages) {
+            $all = [];
+            $totalCount = 0;
+            $lastRaw = null;
+            $hasNext = true;
+            for ($n = 1; $hasNext && $n <= self::LIST_MAX_PAGES; $n++) {
+                [$parcels, $count, $hasNext, $lastRaw] = $this->listPage($query, $n);
+                array_push($all, ...$parcels);
+                if ($n === 1) {
+                    $totalCount = $count;
+                }
+            }
+
+            // hasNext stays true when the page cap cut the walk short.
+            return new ParcelListPage($all, 1, self::LIST_PAGE_SIZE, $totalCount, $hasNext, $this->raw($lastRaw));
+        }
+
+        [$parcels, $totalCount, $hasNext, $raw] = $this->listPage($query, $query->page);
+
+        return new ParcelListPage($parcels, $query->page, self::LIST_PAGE_SIZE, $totalCount, $hasNext, $this->raw($raw));
     }
 
+    /**
+     * PATCH {backend}/api/shared/status/{id}/ with { status: 50, abort_reason: 21 } (abort).
+     * Takes the order UUID (Parcel::$id) or the tracking number (display_id). Unknown order →
+     * NOT_FOUND; an answer whose new_status is not 50 → VALIDATION_ERROR (the order was not aborted).
+     */
     public function cancelParcel(string $trackingNumberOrId): void
     {
-        throw ShippingError::notSupported('Maystro has no order cancellation endpoint', self::NAME);
+        $ref = trim($trackingNumberOrId);
+        if ($ref === '') {
+            throw ShippingError::validation('trackingNumberOrId is required', self::NAME, 'trackingNumberOrId');
+        }
+
+        $orderId = preg_match(self::UUID_RE, $ref) === 1 ? $ref : (string) $this->resolveOrder($ref)['id'];
+        $body = $this->backendHttp->request(
+            'PATCH',
+            'api/shared/status/' . rawurlencode($orderId) . '/',
+            [],
+            ['status' => self::STATUS_ABORTED, 'abort_reason' => self::ABORT_REASON],
+        );
+        if (is_array($body) && self::hasValue($body['new_status'] ?? null) && (int) $body['new_status'] !== self::STATUS_ABORTED) {
+            throw new ShippingError(
+                ShippingError::VALIDATION_ERROR,
+                "Maystro did not cancel order $ref (status {$body['new_status']})",
+                null,
+                null,
+                $this->raw($body),
+                self::NAME,
+            );
+        }
+    }
+
+    /**
+     * Maystro extra (not on the common interface): the shipping labels (bordereaux) of one or
+     * more orders, as one PDF with a page per order.
+     *
+     * - Tracking numbers (display_id) → POST {backend}/api/delivery/starter/starter_bordureau/;
+     *   order UUIDs (Parcel::$id) → POST {backend}/api/delivery/starter/v2/starter_bordureau/
+     *   ({ orders_ids: [...] }). A mix is sent as tracking numbers (each UUID costs one order read).
+     * - Maystro silently drops unknown references and dedupes repeats: labelCount is the number of
+     *   labels in the PDF, so labelCount < count($references) means some were not found. When none
+     *   is found Maystro returns a blank page: that throws NOT_FOUND.
+     *
+     * @param list<string> $references
+     */
+    public function getLabels(array $references): MaystroLabels
+    {
+        $refs = [];
+        foreach ($references as $ref) {
+            $ref = is_scalar($ref) ? trim((string) $ref) : '';
+            if ($ref !== '' && !in_array($ref, $refs, true)) {
+                $refs[] = $ref;
+            }
+        }
+        if ($refs === []) {
+            throw ShippingError::validation('getLabels requires at least one order reference', self::NAME, 'references');
+        }
+        if (count($refs) > self::LABELS_MAX) {
+            throw ShippingError::validation('getLabels accepts at most ' . self::LABELS_MAX . ' orders per call', self::NAME, 'references');
+        }
+
+        $byUuid = array_reduce($refs, static fn (bool $all, string $r) => $all && preg_match(self::UUID_RE, $r) === 1, true);
+        $ids = $refs;
+        if (!$byUuid) {
+            // Mixed: UUIDs become tracking numbers; an unknown UUID is dropped, like Maystro drops
+            // unknown tracking numbers, so the other labels are still returned.
+            $ids = [];
+            foreach ($refs as $r) {
+                if (preg_match(self::UUID_RE, $r) !== 1) {
+                    $ids[] = $r;
+                    continue;
+                }
+                try {
+                    $ids[] = (string) ($this->resolveOrder($r)['display_id'] ?? $r);
+                } catch (ShippingError $e) {
+                    if ($e->code !== ShippingError::NOT_FOUND) {
+                        throw $e;
+                    }
+                }
+            }
+        }
+        $response = $this->backendHttp->requestBinary(
+            'POST',
+            $byUuid ? 'api/delivery/starter/v2/starter_bordureau/' : 'api/delivery/starter/starter_bordureau/',
+            [],
+            ['orders_ids' => $ids],
+            // Maystro answers HTTP 406 to `Accept: application/pdf` (checked live); */* gets the PDF.
+            ['Accept' => '*/*'],
+        );
+        $pdf = $response['body'];
+        if (!str_starts_with($pdf, '%PDF')) {
+            throw ShippingError::providerError('Maystro did not return a PDF label', self::NAME);
+        }
+        $labelCount = self::countPdfLabels($pdf);
+        if ($labelCount === 0) {
+            throw ShippingError::notFound('No Maystro order found for: ' . implode(', ', $refs), self::NAME);
+        }
+
+        return new MaystroLabels($pdf, $labelCount);
+    }
+
+    /**
+     * Pages of a Maystro label PDF that carry a label. Each label page embeds its barcode as an
+     * image; the blank page Maystro returns when no order matched has none (checked live).
+     */
+    private static function countPdfLabels(string $pdf): int
+    {
+        if (preg_match('~/Subtype\s*/Image~', $pdf) !== 1) {
+            return 0;
+        }
+
+        return (int) preg_match_all('~/Type\s*/Page(?!s)~', $pdf);
     }
 
     /** Probes `GET api/base/wilayas/` (bypasses cache). */
@@ -543,6 +752,140 @@ final class MaystroProvider implements ShippingProviderInterface
         $message = $details === [] ? 'Maystro rejected the order' : implode('; ', array_column($details, 'message'));
 
         return [$code ?? ShippingError::VALIDATION_ERROR, $message, $details];
+    }
+
+    /**
+     * Order UUID → GET {backend}/api/stores/orders/{id}/ (404 → NOT_FOUND). A numeric
+     * reference is looked up with GET {backend}/api/stores/orders/?display_id=.
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveOrder(string $ref): array
+    {
+        if (preg_match(self::UUID_RE, $ref) === 1) {
+            $body = $this->backendHttp->request('GET', 'api/stores/orders/' . rawurlencode($ref) . '/');
+            if (!is_array($body) || array_is_list($body) || !self::hasValue($body['id'] ?? null)) {
+                throw ShippingError::providerError('Unexpected Maystro order response', self::NAME, $this->raw($body));
+            }
+
+            return $body;
+        }
+        if (ctype_digit($ref)) {
+            $body = $this->backendHttp->request('GET', 'api/stores/orders/', ['display_id' => $ref]);
+            foreach (self::ordersPage($body, $this->raw($body))[0] as $order) {
+                if (
+                    self::hasValue($order['id'] ?? null)
+                    && (trim((string) ($order['display_id'] ?? '')) === $ref || trim((string) ($order['tracking'] ?? '')) === $ref)
+                ) {
+                    return $order;
+                }
+            }
+        }
+
+        throw ShippingError::notFound(
+            "Unknown Maystro order: $ref (pass Parcel::\$id or the tracking number returned by createParcel)",
+            self::NAME,
+        );
+    }
+
+    /**
+     * @return array{0: list<Parcel>, 1: int, 2: bool, 3: mixed}
+     */
+    private function listPage(ParcelListQuery $query, int $page): array
+    {
+        $body = $this->backendHttp->request('GET', 'api/stores/orders/', ['page' => $page]);
+        [$items, $count, $hasNext] = self::ordersPage($body, $this->raw($body));
+
+        $orderId = $query->orderId !== null ? trim($query->orderId) : null;
+        $keyword = $query->keyword !== null ? mb_strtolower(trim($query->keyword)) : null;
+        // DateTimeImmutable keeps the microseconds of Maystro's `updated_at` (strtotime() would not).
+        $since = $query->updatedSince !== null ? new \DateTimeImmutable($query->updatedSince) : null;
+
+        $parcels = [];
+        foreach ($items as $order) {
+            if (!self::hasValue($order['id'] ?? null)) {
+                continue;
+            }
+            if ($orderId !== null && $orderId !== '' && trim((string) ($order['external_order_id'] ?? '')) !== $orderId) {
+                continue;
+            }
+            if ($since !== null) {
+                try {
+                    $updated = is_string($order['updated_at'] ?? null) ? new \DateTimeImmutable($order['updated_at']) : null;
+                } catch (\Exception) {
+                    $updated = null;
+                }
+                if ($updated === null || $updated < $since) {
+                    continue;
+                }
+            }
+            if ($keyword !== null && $keyword !== '') {
+                $match = false;
+                foreach (['display_id', 'tracking', 'customer_name', 'customer_phone', 'external_order_id'] as $field) {
+                    if (self::hasValue($order[$field] ?? null) && str_contains(mb_strtolower((string) $order[$field]), $keyword)) {
+                        $match = true;
+                        break;
+                    }
+                }
+                if (!$match) {
+                    continue;
+                }
+            }
+            $parcel = $this->toParcel($order);
+            if ($query->status === null || $parcel->status === $query->status) {
+                $parcels[] = $parcel;
+            }
+        }
+
+        return [
+            $parcels,
+            $count ?? ($page - 1) * self::LIST_PAGE_SIZE + count($items),
+            $hasNext ?? count($items) === self::LIST_PAGE_SIZE,
+            $body,
+        ];
+    }
+
+    /**
+     * GET api/stores/orders/ page → [rows, count, hasNext]. The docs wrap the DRF page in
+     * `list` ({ list: { count, next, previous, results } }); a bare DRF page or a plain array
+     * is accepted too.
+     *
+     * @return array{0: list<array<string, mixed>>, 1: ?int, 2: ?bool}
+     */
+    private static function ordersPage(mixed $body, mixed $raw): array
+    {
+        $page = is_array($body) && is_array($body['list'] ?? null) ? $body['list'] : $body;
+        $rows = static fn (array $list) => array_values(array_filter($list, static fn ($o) => is_array($o) && !array_is_list($o)));
+        if (is_array($page) && array_is_list($page)) {
+            return [$rows($page), null, null];
+        }
+        if (!is_array($page) || !is_array($page['results'] ?? null)) {
+            throw ShippingError::providerError('Unexpected Maystro orders response', self::NAME, $raw);
+        }
+        $count = self::number($page['count'] ?? null);
+
+        return [
+            $rows($page['results']),
+            $count !== null ? (int) $count : null,
+            array_key_exists('next', $page) ? self::hasValue($page['next']) : null,
+        ];
+    }
+
+    /**
+     * Order row → Parcel. id is the order UUID; the tracking number is its display_id
+     * (the number createParcel returns as tracking), or tracking when a row carries one.
+     *
+     * @param array<string, mixed> $order
+     */
+    private function toParcel(array $order): Parcel
+    {
+        $id = (string) $order['id'];
+        $tracking = self::hasValue($order['tracking'] ?? null)
+            ? trim((string) $order['tracking'])
+            : (self::hasValue($order['display_id'] ?? null) ? trim((string) $order['display_id']) : $id);
+        $status = $order['status'] ?? null;
+
+        return new Parcel($id, $tracking, StatusMapper::maystro(is_int($status) || is_string($status) ? $status : null), self::NAME, $this->raw($order));
     }
 
     private static function isOrderRow(mixed $value): bool

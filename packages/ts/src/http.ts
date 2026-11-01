@@ -10,6 +10,8 @@ export interface HttpRequest {
   query?: Record<string, QueryValue>;
   body?: unknown;
   headers?: Record<string, string>;
+  /** `binary`: a successful body is returned as bytes (`Uint8Array`), e.g. a PDF label. Default `json`. */
+  responseType?: 'json' | 'binary';
 }
 
 export interface HttpResponse<T = unknown> {
@@ -66,6 +68,15 @@ export class HttpClient {
     const timeoutMs = this.options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+    const networkError = (err: unknown) =>
+      new ShippingError(
+        'NETWORK_ERROR',
+        controller.signal.aborted
+          ? `Request timed out after ${timeoutMs} ms`
+          : `Network error: ${(err as Error)?.message ?? String(err)}`,
+        { provider, cause: err },
+      );
+
     let res: Response;
     try {
       res = await fetchImpl(url, {
@@ -75,15 +86,22 @@ export class HttpClient {
         signal: controller.signal,
       });
     } catch (err) {
-      const timedOut = controller.signal.aborted;
-      throw new ShippingError(
-        'NETWORK_ERROR',
-        timedOut ? `Request timed out after ${timeoutMs} ms` : `Network error: ${(err as Error)?.message ?? String(err)}`,
-        { provider, cause: err },
-      );
-    } finally {
       clearTimeout(timer);
+      throw networkError(err);
     }
+
+    if (req.responseType === 'binary' && res.ok) {
+      // The timeout also bounds the body download (labels can be large).
+      try {
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        return { status: res.status, headers: res.headers, body: bytes as T };
+      } catch (err) {
+        throw networkError(err);
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    clearTimeout(timer);
 
     const text = await res.text().catch(() => '');
     let body: unknown = undefined;

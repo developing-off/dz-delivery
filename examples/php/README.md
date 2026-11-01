@@ -30,7 +30,7 @@ DZ_CREATE=1 DZ_PROVIDER=yalidine ... php examples/php/quickstart.php
 | `YALIDINE_FROM_WILAYA_ID` | Your origin wilaya code (default `16`). |
 | `MAYSTRO_API_TOKEN` | Maystro store token. |
 | `ECOTRACK_TOKEN` + `ECOTRACK_COURIER` or `ECOTRACK_BASE_URL` | Ecotrack token and tenant (`dhd`, `conexlog`, … or the tenant URL). |
-| `DZ_CREATE` | `1` to create / track / cancel a parcel (Maystro: create only, it has no tracking / cancellation API). |
+| `DZ_CREATE` | `1` to create / track / cancel a parcel. |
 
 The variable names match [`.env.example`](../../.env.example). The script reads real environment
 variables only (it does not load `.env` itself): export them in your shell, or use a tool such
