@@ -29,18 +29,27 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    env:
-      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
+      - name: Resolve tag
+        env:
+          RAW_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          tag="$(printf '%s' "$RAW_TAG" | tr -d '[:space:]')"
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Not a release tag: '$RAW_TAG' (expected e.g. v0.1.12)"
+            exit 1
+          fi
+          echo "TAG=$tag" >>"$GITHUB_ENV"
+
       - name: Checkout monorepo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: refs/tags/${{ env.TAG }}
           path: mono
           fetch-depth: 0 # keeps the annotated tag message
 
       - name: Checkout dz-delivery-php
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: developing-off/dz-delivery-php
           ref: main
