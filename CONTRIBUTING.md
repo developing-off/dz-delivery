@@ -51,3 +51,13 @@ Look for the `good first issue` label. Typical starter tasks:
 - Use clear commit messages, e.g. `feat(ts): add yalidine track`, `docs: zrexpress fee mapping`.
 - Labels: `provider:<name>`, `lang:ts`, `lang:php`, `docs`, `good first issue`.
 - PRs must keep TS and PHP behavior aligned with the contract.
+
+## Releasing (maintainers)
+
+1. Bump the version in `packages/ts/package.json` and move the `[Unreleased]` entries of `CHANGELOG.md` under the new version.
+2. Merge to `main`, then push an annotated tag: `git tag -a v0.x.y -m "v0.x.y: <summary>" && git push origin v0.x.y`.
+3. The tag triggers two workflows:
+   - `publish.yml` publishes `@dz-delivery/core` to npm;
+   - `sync-php.yml` mirrors `packages/php` and the shared docs/fixtures into [`dz-delivery-php`](https://github.com/developing-off/dz-delivery-php), runs PHPUnit there, then pushes `main` and the same tag (Packagist picks it up).
+
+To mirror by hand (or preview a sync): `scripts/sync-php.sh . ../dz-delivery-php`, then review and commit in `dz-delivery-php`.
