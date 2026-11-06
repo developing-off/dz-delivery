@@ -576,6 +576,7 @@
 <span class="c-key">require</span> __DIR__ . <span class="c-str">&#x27;/../vendor/autoload.php&#x27;</span>;
 
 <span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
 
 <span class="c-cmt">// Shared secret: register the URL as /maystro-webhook.php?key=&lt;MAYSTRO_WEBHOOK_SECRET&gt;</span>
 <span class="c-var">$secret</span> = (<span class="c-type">string</span>) <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_WEBHOOK_SECRET&#x27;</span>);
@@ -603,11 +604,20 @@
 }
 
 <span class="c-key">if</span> ((<span class="c-var">$event</span>[<span class="c-str">&#x27;event&#x27;</span>] ?? <span class="c-key">null</span>) === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
-    <span class="c-var">$orderId</span> = (<span class="c-type">string</span>) (<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;id&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>);
+    <span class="c-var">$orderId</span> = <span class="c-fn">trim</span>((<span class="c-type">string</span>) (<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;id&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>));
+    <span class="c-key">if</span> (<span class="c-var">$orderId</span> === <span class="c-str">&#x27;&#x27;</span>) {
+        <span class="c-fn">http_response_code</span>(<span class="c-num">400</span>);
+        <span class="c-key">exit</span>;
+    }
 
     <span class="c-cmt">// Do not trust the pushed status: read the order back from Maystro.</span>
     <span class="c-var">$maystro</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;maystro&#x27;</span>, [<span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_API_TOKEN&#x27;</span>)]);
-    <span class="c-var">$parcel</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$orderId</span>)-&gt;<span class="c-var">parcel</span>;  <span class="c-cmt">// accepts the order UUID</span>
+    <span class="c-key">try</span> {
+        <span class="c-var">$parcel</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$orderId</span>)-&gt;<span class="c-var">parcel</span>;  <span class="c-cmt">// accepts the order UUID</span>
+    } <span class="c-key">catch</span> (<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {  <span class="c-cmt">// unknown order or Maystro unavailable</span>
+        <span class="c-fn">http_response_code</span>(<span class="c-num">502</span>);  <span class="c-cmt">// non-2xx answer: the event is not acknowledged</span>
+        <span class="c-key">exit</span>;
+    }
 
     <span class="c-cmt">// update your order where carrier_id = $orderId with $parcel-&gt;status ...</span>
 }

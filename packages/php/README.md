@@ -61,7 +61,7 @@ $client = ClientFactory::create('zrexpress', [
     'tenant' => getenv('ZREXPRESS_TENANT'),
     // 'baseUrl' => ..., 'timeoutMs' => 15000, 'includeRaw' => true,
 ]);
-// Extras ZR (bulk / labels): new \DzDelivery\Providers\ZRExpressProvider([...])
+// Extras ZR (bulk / labels): new \DzDelivery\Providers\ZRExpressProvider(\DzDelivery\Models\ClientOptions::fromArray([...]))
 // Webhooks: \DzDelivery\Providers\ZRExpress\Webhook::verify($rawBody, $headers, $secret)
 // → docs/ZREXPRESS.md
 

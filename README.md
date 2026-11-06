@@ -159,7 +159,7 @@ Installez `@dz-delivery/core` (Node.js) ou `dz-delivery/sdk` (PHP / Laravel), pu
 Yes — one `ecotrack` provider covers every courier on the Ecotrack platform, with a built-in `courier` key (`dhd`, `anderson`, `worldexpress`, …) or your tenant `baseUrl`. See the [Ecotrack guide](https://dz-delivery.younes-sarni.com/ecotrack/).
 
 **Can I switch carriers without rewriting my code?**
-Yes. Every carrier returns the same models and the same normalized statuses, so only the client configuration changes.
+Mostly. Every carrier returns the same models and the same normalized statuses, so switching is a configuration change for the operations both carriers support. Some operations are not available everywhere (they throw `NOT_SUPPORTED`): check the [capability matrix](https://dz-delivery.younes-sarni.com/en/#matrix).
 
 **Est-ce que ça marche avec Laravel, WooCommerce ou Shopify ?**
 Le SDK PHP fonctionne dans n'importe quel projet Composer (exemple Laravel dans le [guide PHP](./docs/guide-php.md#6-laravel-example)). Pour Shopify ou un backend Node, utilisez le package npm.
