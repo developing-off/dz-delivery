@@ -8,21 +8,21 @@ One API for Algerian delivery carriers — **Yalidine, GuepEx, ZRExpress, Maystr
 Create parcels, track shipments, quote fees and list wilayas / communes / stop desks with the same code for every carrier.
 
 > 🇩🇿 SDK livraison Algérie : un seul code pour créer, suivre et tarifer vos colis chez tous les transporteurs.
-> Docs : <https://developing-off.github.io/dz-delivery/> · PHP / Laravel : [`dz-delivery/sdk`](https://packagist.org/packages/dz-delivery/sdk)
+> Docs : <https://dz-delivery.younes-sarni.com/> · PHP / Laravel : [`dz-delivery/sdk`](https://packagist.org/packages/dz-delivery/sdk)
 
 Implements the shared contract in
 [`docs/CONTRACT.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md); carrier-specific mappings are in
 [`docs/PROVIDERS.md`](https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md).
 
 <p align="center">
-  <a href="https://developing-off.github.io/dz-delivery/yalidine/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/yalidine.png" alt="Yalidine" title="Yalidine" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/noest/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/ecom/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/mdm/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/mdm.png" alt="MDM Express" title="MDM Express" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/elogistia/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/elogistia.png" alt="Elogistia" title="Elogistia" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/yalidine/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/yalidine.png" alt="Yalidine" title="Yalidine" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/noest/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/ecom/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/mdm/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/mdm.png" alt="MDM Express" title="MDM Express" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/elogistia/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/elogistia.png" alt="Elogistia" title="Elogistia" height="60"></a>
 </p>
 
 <p align="center"><sub>Logos are trademarks of their respective owners, shown only to indicate which carriers the SDK works with. dz-delivery is an independent open-source project, not affiliated with or endorsed by these companies.</sub></p>

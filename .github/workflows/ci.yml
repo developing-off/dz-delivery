@@ -56,3 +56,26 @@ jobs:
 
       - name: Test
         run: composer test
+
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build site
+        run: sh scripts/build-site.sh
+
+      - name: Check output
+        run: |
+          for f in sitemap.xml robots.txt _headers index.html 404.html; do
+            if [ ! -f "_site/$f" ]; then
+              echo "Missing _site/$f" >&2
+              exit 1
+            fi
+          done
+          if grep -rl 'developing-off.github.io' _site; then
+            echo "Old GitHub Pages URL found in the site output" >&2
+            exit 1
+          fi

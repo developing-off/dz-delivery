@@ -4,7 +4,7 @@
   "description": "Unified SDK for Algerian delivery carriers (Yalidine, ZRExpress, Maystro, Ecotrack/DHD, GuepEx, NoEST, E-com, MDM, Elogistia) — SDK livraison Algérie : créer, suivre et tarifer des colis, wilayas et communes. TypeScript, Node.js.",
   "license": "MIT",
   "author": "developing-off",
-  "homepage": "https://developing-off.github.io/dz-delivery/",
+  "homepage": "https://dz-delivery.younes-sarni.com/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/developing-off/dz-delivery.git",
