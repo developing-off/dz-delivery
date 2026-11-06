@@ -1,0 +1,104 @@
+# Mirror packages/php (+ shared docs and fixtures) into developing-off/dz-delivery-php
+# on every release tag, run its tests there, then push main and the same tag.
+# Packagist reads versions from the dz-delivery-php tags.
+#
+# Setup (once): a deploy key with write access on dz-delivery-php
+#   1. ssh-keygen -t ed25519 -N "" -C "dz-delivery sync" -f dz-php-sync
+#   2. dz-delivery-php → Settings → Deploy keys → Add: dz-php-sync.pub, "Allow write access"
+#   3. dz-delivery → Settings → Secrets and variables → Actions → New secret
+#      PHP_SPLIT_DEPLOY_KEY = contents of dz-php-sync (private key), then delete both files.
+
+name: Sync PHP repo
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Monorepo tag to mirror (e.g. v0.1.12)"
+        required: true
+
+concurrency:
+  group: sync-php
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag
+        env:
+          RAW_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          tag="$(printf '%s' "$RAW_TAG" | tr -d '[:space:]')"
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Not a release tag: '$RAW_TAG' (expected e.g. v0.1.12)"
+            exit 1
+          fi
+          echo "TAG=$tag" >>"$GITHUB_ENV"
+
+      - name: Checkout monorepo
+        uses: actions/checkout@v5
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          path: mono
+          fetch-depth: 0 # keeps the annotated tag message
+
+      - name: Checkout dz-delivery-php
+        uses: actions/checkout@v5
+        with:
+          repository: developing-off/dz-delivery-php
+          ref: main
+          path: split
+          fetch-depth: 0
+          ssh-key: ${{ secrets.PHP_SPLIT_DEPLOY_KEY }}
+
+      # The script comes from the workflow's own commit, so a manual run on an
+      # older tag (made before the script existed) still works.
+      - name: Mirror files
+        run: |
+          git -C mono show "$GITHUB_SHA:scripts/sync-php.sh" >"$RUNNER_TEMP/sync-php.sh"
+          bash "$RUNNER_TEMP/sync-php.sh" mono split
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Test (in the split repo)
+        working-directory: split
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          composer test
+
+      - name: Commit, tag and push
+        working-directory: split
+        run: |
+          version="${TAG#v}"
+          git config user.name "developing-off"
+          git config user.email "45017738+developing-off@users.noreply.github.com"
+
+          if git diff --cached --quiet; then
+            echo "No file changes to commit."
+          else
+            git commit -q \
+              -m "Sync $version from the monorepo." \
+              -m "Mirrors developing-off/dz-delivery@$(git -C ../mono rev-parse --short HEAD) ($TAG)."
+            git push origin HEAD:main
+          fi
+
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            if [ "$(git rev-list -n1 "$TAG")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::$TAG already exists in dz-delivery-php on another commit; not moving it."
+              exit 1
+            fi
+            echo "$TAG already points at main."
+          else
+            msg="$(git -C ../mono tag -l --format='%(contents:subject)' "$TAG")"
+            git tag -a "$TAG" -m "${msg:-$TAG}"
+            git push origin "$TAG"
+          fi
