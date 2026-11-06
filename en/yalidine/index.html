@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yalidine API for Node.js and PHP — dz-delivery SDK (GuepEx included)</title>
+  <meta name="description" content="Integrate the Yalidine API (and GuepEx) in TypeScript or PHP: create and track parcels, get fees, list wilayas, communes and stop desks. Open source SDK." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/yalidine/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/yalidine/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/yalidine/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/yalidine/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/yalidine/" />
+  <meta property="og:title" content="Yalidine API for Node.js and PHP — dz-delivery SDK (GuepEx included)" />
+  <meta property="og:description" content="Integrate the Yalidine API (and GuepEx) in TypeScript or PHP: create and track parcels, get fees, list wilayas, communes and stop desks. Open source SDK." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-yalidine.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-yalidine.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Yalidine API for Node.js and PHP",
+        "description": "Integrate the Yalidine API (and GuepEx) in TypeScript or PHP: create and track parcels, get fees, list wilayas, communes and stop desks. Open source SDK.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/yalidine/",
+        "about": [
+          "Yalidine",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/yalidine/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Yalidine",
+            "item": "https://dz-delivery.younes-sarni.com/en/yalidine/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/" aria-current="page">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../yalidine/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Carriers</a></li>
+          <li aria-current="page">Yalidine</li>
+        </ol>
+      </nav>
+
+      <h1>Yalidine API for Node.js and PHP</h1>
+      <p class="lead">Create, track and price your Yalidine parcels (and GuepEx, same platform) with the dz-delivery SDK — no hand-written HTTP calls, pagination or status mapping.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Install</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). Every carrier implements the same interface, so the same code works with the others once the client is configured; some operations are not available on every carrier and throw <code>NOT_SUPPORTED</code> (see the <a href="../#matrix">capability matrix</a>).</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">Yalidine credentials</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Header sent</th><th>Where to find it</th></tr></thead><tbody><tr><td><code>apiId</code></td><td><code>X-API-ID</code></td><td>Yalidine developer dashboard</td></tr><tr><td><code>apiToken</code></td><td><code>X-API-TOKEN</code></td><td>Yalidine developer dashboard</td></tr><tr><td><code>fromWilayaId</code> or <code>fromWilayaName</code></td><td>—</td><td>Your origin wilaya (code <code>1</code>–<code>58</code>), required for <code>createParcel</code> and <code>getFees</code></td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">Yalidine with TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> yalidine = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, {
+  apiId: process.env.<span class="c-type">YALIDINE_API_ID</span>!,
+  apiToken: process.env.<span class="c-type">YALIDINE_API_TOKEN</span>!,
+  fromWilayaId: <span class="c-num">16</span>, <span class="c-cmt">// origin wilaya (Algiers)</span>
+});
+
+<span class="c-key">try</span> {
+  <span class="c-cmt">// Wilayas, communes, offices (stop desks)</span>
+  <span class="c-key">const</span> wilayas = <span class="c-key">await</span> yalidine.<span class="c-fn">getWilayas</span>();            <span class="c-cmt">// id = official code 1–58</span>
+  <span class="c-key">const</span> communes = <span class="c-key">await</span> yalidine.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> yalidine.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">31</span> });
+
+  <span class="c-cmt">// Delivery fees (weight in kg, dimensions in cm)</span>
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> yalidine.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">31</span>, weight: <span class="c-num">2</span> });
+  <span class="c-cmt">// { deliveryFee, stopDeskFee, returnFee?, currency: &#x27;DZD&#x27; }</span>
+
+  <span class="c-cmt">// Create a parcel (cash on delivery)</span>
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> yalidine.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaName: <span class="c-str">&#x27;Oran&#x27;</span>,
+    communeName: <span class="c-str">&#x27;Bir El Djir&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-cmt">// Tracking: unified status + history (oldest first)</span>
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> yalidine.<span class="c-fn">track</span>(parcel.trackingNumber);
+  console.<span class="c-fn">log</span>(current.status, events.<span class="c-fn">at</span>(-<span class="c-num">1</span>)?.label);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message, err.details);
+}</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">Yalidine with PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$yalidine</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, [
+    <span class="c-str">&#x27;apiId&#x27;</span>        =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;YALIDINE_API_ID&#x27;</span>),
+    <span class="c-str">&#x27;apiToken&#x27;</span>     =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;YALIDINE_API_TOKEN&#x27;</span>),
+    <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>, <span class="c-cmt">// or &#x27;fromWilayaName&#x27; =&gt; &#x27;Alger&#x27;</span>
+]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$wilayas</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getWilayas</span>();
+    <span class="c-var">$desks</span>   = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getStopDesks</span>([<span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-num">31</span>]);
+    <span class="c-var">$quote</span>   = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">31</span>, <span class="c-str">&#x27;weight&#x27;</span> =&gt; <span class="c-num">2</span>]);
+
+    <span class="c-var">$parcel</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaName&#x27;</span>    =&gt; <span class="c-str">&#x27;Oran&#x27;</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bir El Djir&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+    <span class="c-key">echo</span> <span class="c-var">$result</span>-&gt;parcel-&gt;status; <span class="c-cmt">// pending | in_transit | delivered | ...</span>
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Installation, Laravel, errors and testing: see the <a href="../php/">full PHP guide</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Supported methods</h2>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">yes</td><td>New parcels are « En préparation » (being prepared) → <code>pending</code>.</td></tr><tr><td><code>track</code></td><td class="ok">yes</td><td>Unified status + full history. <code>parcel.labelUrl</code> = link to the shipping label (also returned by <code>createParcel</code>).</td></tr><tr><td><code>getFees</code></td><td class="ok">yes</td><td>Volumetric weight is billed when it is higher (<code>length</code> / <code>width</code> / <code>height</code> in cm).</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">yes</td><td>The wilaya <code>id</code> is the official code.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">yes</td><td>Yalidine offices (<code>centers</code>), <code>communeId</code> optional.</td></tr><tr><td><code>listParcels</code></td><td class="ok">yes</td><td><code>GET /parcels/</code>, up to 1000 per page. <code>keyword</code> → <code>tracking</code>, <code>orderId</code> → <code>order_id</code>; 50 by default. <code>status</code> and <code>updatedSince</code> are filtered by the SDK page by page: a page can be short (or empty) while <code>hasNext</code> is <code>true</code>, so keep following <code>hasNext</code>.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">yes</td><td>Only parcels still « En préparation » (being prepared).</td></tr><tr><td><code>healthCheck</code></td><td class="ok">yes</td><td>Checks the credentials (real API call).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="guepex" aria-labelledby="guepex-title">
+        <h2 id="guepex-title">GuepEx API</h2>
+        <p>GuepEx runs the same API as Yalidine on a different domain. Use the <code>yalidine</code> provider with your GuepEx credentials and the GuepEx URL:</p>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, <span class="c-type">GUEPEX_DEFAULT_BASE_URL</span> } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> guepex = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, {
+  apiId: process.env.<span class="c-type">GUEPEX_API_ID</span>!,
+  apiToken: process.env.<span class="c-type">GUEPEX_API_TOKEN</span>!,
+  fromWilayaId: <span class="c-num">16</span>,
+  baseUrl: <span class="c-type">GUEPEX_DEFAULT_BASE_URL</span>, <span class="c-cmt">// https://api.guepex.app/v1</span>
+});</pre></div>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">YalidineProvider</span>;
+
+<span class="c-var">$guepex</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, [
+    <span class="c-str">&#x27;apiId&#x27;</span>        =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;GUEPEX_API_ID&#x27;</span>),
+    <span class="c-str">&#x27;apiToken&#x27;</span>     =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;GUEPEX_API_TOKEN&#x27;</span>),
+    <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>,
+    <span class="c-str">&#x27;baseUrl&#x27;</span>      =&gt; <span class="c-type">YalidineProvider</span>::<span class="c-type">GUEPEX_DEFAULT_BASE_URL</span>,
+]);</pre></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Yalidine statuses → unified statuses</h2>
+        <p>The SDK maps the Yalidine <code>status</code> / <code>last_status</code> (French labels, matched case- and accent-insensitively) to a unified status. GuepEx uses the same mapping.</p>
+        <div class="table-wrap"><table><thead><tr><th>Yalidine status</th><th>Unified status</th></tr></thead><tbody><tr><td><code>En préparation</code>, <code>A vérifier</code></td><td><code>pending</code></td></tr><tr><td><code>Pas encore expédié</code>, <code>Pas encore ramassé</code>, <code>Prêt à expédier</code>, <code>En passation</code></td><td><code>created</code></td></tr><tr><td><code>Ramassé</code>, <code>Expédié</code>, <code>Centre</code>, <code>En localisation</code>, <code>En transit</code>, <code>Vers Wilaya</code>, <code>Reçu à Wilaya</code>, <code>Transfert</code>, <code>Vers Station</code>, <code>En station</code>, <code>Prêt pour livreur</code>, <code>Dispatché</code>, <code>Sorti en livraison</code>, <code>En attente du client</code>, <code>En attente</code>, <code>Tentative échouée</code>, <code>Echèc livraison</code>, <code>En alerte</code>, <code>Alerte résolue</code>, <code>Bloqué</code>, <code>Débloqué</code></td><td><code>in_transit</code></td></tr><tr><td><code>Livré</code></td><td><code>delivered</code></td></tr><tr><td><code>Retour …</code>, <code>Retourné …</code>, <code>Echange échoué</code>, <code>Colis abandonné</code></td><td><code>returned</code></td></tr><tr><td><code>Annulé</code>, <code>Supprimé</code></td><td><code>cancelled</code></td></tr><tr><td>Any other status</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>What each unified status means: <a href="../statuses/">full list of unified statuses</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Good to know about the Yalidine API</h2>
+        <ul class="notes">
+          <li><strong>Origin wilaya required</strong>: without <code>fromWilayaId</code> / <code>fromWilayaName</code>, <code>createParcel</code> and <code>getFees</code> throw <code>VALIDATION_ERROR</code>.</li>
+          <li>Wilaya and commune can be passed by id, official code or name: the SDK resolves them before the HTTP call.</li>
+          <li>The Yalidine tracking number doubles as the identifier (<code>parcel.id === parcel.trackingNumber</code>).</li>
+          <li>Pagination (<code>page_size</code> = 1000) and non-deliverable wilayas/communes are handled for you.</li>
+          <li>When you hit the rate limit, the <code>RATE_LIMITED</code> error tells you how long to wait (<code>retryAfter</code>) when Yalidine sends it.</li>
+        </ul>
+        <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#yalidine">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">Yalidine FAQ</h2>
+        <div class="faq">
+          <details>
+            <summary>How do I get a Yalidine API key?</summary>
+            <p>In your Yalidine merchant account, developer section: you will find the API ID and the API token to pass as <code>apiId</code> and <code>apiToken</code>.</p>
+          </details>
+          <details>
+            <summary>How do I calculate Yalidine delivery fees?</summary>
+            <p><code>getFees({ toWilayaId, weight })</code> returns <code>deliveryFee</code> (home) and <code>stopDeskFee</code> (office) in DZD, from your origin wilaya.</p>
+          </details>
+          <details>
+            <summary>How do I ship a parcel to a Yalidine office (stop desk)?</summary>
+            <p>List the offices with <code>getStopDesks({ wilayaId })</code>, then create the parcel with <code>isStopDesk: true</code> and <code>stopDeskId</code> = the office <code>id</code>.</p>
+          </details>
+          <details>
+            <summary>Does the SDK work with GuepEx?</summary>
+            <p>Yes, see the <a href="#guepex">GuepEx API</a> section: same provider, different <code>baseUrl</code>.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Other carriers</h2>
+        <p>Same interface, same unified statuses (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../ecotrack/">Ecotrack API</a></li>
+          <li><a href="../noest/">NoEST API</a></li>
+          <li><a href="../ecom/">E-com Delivery API</a></li>
+          <li><a href="../mdm/">MDM Express API</a></li>
+          <li><a href="../elogistia/">Elogistia API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API E-com Delivery (API v2) en TypeScript ou PHP : créer des colis, suivre, lister et synchroniser les colis du compte, tarifs, wilayas, communes et stop desks." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/ecom/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/ecom/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/ecom/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/ecom/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/ecom/" />
   <meta property="og:title" content="API E-com Delivery en Node.js et PHP — SDK dz-delivery" />
   <meta property="og:description" content="Intégrer l’API E-com Delivery (API v2) en TypeScript ou PHP : créer des colis, suivre, lister et synchroniser les colis du compte, tarifs, wilayas, communes et stop desks." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/ecom.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/ecom.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/">MDM</a>
         <a href="../elogistia/">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/ecom/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -96,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Tous les transporteurs implémentent la même interface&nbsp;: le même code fonctionne avec les autres une fois le client configuré, mais certaines opérations n’existent pas chez tous et lèvent <code>NOT_SUPPORTED</code> (voir la <a href="../#matrix">matrice de compatibilité</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -114,10 +121,10 @@
   autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// remettre le colis au transporteur tout de suite</span>
 });
 
-<span class="c-key">const</span> desks = <span class="c-key">await</span> ecom.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
-<span class="c-key">const</span> quote = <span class="c-key">await</span> ecom.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> ecom.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> ecom.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> ecom.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -130,12 +137,12 @@
   });
 
   <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> ecom.<span class="c-fn">track</span>(parcel.trackingNumber);
+
+  <span class="c-cmt">// Colis modifiés depuis hier, toutes pages</span>
+  <span class="c-key">const</span> page = <span class="c-key">await</span> ecom.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-key">new</span> <span class="c-type">Date</span>(Date.now() - <span class="c-num">86400000</span>).<span class="c-fn">toISOString</span>(), allPages: <span class="c-key">true</span> });
 } <span class="c-key">catch </span>(err) {
   <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
-}
-
-<span class="c-cmt">// Colis modifiés depuis hier, toutes pages</span>
-<span class="c-key">const</span> page = <span class="c-key">await</span> ecom.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-key">new</span> <span class="c-type">Date</span>(Date.now() - <span class="c-num">86400000</span>), allPages: <span class="c-key">true</span> });</pre></div>
+}</pre></div>
       </section>
 
       <section id="php" aria-labelledby="php-title">
@@ -149,9 +156,9 @@
     <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
 ]);
 
-<span class="c-var">$quote</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
-
 <span class="c-key">try</span> {
+    <span class="c-var">$quote</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
     <span class="c-var">$parcel</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">createParcel</span>([
         <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
         <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -167,12 +174,20 @@
 } <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
     <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
 }</pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="../php/">guide PHP</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
         <h2 id="support-title">Méthodes supportées</h2>
         <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Domicile ou stop desk. Reste « En Préparation » sans <code>autoValidate</code>.</td></tr><tr><td><code>track</code></td><td class="ok">oui</td><td>Statut unifié (situation + état logistique) + historique.</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Tarifs domicile / stop desk par wilaya.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Communes livrables uniquement.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">oui</td><td>Bureaux E-com (id = <code>code_stopdesk</code>, ex. <code>16B</code>).</td></tr><tr><td><code>listParcels</code></td><td class="ok">oui</td><td>Pagination, filtre par tracking, n° de commande, statut et <code>updatedSince</code>.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">oui</td><td>Uniquement les colis encore « En Préparation ».</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie les identifiants (appel réel).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts E-com Delivery → statuts unifiés</h2>
+        <p>Le SDK reconnaît les libellés de situation et d’état logistique d’E-com, sans tenir compte de la casse ni des accents. Pour le statut d’un colis, une situation finale (« Livrée », « Annuler », « Commande Annuler »…) l’emporte, puis l’état logistique, puis toute autre situation.</p>
+        <div class="table-wrap"><table><thead><tr><th>Statut E-com (situation / état logistique)</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>En Préparation</code>, <code>Attend Confirmation</code>, <code>Commande Reporté</code>, <code>Commande a Relancé</code></td><td><code>pending</code></td></tr><tr><td><code>En Traitement</code>, <code>Commande Confirmée</code></td><td><code>created</code></td></tr><tr><td><code>Au Bureau</code>, <code>En livraison</code>, <code>Sortir en livraison</code>, <code>Dispatcher</code>, <code>Ne Réponde pas #1–3</code>, <code>En attente du client</code>, <code>Reporté</code>, <code>Reporté Commune Erronée</code>, <code>Reporté Wilaya Erronée</code>, <code>Appel Tel</code>, <code>SMS Envoyé</code>, <code>WhatsApp OK</code></td><td><code>in_transit</code></td></tr><tr><td><code>Livrée</code>, <code>Encaisser</code>, <code>Recouvert</code>, <code>Récupérer</code> (paiement encaissé)</td><td><code>delivered</code></td></tr><tr><td><code>Annuler</code>, <code>Annuler x3</code>, <code>Retour de Dispatche</code>, <code>Retour Navette</code>, <code>Retour Fournisseur</code>, <code>Retour Stock</code></td><td><code>returned</code></td></tr><tr><td><code>Commande Annuler</code>, <code>Supprimée</code></td><td><code>cancelled</code></td></tr><tr><td><code>EnCours</code> (situation par défaut), <code>BIZ</code>, <code>Suivi par E-com</code></td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>« Récupérer », « Retour Fournisseur » et « Retour Stock » ne figurent pas dans la documentation E-com mais sont renvoyés en réel. Dans l’historique de <code>track</code>, les notes («&nbsp;Information&nbsp;», «&nbsp;Type de Colis&nbsp;», «&nbsp;Type de Livraison&nbsp;», «&nbsp;BIZ&nbsp;», étapes sans situation) conservent le statut précédent.</p>
+        <p>Liste complète des statuts unifiés et de leur signification&nbsp;: <a href="../statuts/#statuses">statuts du SDK</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">

@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API MDM Express en TypeScript ou PHP : expédier les produits stockés chez MDM, suivre et lister les colis, tarifs par commune, wilayas, communes et bureaux." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/mdm/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/mdm/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/mdm/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/mdm/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/mdm/" />
   <meta property="og:title" content="API MDM Express en Node.js et PHP — SDK dz-delivery" />
   <meta property="og:description" content="Intégrer l’API MDM Express en TypeScript ou PHP : expédier les produits stockés chez MDM, suivre et lister les colis, tarifs par commune, wilayas, communes et bureaux." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/mdm.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/mdm.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/" aria-current="page">MDM</a>
         <a href="../elogistia/">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/mdm/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -96,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Tous les transporteurs implémentent la même interface&nbsp;: le même code fonctionne avec les autres une fois le client configuré, mais certaines opérations n’existent pas chez tous et lèvent <code>NOT_SUPPORTED</code> (voir la <a href="../#matrix">matrice de compatibilité</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -113,9 +120,9 @@
   storeId: process.env.<span class="c-type">MDM_STORE_ID</span>!,  <span class="c-cmt">// STR-…</span>
 });
 
-<span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> mdm.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -128,12 +135,12 @@
   });
 
   <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> mdm.<span class="c-fn">track</span>(parcel.trackingNumber);
+
+  <span class="c-cmt">// Colis livrés, filtrés côté MDM</span>
+  <span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });
 } <span class="c-key">catch </span>(err) {
   <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
-}
-
-<span class="c-cmt">// Colis livrés, filtrés côté MDM</span>
-<span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });</pre></div>
+}</pre></div>
       </section>
 
       <section id="php" aria-labelledby="php-title">
@@ -161,12 +168,19 @@
 } <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
     <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
 }</pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="../php/">guide PHP</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
         <h2 id="support-title">Méthodes supportées</h2>
         <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Produits du catalogue MDM (<code>productId</code> ou <code>sku</code> = <code>PRD-…</code>) et <code>storeId</code>.</td></tr><tr><td><code>track</code></td><td class="ok">oui</td><td>Statut unifié + historique.</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Tarif exact par commune (domicile ou bureau) et frais de retour.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Ids de commune MDM (<code>DZA161601</code>).</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">oui</td><td>Bureaux des transporteurs partenaires de MDM.</td></tr><tr><td><code>listParcels</code></td><td class="ok">oui</td><td>Filtres <code>status</code> et <code>updatedSince</code> appliqués côté MDM.</td></tr><tr><td><code>cancelParcel</code></td><td class="no">NOT_SUPPORTED</td><td>Pas d’annulation par API&nbsp;: depuis le tableau de bord MDM.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie la clé (appel réel).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts MDM Express → statuts unifiés</h2>
+        <p>Le SDK traduit les slugs de statut MDM (relevés en réel sur <code>GET /api/v2/shipping/parcels/metadata</code>, octobre 2026) en statuts unifiés. Le filtre <code>status</code> de <code>listParcels</code> utilise la même table&nbsp;: tous les slugs MDM du statut demandé sont filtrés côté MDM.</p>
+        <div class="table-wrap"><table><thead><tr><th>Statut MDM (slug)</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>out-of-stock</code></td><td><code>pending</code></td></tr><tr><td><code>confirmed</code>, <code>preparing</code>, <code>packaged</code>, <code>ready-for-dispatch</code></td><td><code>created</code></td></tr><tr><td><code>received-by-mdm</code>, <code>dispatched</code>, <code>received</code>, <code>in-transit</code>, <code>ready-for-delivery</code>, <code>out-for-delivery</code>, <code>postponed</code>, <code>delivery-attempt-failed</code>, <code>exchange-pending</code>, <code>refund-pending</code></td><td><code>in_transit</code></td></tr><tr><td><code>delivered</code>, <code>delivered-partially</code>, <code>exchange-collected</code></td><td><code>delivered</code></td></tr><tr><td><code>delivery-failed</code>, <code>returning</code>, <code>return-ready</code>, <code>return-received</code>, <code>return-grouped</code>, <code>returned</code>, <code>exchange-failed</code>, <code>refund-collected</code>, <code>refunded</code>, <code>refunded-partially</code></td><td><code>returned</code></td></tr><tr><td><code>lost</code></td><td><code>cancelled</code> (final, ni livré ni retourné)</td></tr></tbody></table></div>
+        <p>Liste complète des statuts unifiés et de leur signification&nbsp;: <a href="../statuts/#statuses">statuts du SDK</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">
@@ -175,7 +189,7 @@
           <li><strong>Testé en réel</strong> (octobre 2026, lecture seule)&nbsp;: wilayas, communes, bureaux, tarifs, liste, suivi, erreurs.</li>
           <li><strong>Fulfilment</strong>&nbsp;: MDM expédie des produits stockés chez lui. Chaque ligne de <code>productList</code> doit porter son id catalogue MDM&nbsp;; un produit inconnu → <code>VALIDATION_ERROR</code> sur <code>productList</code>.</li>
           <li><code>price</code> est ce que paie le destinataire&nbsp;: MDM n’ajoute pas de frais de livraison par-dessus.</li>
-          <li>MDM n’a pas de champ «&nbsp;référence commande&nbsp;»&nbsp;: <code>orderId</code> est écrit dans les notes (<code>Ref: …</code>) et reste filtrable avec <code>listParcels({ orderId })</code>.</li>
+          <li>MDM n’a pas de champ «&nbsp;référence commande&nbsp;»&nbsp;: <code>orderId</code> est écrit dans les notes (<code>Ref: …</code>). L’API de recherche MDM n’a pas de filtre pour ce champ&nbsp;: le SDK filtre donc <code>orderId</code> sur chaque page lue. Utilisez <code>listParcels({ orderId, allPages: true })</code> (<code>'allPages' =&gt; true</code> en PHP) pour chercher dans toutes les pages, pas seulement la première.</li>
           <li>Le <code>baseUrl</code> doit être en HTTPS.</li>
         </ul>
         <p>Mapping natif détaillé (endpoints, champs, statuts)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#mdm">PROVIDERS.md</a>.</p>

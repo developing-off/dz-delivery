@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ecotrack API (DHD, Anderson…) for Node.js and PHP — dz-delivery</title>
+  <meta name="description" content="Ecotrack API in TypeScript or PHP for DHD, Anderson, World Express, 48Hr Express, EcoRapid and other Ecotrack couriers: create, validate, track, cancel parcels." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/ecotrack/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/ecotrack/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/ecotrack/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/ecotrack/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/ecotrack/" />
+  <meta property="og:title" content="Ecotrack API (DHD, Anderson…) for Node.js and PHP — dz-delivery" />
+  <meta property="og:description" content="Ecotrack API in TypeScript or PHP for DHD, Anderson, World Express, 48Hr Express, EcoRapid and other Ecotrack couriers: create, validate, track, cancel parcels." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-ecotrack.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-ecotrack.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Ecotrack API — DHD, Anderson, World Express… for Node.js and PHP",
+        "description": "Ecotrack API in TypeScript or PHP for DHD, Anderson, World Express, 48Hr Express, EcoRapid and other Ecotrack couriers: create, validate, track, cancel parcels.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/ecotrack/",
+        "about": [
+          "Ecotrack",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/ecotrack/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Ecotrack",
+            "item": "https://dz-delivery.younes-sarni.com/en/ecotrack/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/" aria-current="page">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../ecotrack/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Carriers</a></li>
+          <li aria-current="page">Ecotrack</li>
+        </ol>
+      </nav>
+
+      <h1>Ecotrack API — DHD, Anderson, World Express… for Node.js and PHP</h1>
+      <p class="lead">Ecotrack is the platform behind DHD, Anderson, World Express and dozens of other Algerian couriers. With dz-delivery, a single <code>ecotrack</code> provider covers them all.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Install</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). Every carrier implements the same interface, so the same code works with the others once the client is configured; some operations are not available on every carrier and throw <code>NOT_SUPPORTED</code> (see the <a href="../#matrix">capability matrix</a>).</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">Ecotrack credentials</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Value</th><th>Notes</th></tr></thead><tbody><tr><td><code>token</code></td><td>API token from the courier’s dashboard</td><td>Sent as <code>Authorization: Bearer &lt;token&gt;</code></td></tr><tr><td><code>courier</code></td><td>Built-in key (<code>dhd</code>, <code>anderson</code>, …)</td><td>Exactly one of <code>courier</code> / <code>baseUrl</code></td></tr><tr><td><code>baseUrl</code></td><td>Tenant HTTPS URL, e.g. <code>https://xyz.ecotrack.dz</code></td><td>For any other Ecotrack courier</td></tr><tr><td><code>autoValidate</code></td><td><code>false</code> by default</td><td><code>true</code>: validates the order right after it is created</td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">Ecotrack with TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> dhd = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;ecotrack&#x27;</span>, {
+  token: process.env.<span class="c-type">ECOTRACK_TOKEN</span>!,
+  courier: <span class="c-str">&#x27;dhd&#x27;</span>,              <span class="c-cmt">// or baseUrl: &#x27;https://&lt;tenant&gt;.ecotrack.dz&#x27;</span>
+  autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// hand the order over to the courier right away</span>
+});
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> wilayas = <span class="c-key">await</span> dhd.<span class="c-fn">getWilayas</span>();        <span class="c-cmt">// wilayas served by this courier</span>
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> dhd.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> dhd.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> dhd.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaId: <span class="c-num">16</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> dhd.<span class="c-fn">track</span>(parcel.trackingNumber);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">Ecotrack with PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$dhd</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;ecotrack&#x27;</span>, [
+    <span class="c-str">&#x27;token&#x27;</span>        =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ECOTRACK_TOKEN&#x27;</span>),
+    <span class="c-str">&#x27;courier&#x27;</span>      =&gt; <span class="c-str">&#x27;dhd&#x27;</span>,  <span class="c-cmt">// or &#x27;baseUrl&#x27; =&gt; &#x27;https://&lt;tenant&gt;.ecotrack.dz&#x27;</span>
+    <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
+]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$quote</span> = <span class="c-var">$dhd</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
+    <span class="c-var">$parcel</span> = <span class="c-var">$dhd</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$dhd</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Installation, Laravel, errors and testing: see the <a href="../php/">full PHP guide</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Supported methods</h2>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">yes</td><td>Stays <code>pending</code> until validated (see <code>autoValidate</code>).</td></tr><tr><td><code>track</code></td><td class="ok">yes</td><td>Unified status + history.</td></tr><tr><td><code>getFees</code></td><td class="ok">yes</td><td>Rates per wilaya.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">yes</td><td>Only the wilayas served by the tenant.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">yes</td><td>Communes with a stop desk (id = Ecotrack postal code).</td></tr><tr><td><code>listParcels</code></td><td class="no">NOT_SUPPORTED</td><td>Not implemented in the SDK yet.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">yes</td><td>Only before the order is validated.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">yes</td><td>Checks the token (real API call).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="couriers" aria-labelledby="couriers-title">
+        <h2 id="couriers-title">Built-in Ecotrack couriers</h2>
+        <p>These <code>courier</code> keys work out of the box. For any other Ecotrack courier, pass its URL as <code>baseUrl</code> (HTTPS only).</p>
+        <div class="table-wrap"><table><thead><tr><th>Courier</th><th><code>courier</code></th><th>Domain</th></tr></thead><tbody><tr><td>DHD</td><td><code>dhd</code></td><td><code>platform.dhd-dz.com</code></td></tr><tr><td>Anderson Delivery</td><td><code>anderson</code></td><td><code>anderson-ecommerce.ecotrack.dz</code></td></tr><tr><td>World Express</td><td><code>worldexpress</code></td><td><code>world-express.ecotrack.dz</code></td></tr><tr><td>48Hr Express</td><td><code>48hrexpress</code></td><td><code>48hr.ecotrack.dz</code></td></tr><tr><td>EcoRapid</td><td><code>ecorapid</code></td><td><code>ecorapide-express.ecotrack.dz</code></td></tr><tr><td>Conexlog</td><td><code>conexlog</code></td><td><code>app.conexlog-dz.com</code></td></tr><tr><td>MSM Go</td><td><code>msmgo</code></td><td><code>msmgo.ecotrack.dz</code></td></tr><tr><td>Packers</td><td><code>packers</code></td><td><code>packers.ecotrack.dz</code></td></tr><tr><td>Rocket Delivery</td><td><code>rocketdelivery</code></td><td><code>rocketdelivery.ecotrack.dz</code></td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Ecotrack statuses → unified statuses</h2>
+        <p>The SDK only maps Ecotrack’s stable keys (activity keys and order status keys), case-insensitively. The French display labels vary from one courier to another and map to <code>unknown</code>.</p>
+        <div class="table-wrap"><table><thead><tr><th>Ecotrack key</th><th>Unified status</th></tr></thead><tbody><tr><td><code>prete_a_expedier</code>, <code>prete_a_preparer</code></td><td><code>pending</code></td></tr><tr><td><code>order_information_received_by_carrier</code>, <code>en_preparation_stock</code>, <code>en_ramassage</code></td><td><code>created</code></td></tr><tr><td><code>picked</code>, <code>accepted_by_carrier</code>, <code>dispatched_to_driver</code>, <code>attempt_delivery</code>, <code>vers_hub</code>, <code>en_hub</code>, <code>vers_wilaya</code>, <code>en_preparation</code>, <code>en_livraison</code>, <code>suspendu</code></td><td><code>in_transit</code></td></tr><tr><td><code>livred</code>, <code>encaissed</code>, <code>payed</code>, <code>livre_non_encaisse</code>, <code>encaisse_non_paye</code>, <code>paiements_prets</code>, <code>paye_et_archive</code></td><td><code>delivered</code></td></tr><tr><td><code>return_asked</code>, <code>return_in_transit</code>, <code>return_received</code>, <code>retour_chez_livreur</code>, <code>retour_transit_entrepot</code>, <code>retour_en_traitement</code>, <code>retour_recu</code>, <code>retour_archive</code></td><td><code>returned</code></td></tr><tr><td><code>annule</code></td><td><code>cancelled</code></td></tr><tr><td>Any other value (including <code>notification_on_order</code> and French labels)</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>What each unified status means: <a href="../statuses/">full list of unified statuses</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Good to know about the Ecotrack API</h2>
+        <ul class="notes">
+          <li><strong>Validation</strong>: without <code>autoValidate: true</code>, orders stay on hold until they are validated in the courier’s dashboard.</li>
+          <li><code>cancelParcel</code> only works before validation; after that the API returns <code>VALIDATION_ERROR</code>.</li>
+          <li>The <code>id</code> of communes and stop desks is the Ecotrack postal code (“station code”): use it as-is for <code>stopDeskId</code>.</li>
+          <li>A <code>baseUrl</code> ending in <code>/api/v1</code> is accepted (the suffix is stripped automatically).</li>
+        </ul>
+        <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#ecotrack">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">Ecotrack FAQ</h2>
+        <div class="faq">
+          <details>
+            <summary>How do I integrate the DHD API?</summary>
+            <p>DHD runs on Ecotrack: create an <code>ecotrack</code> client with your DHD token and <code>courier: 'dhd'</code>.</p>
+          </details>
+          <details>
+            <summary>My courier uses Ecotrack but is not in the list?</summary>
+            <p>Pass its tenant URL as <code>baseUrl</code> (e.g. <code>https://mycourier.ecotrack.dz</code>); the API is identical.</p>
+          </details>
+          <details>
+            <summary>Why do my Ecotrack parcels stay on hold?</summary>
+            <p>Ecotrack creates orders unvalidated. Turn on <code>autoValidate: true</code> or validate them from the courier’s dashboard.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Other carriers</h2>
+        <p>Same interface, same unified statuses (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">Yalidine API</a></li>
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../noest/">NoEST API</a></li>
+          <li><a href="../ecom/">E-com Delivery API</a></li>
+          <li><a href="../mdm/">MDM Express API</a></li>
+          <li><a href="../elogistia/">Elogistia API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
