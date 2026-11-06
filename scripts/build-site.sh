@@ -1,7 +1,7 @@
 #!/bin/sh
 # Builds the public documentation site into _site/ (Cloudflare Pages output directory).
 #
-# Only the site files are published: the home page, one folder per carrier page,
+# Only the site files are published: the home page, 404.html, one folder per carrier page,
 # assets/ and _headers. robots.txt and sitemap.xml are generated here, with each
 # page's <lastmod> taken from the date of the last commit that touched it.
 #
@@ -45,7 +45,7 @@ lastmod() {
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
-cp index.html _headers "$OUT/"
+cp index.html 404.html _headers "$OUT/"
 cp -R assets "$OUT/"
 for p in $PAGES; do
   mkdir -p "$OUT/$p"

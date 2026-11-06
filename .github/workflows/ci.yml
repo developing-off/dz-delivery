@@ -69,7 +69,7 @@ jobs:
 
       - name: Check output
         run: |
-          for f in sitemap.xml robots.txt _headers index.html; do
+          for f in sitemap.xml robots.txt _headers index.html 404.html; do
             if [ ! -f "_site/$f" ]; then
               echo "Missing _site/$f" >&2
               exit 1
