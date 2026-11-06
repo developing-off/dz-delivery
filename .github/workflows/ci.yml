@@ -69,7 +69,12 @@ jobs:
 
       - name: Check output
         run: |
-          test -f _site/sitemap.xml && test -f _site/robots.txt && test -f _site/_headers
+          for f in sitemap.xml robots.txt _headers index.html; do
+            if [ ! -f "_site/$f" ]; then
+              echo "Missing _site/$f" >&2
+              exit 1
+            fi
+          done
           if grep -rl 'developing-off.github.io' _site; then
             echo "Old GitHub Pages URL found in the site output" >&2
             exit 1
