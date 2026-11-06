@@ -839,7 +839,7 @@ $result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);</
                 <tr>
                   <td><code>maystro</code></td>
                   <td><code>apiToken</code></td>
-                  <td><code>Authorization: Token …</code>. Optional webhooks (<code>mapMaystroStatus</code>)</td>
+                  <td><code>Authorization: Token …</code>. Webhooks: receive them yourself, <code>mapMaystroStatus</code> converts the status code</td>
                 </tr>
                 <tr>
                   <td><code>ecotrack</code></td>
@@ -1337,7 +1337,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="prose"><span class="mono">fromWilayaId</span> (or <span class="mono">fromWilayaName</span>), the origin wilaya, goes in the client config: <span class="mono">createParcel</span> and <span class="mono">getFees</span> need it. Cancellation only while the parcel is “En préparation” (preparing). GuepEx = same API, different <span class="mono">baseUrl</span>.</p>
 
           <h3 class="sub"><a href="maystro/">Maystro</a></h3>
-          <p class="prose"><span class="mono">track</span> / <span class="mono">cancelParcel</span> / <span class="mono">listParcels</span> and PDF labels (<span class="mono">getLabels</span>); optional webhooks with <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> requires <span class="mono">communeId</span>.</p>
+          <p class="prose"><span class="mono">track</span> / <span class="mono">cancelParcel</span> / <span class="mono">listParcels</span> and PDF labels (<span class="mono">getLabels</span>); for webhooks (an endpoint you write yourself), <span class="mono">mapMaystroStatus</span> converts the pushed status code. <span class="mono">getStopDesks</span> requires <span class="mono">communeId</span>.</p>
 
           <h3 class="sub"><a href="ecotrack/">Ecotrack</a></h3>
           <p class="prose">One provider, many couriers via <span class="mono">courier</span> (<span class="mono">dhd</span>, <span class="mono">anderson</span>, <span class="mono">worldexpress</span>…) or the tenant’s HTTPS <span class="mono">baseUrl</span>. The <span class="mono">autoValidate</span> option validates the order right after creation.</p>

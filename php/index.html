@@ -575,7 +575,7 @@
 
 <span class="c-key">require</span> __DIR__ . <span class="c-str">&#x27;/../vendor/autoload.php&#x27;</span>;
 
-<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Support</span>\<span class="c-type">StatusMapper</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
 
 <span class="c-cmt">// Secret partagé : déclarez l&#x27;URL /maystro-webhook.php?key=&lt;MAYSTRO_WEBHOOK_SECRET&gt;</span>
 <span class="c-var">$secret</span> = (<span class="c-type">string</span>) <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_WEBHOOK_SECRET&#x27;</span>);
@@ -604,13 +604,16 @@
 
 <span class="c-key">if</span> ((<span class="c-var">$event</span>[<span class="c-str">&#x27;event&#x27;</span>] ?? <span class="c-key">null</span>) === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
     <span class="c-var">$orderId</span> = (<span class="c-type">string</span>) (<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;id&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>);
-    <span class="c-var">$status</span> = <span class="c-type">StatusMapper</span>::<span class="c-fn">maystro</span>(<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;status&#x27;</span>] ?? <span class="c-key">null</span>);  <span class="c-cmt">// ex. 41 → &#x27;delivered&#x27;</span>
 
-    <span class="c-cmt">// mettre à jour votre commande dont carrier_id = $orderId ...</span>
+    <span class="c-cmt">// Ne faites pas confiance au statut reçu : relisez la commande chez Maystro.</span>
+    <span class="c-var">$maystro</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;maystro&#x27;</span>, [<span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_API_TOKEN&#x27;</span>)]);
+    <span class="c-var">$parcel</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$orderId</span>)-&gt;<span class="c-var">parcel</span>;  <span class="c-cmt">// accepte l&#x27;UUID de la commande</span>
+
+    <span class="c-cmt">// mettre à jour votre commande dont carrier_id = $orderId avec $parcel-&gt;status ...</span>
 }
 
 <span class="c-fn">http_response_code</span>(<span class="c-num">201</span>);</pre></div>
-        <p>La documentation ne décrit aucune signature des requêtes webhook, et le SDK n’a donc pas d’outil de vérification pour Maystro&nbsp;: protégez l’endpoint vous-même. L’exemple ci-dessus place un long secret aléatoire dans l’URL (<code>/maystro-webhook.php?key=…</code>) et le compare avec <code>hash_equals</code> avant de lire le corps de la requête&nbsp;; gardez ce secret hors de vos logs. Voir aussi <a href="../maystro/#webhooks">les webhooks sur la page Maystro</a>.</p>
+        <p>La documentation ne décrit aucune signature des requêtes webhook, et le SDK n’a donc pas d’outil de vérification pour Maystro&nbsp;: protégez l’endpoint vous-même. L’exemple ci-dessus place un long secret aléatoire dans l’URL (<code>/maystro-webhook.php?key=…</code>) et le compare avec <code>hash_equals</code> avant de lire le corps de la requête. Un secret dans l’URL peut finir dans les logs du serveur ou d’un proxy&nbsp;: excluez la query string de vos logs pour cette route et changez le secret s’il fuit. Surtout, l’exemple ne croit pas le statut envoyé&nbsp;: il s’en sert seulement comme signal et relit la commande avec <code>track()</code>, si bien qu’un faux événement ne peut pas imposer un statut. <code>StatusMapper::maystro()</code> reste disponible si vous voulez convertir un code reçu sans appel réseau. Voir aussi <a href="../maystro/#webhooks">les webhooks sur la page Maystro</a>.</p>
       </section>
 
       <section id="testing" aria-labelledby="testing-title">

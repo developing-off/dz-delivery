@@ -15,14 +15,14 @@ cd "$(dirname "$0")/.."
 PROD_URL=https://dz-delivery.younes-sarni.com
 SITE_URL="${SITE_URL:-$PROD_URL}"
 SITE_URL="${SITE_URL%/}"
-# Origin only (scheme + host[:port]): it is concatenated into URLs and written
-# unescaped into sitemap.xml.
+# Origin only (scheme + host[:port]): it is concatenated into URLs, written
+# unescaped into sitemap.xml and used as a sed replacement.
 case "$SITE_URL" in
   http://*|https://*) ;;
   *) echo "build-site: SITE_URL must start with http:// or https:// (got '$SITE_URL')" >&2; exit 1 ;;
 esac
 case "${SITE_URL#*://}" in
-  ''|*/*|*'?'*|*'#'*|*'&'*|*'<'*|*'>'*|*'"'*|*"'"*|*' '*)
+  ''|*/*|*'?'*|*'#'*|*'&'*|*'<'*|*'>'*|*'"'*|*"'"*|*' '*|*'\'*|*[[:cntrl:]]*)
     echo "build-site: SITE_URL must be an origin like https://example.com (got '$SITE_URL')" >&2; exit 1 ;;
 esac
 OUT=_site

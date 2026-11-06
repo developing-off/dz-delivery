@@ -840,7 +840,7 @@ $result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);</
                 <tr>
                   <td><code>maystro</code></td>
                   <td><code>apiToken</code></td>
-                  <td><code>Authorization: Token …</code>. Webhooks optionnels (<code>mapMaystroStatus</code>)</td>
+                  <td><code>Authorization: Token …</code>. Webhooks : à recevoir vous-même, <code>mapMaystroStatus</code> convertit le code de statut</td>
                 </tr>
                 <tr>
                   <td><code>ecotrack</code></td>
@@ -1338,7 +1338,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="prose"><span class="mono">fromWilayaId</span> (ou <span class="mono">fromWilayaName</span>), la wilaya d’origine, se passe dans la configuration du client&nbsp;: <span class="mono">createParcel</span> et <span class="mono">getFees</span> en ont besoin. Annulation seulement en « En préparation ». GuepEx = même API, autre <span class="mono">baseUrl</span>.</p>
 
           <h3 class="sub"><a href="maystro/">Maystro</a></h3>
-          <p class="prose"><span class="mono">track</span> / <span class="mono">cancelParcel</span> / <span class="mono">listParcels</span> et bordereaux PDF (<span class="mono">getLabels</span>) ; webhooks en option avec <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> exige <span class="mono">communeId</span>.</p>
+          <p class="prose"><span class="mono">track</span> / <span class="mono">cancelParcel</span> / <span class="mono">listParcels</span> et bordereaux PDF (<span class="mono">getLabels</span>) ; pour les webhooks (endpoint à écrire vous-même), <span class="mono">mapMaystroStatus</span> convertit le code de statut reçu. <span class="mono">getStopDesks</span> exige <span class="mono">communeId</span>.</p>
 
           <h3 class="sub"><a href="ecotrack/">Ecotrack</a></h3>
           <p class="prose">Un provider, plusieurs coursiers via <span class="mono">courier</span> (<span class="mono">dhd</span>, <span class="mono">anderson</span>, <span class="mono">worldexpress</span>…) ou <span class="mono">baseUrl</span> HTTPS du tenant. Option <span class="mono">autoValidate</span> pour valider juste après création.</p>
