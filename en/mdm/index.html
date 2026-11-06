@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MDM Express API for Node.js and PHP — dz-delivery SDK</title>
+  <meta name="description" content="Integrate the MDM Express API in TypeScript or PHP: ship products stocked at MDM, track and list parcels, per-commune fees, wilayas, communes and stop desks." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/mdm/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/mdm/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/mdm/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/mdm/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/mdm/" />
+  <meta property="og:title" content="MDM Express API for Node.js and PHP — dz-delivery SDK" />
+  <meta property="og:description" content="Integrate the MDM Express API in TypeScript or PHP: ship products stocked at MDM, track and list parcels, per-commune fees, wilayas, communes and stop desks." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-mdm.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-mdm.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "MDM Express API for Node.js and PHP",
+        "description": "Integrate the MDM Express API in TypeScript or PHP: ship products stocked at MDM, track and list parcels, per-commune fees, wilayas, communes and stop desks.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/mdm/",
+        "about": [
+          "MDM Express",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/mdm/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "MDM Express",
+            "item": "https://dz-delivery.younes-sarni.com/en/mdm/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/" aria-current="page">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../mdm/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Carriers</a></li>
+          <li aria-current="page">MDM Express</li>
+        </ol>
+      </nav>
+
+      <h1>MDM Express API for Node.js and PHP</h1>
+      <p class="lead">MDM Express stores your products and ships them. With dz-delivery, the <code>mdm</code> provider uses its v2 API (parcels, geography, offices) with the same code as every other carrier.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Install</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works for the other carriers: only the client configuration changes.</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">MDM Express credentials</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Value</th><th>Notes</th></tr></thead><tbody><tr><td><code>apiKey</code></td><td>API key created in the MDM dashboard</td><td>Sent as <code>x-api-key</code></td></tr><tr><td><code>storeId</code></td><td>Your MDM store (<code>STR-…</code>)</td><td>Required to create a parcel</td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">MDM Express in TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> mdm = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;mdm&#x27;</span>, {
+  apiKey: process.env.<span class="c-type">MDM_API_KEY</span>!,
+  storeId: process.env.<span class="c-type">MDM_STORE_ID</span>!,  <span class="c-cmt">// STR-…</span>
+});
+
+<span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> mdm.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaId: <span class="c-num">16</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    <span class="c-cmt">// products stocked at MDM: their catalog id (PRD-…)</span>
+    productList: [{ name: <span class="c-str">&#x27;T-shirt&#x27;</span>, quantity: <span class="c-num">1</span>, productId: <span class="c-str">&#x27;PRD-B5C63A&#x27;</span> }],
+    price: <span class="c-num">2500</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> mdm.<span class="c-fn">track</span>(parcel.trackingNumber);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}
+
+<span class="c-cmt">// Delivered parcels, filtered by MDM</span>
+<span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">MDM Express in PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$mdm</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;mdm&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span>  =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MDM_API_KEY&#x27;</span>),
+    <span class="c-str">&#x27;storeId&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MDM_STORE_ID&#x27;</span>),
+]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$parcel</span> = <span class="c-var">$mdm</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productList&#x27;</span>   =&gt; [[<span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>, <span class="c-str">&#x27;quantity&#x27;</span> =&gt; <span class="c-num">1</span>, <span class="c-str">&#x27;productId&#x27;</span> =&gt; <span class="c-str">&#x27;PRD-B5C63A&#x27;</span>]],
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$mdm</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Full PHP guide (Laravel, errors, testing): <a href="../php/">PHP guide</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Supported methods</h2>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">yes</td><td>MDM catalog products (<code>productId</code> or <code>sku</code> = <code>PRD-…</code>) and <code>storeId</code>.</td></tr><tr><td><code>track</code></td><td class="ok">yes</td><td>Unified status + history.</td></tr><tr><td><code>getFees</code></td><td class="ok">yes</td><td>Exact rate per commune (home or office) and return fee.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">yes</td><td>MDM commune ids (<code>DZA161601</code>).</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">yes</td><td>Offices of MDM’s partner carriers.</td></tr><tr><td><code>listParcels</code></td><td class="ok">yes</td><td><code>status</code> and <code>updatedSince</code> filters applied by MDM.</td></tr><tr><td><code>cancelParcel</code></td><td class="no">NOT_SUPPORTED</td><td>No cancellation through the API: use the MDM dashboard.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">yes</td><td>Checks the key (real call).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">MDM Express statuses → unified statuses</h2>
+        <p>The SDK maps MDM status slugs (read live from <code>GET /api/v2/shipping/parcels/metadata</code>, October 2026) to unified statuses. The <code>status</code> filter of <code>listParcels</code> uses the same table: every MDM slug of the requested status is filtered by MDM.</p>
+        <div class="table-wrap"><table><thead><tr><th>MDM status (slug)</th><th>Unified status</th></tr></thead><tbody><tr><td><code>out-of-stock</code></td><td><code>pending</code></td></tr><tr><td><code>confirmed</code>, <code>preparing</code>, <code>packaged</code>, <code>ready-for-dispatch</code></td><td><code>created</code></td></tr><tr><td><code>received-by-mdm</code>, <code>dispatched</code>, <code>received</code>, <code>in-transit</code>, <code>ready-for-delivery</code>, <code>out-for-delivery</code>, <code>postponed</code>, <code>delivery-attempt-failed</code>, <code>exchange-pending</code>, <code>refund-pending</code></td><td><code>in_transit</code></td></tr><tr><td><code>delivered</code>, <code>delivered-partially</code>, <code>exchange-collected</code></td><td><code>delivered</code></td></tr><tr><td><code>delivery-failed</code>, <code>returning</code>, <code>return-ready</code>, <code>return-received</code>, <code>return-grouped</code>, <code>returned</code>, <code>exchange-failed</code>, <code>refund-collected</code>, <code>refunded</code>, <code>refunded-partially</code></td><td><code>returned</code></td></tr><tr><td><code>lost</code></td><td><code>cancelled</code> (terminal, neither delivered nor returned)</td></tr></tbody></table></div>
+        <p>Full list of unified statuses and what they mean: <a href="../statuses/#statuses">SDK statuses</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Good to know about the MDM Express API</h2>
+        <ul class="notes">
+          <li><strong>Tested live</strong> (October 2026, read-only): wilayas, communes, offices, fees, list, tracking, errors.</li>
+          <li><strong>Fulfillment</strong>: MDM ships products stocked in its own warehouse. Every <code>productList</code> line must carry its MDM catalog id; an unknown product → <code>VALIDATION_ERROR</code> on <code>productList</code>.</li>
+          <li><code>price</code> is what the recipient pays: MDM adds no delivery fee on top.</li>
+          <li>MDM has no “order reference” field: <code>orderId</code> is written to the notes (<code>Ref: …</code>) and can still be filtered with <code>listParcels({ orderId })</code>.</li>
+          <li>The <code>baseUrl</code> must use HTTPS.</li>
+        </ul>
+        <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#mdm">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">MDM Express FAQ</h2>
+        <div class="faq">
+          <details>
+            <summary>Where do I find my MDM API key and storeId?</summary>
+            <p>In the MDM dashboard: the API key in the API settings, the <code>storeId</code> (<code>STR-…</code>) in your store.</p>
+          </details>
+          <details>
+            <summary>Can I ship a product that is not stocked at MDM?</summary>
+            <p>No: MDM rejects products outside its catalog. Add the product to MDM first, then use its <code>PRD-…</code> id.</p>
+          </details>
+          <details>
+            <summary>How do I cancel an MDM parcel?</summary>
+            <p>The API has no cancellation: <code>cancelParcel</code> returns <code>NOT_SUPPORTED</code>. Cancel from the MDM dashboard.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Other carriers</h2>
+        <p>Same interface, same normalized statuses (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">Yalidine API</a></li>
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../ecotrack/">Ecotrack · DHD API</a></li>
+          <li><a href="../noest/">NoEST API</a></li>
+          <li><a href="../ecom/">E-com Delivery API</a></li>
+          <li><a href="../elogistia/">Elogistia API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

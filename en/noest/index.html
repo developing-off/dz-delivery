@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NoEST (NOEST Express) API for Node.js and PHP — dz-delivery SDK</title>
+  <meta name="description" content="Integrate the NoEST (NOEST Express) API in TypeScript or PHP: create and validate orders, track parcels, fees, wilayas, communes and stop desks, error handling." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/noest/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/noest/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/noest/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/noest/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/noest/" />
+  <meta property="og:title" content="NoEST (NOEST Express) API for Node.js and PHP — dz-delivery SDK" />
+  <meta property="og:description" content="Integrate the NoEST (NOEST Express) API in TypeScript or PHP: create and validate orders, track parcels, fees, wilayas, communes and stop desks, error handling." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-noest.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-noest.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "NoEST API for Node.js and PHP",
+        "description": "Integrate the NoEST (NOEST Express) API in TypeScript or PHP: create and validate orders, track parcels, fees, wilayas, communes and stop desks, error handling.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/noest/",
+        "about": [
+          "NoEST",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/noest/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "NoEST",
+            "item": "https://dz-delivery.younes-sarni.com/en/noest/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/" aria-current="page">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../noest/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Carriers</a></li>
+          <li aria-current="page">NoEST</li>
+        </ol>
+      </nav>
+
+      <h1>NoEST API for Node.js and PHP</h1>
+      <p class="lead">NoEST (NOEST Express) offers a public API for its e-commerce partners. With dz-delivery, the <code>noest</code> provider talks to that API with the same code as every other carrier.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Install</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works for the other carriers: only the client configuration changes.</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">NoEST credentials</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Value</th><th>Notes</th></tr></thead><tbody><tr><td><code>apiToken</code></td><td>API token from the NOEST partner dashboard</td><td>Sent as <code>Authorization: Bearer &lt;token&gt;</code></td></tr><tr><td><code>userGuid</code></td><td>Partner GUID (same page)</td><td>Sent as <code>user_guid</code> in every POST</td></tr><tr><td><code>autoValidate</code></td><td><code>false</code> by default</td><td><code>true</code>: <code>valid/order</code> right after creation</td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">NoEST in TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> noest = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;noest&#x27;</span>, {
+  apiToken: process.env.<span class="c-type">NOEST_API_TOKEN</span>!,
+  userGuid: process.env.<span class="c-type">NOEST_USER_GUID</span>!,
+  autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// hand the parcel to the carrier right away</span>
+});
+
+<span class="c-key">const</span> desks = <span class="c-key">await</span> noest.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+<span class="c-key">const</span> quote = <span class="c-key">await</span> noest.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> noest.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaId: <span class="c-num">16</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> noest.<span class="c-fn">track</span>(parcel.trackingNumber);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">NoEST in PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$noest</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;noest&#x27;</span>, [
+    <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;NOEST_API_TOKEN&#x27;</span>),
+    <span class="c-str">&#x27;userGuid&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;NOEST_USER_GUID&#x27;</span>),
+    <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
+]);
+
+<span class="c-var">$quote</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$parcel</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Full PHP guide (Laravel, errors, testing): <a href="../php/">PHP guide</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Supported methods</h2>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">yes</td><td>Stays <code>pending</code> until validated (see <code>autoValidate</code>).</td></tr><tr><td><code>track</code></td><td class="ok">yes</td><td>Unified status + history (<code>event_key</code>).</td></tr><tr><td><code>getFees</code></td><td class="ok">yes</td><td>Partner rate card per wilaya (home, stop desk, return).</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">yes</td><td>Active communes only.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">yes</td><td>NOEST stations (id = station code, e.g. <code>16B</code>).</td></tr><tr><td><code>listParcels</code></td><td class="no">NOT_SUPPORTED</td><td>The NOEST API has no order list.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">yes</td><td>Only before validation.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">yes</td><td>Checks the token (real call).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">NoEST statuses → unified statuses</h2>
+        <p><code>track</code> reads the <code>event_key</code> of each <code>activity[]</code> row (or, when it is missing, the English <code>event</code> label, e.g. <code>Delivered</code>) and maps it to a unified status. Remark events (<code>edited_informations</code>, <code>edit_price</code>, <code>edit_wilaya</code>, <code>extra_fee</code>) keep the previous status; French display labels such as « Validé » (validated) are not recognized and map to <code>unknown</code>.</p>
+        <div class="table-wrap"><table><thead><tr><th>NoEST status (<code>event_key</code>)</th><th>Unified status</th></tr></thead><tbody><tr><td><code>upload</code></td><td><code>pending</code></td></tr><tr><td><code>customer_validation</code></td><td><code>created</code></td></tr><tr><td><code>validation_collect_colis</code>, <code>validation_reception_admin</code>, <code>validation_reception</code>, <code>fdr_activated</code>, <code>sent_to_redispatch</code>, <code>nouvel_tentative_asked_by_customer</code>, <code>mise_a_jour</code>, <code>colis_suspendu</code>, <code>return_redispatched_to_livraison</code>, <code>pickedup</code>, <code>valid_return_pickup</code></td><td><code>in_transit</code></td></tr><tr><td><code>livre</code>, <code>livred</code>, <code>verssement_*</code>, <code>validation_reception_cash_by_partener</code>, <code>echange_valide</code>, <code>echange_valid_by_hub</code>, <code>pickup_picked_recu</code>, <code>colis_pickup_transmit_to_partner</code></td><td><code>delivered</code></td></tr><tr><td><code>return_*</code> (except <code>return_redispatched_to_livraison</code>), <code>retour_dispatched_to_partenaires</code>, <code>colis_retour_transmit_to_partner</code>, <code>annulation_dispatch_retour</code>, <code>cancel_return_dispatched_to_partenaire</code>, <code>livraison_echoue_recu</code></td><td><code>returned</code></td></tr><tr><td><code>ask_to_delete_by_admin</code>, <code>ask_to_delete_by_hub</code></td><td><code>cancelled</code></td></tr></tbody></table></div>
+        <p>Full list of unified statuses and what they mean: <a href="../statuses/#statuses">SDK statuses</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Good to know about the NoEST API</h2>
+        <ul class="notes">
+          <li><strong>Validation</strong>: without <code>autoValidate: true</code>, orders stay editable and deletable, but NOEST does not pick them up.</li>
+          <li><strong>Commune names</strong>: NOEST spells some names differently, e.g. “Bab Azzouar”. The SDK also accepts “Bab Ezzouar” (spelling-tolerant match, only when exactly one commune matches).</li>
+          <li><code>orderId</code> (the NOEST reference) must be at least 5 characters long: otherwise <code>VALIDATION_ERROR</code> before any request.</li>
+          <li>Suspended account or unknown <code>userGuid</code> → <code>AUTH_FAILED</code>; duplicate order, inactive commune… → <code>VALIDATION_ERROR</code> with <code>details[].code</code>.</li>
+          <li>The <code>baseUrl</code> must use HTTPS.</li>
+        </ul>
+        <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#noest">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">NoEST FAQ</h2>
+        <div class="faq">
+          <details>
+            <summary>Where do I find my NoEST token and GUID?</summary>
+            <p>In the NOEST partner dashboard, API section. You need both.</p>
+          </details>
+          <details>
+            <summary>Why are my NoEST orders not being picked up?</summary>
+            <p>They are not validated. Set <code>autoValidate: true</code> or validate them from the dashboard.</p>
+          </details>
+          <details>
+            <summary>Can I list my NoEST parcels?</summary>
+            <p>No: the NOEST API has no list endpoint, so <code>listParcels</code> returns <code>NOT_SUPPORTED</code>. Use <code>track</code> with a tracking number.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Other carriers</h2>
+        <p>Same interface, same normalized statuses (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">Yalidine API</a></li>
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../ecotrack/">Ecotrack · DHD API</a></li>
+          <li><a href="../ecom/">E-com Delivery API</a></li>
+          <li><a href="../mdm/">MDM Express API</a></li>
+          <li><a href="../elogistia/">Elogistia API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API Elogistia en TypeScript ou PHP : créer et suivre des colis, tarifs domicile et bureau, wilayas et communes — sans documentation officielle à lire." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/elogistia/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/elogistia/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/elogistia/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/elogistia/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/elogistia/" />
   <meta property="og:title" content="API Elogistia en Node.js et PHP — SDK dz-delivery" />
   <meta property="og:description" content="Intégrer l’API Elogistia en TypeScript ou PHP : créer et suivre des colis, tarifs domicile et bureau, wilayas et communes — sans documentation officielle à lire." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/elogistia.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/elogistia.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/">MDM</a>
         <a href="../elogistia/" aria-current="page">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/elogistia/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -157,12 +164,19 @@
 } <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
     <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
 }</pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="../php/">guide PHP</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
         <h2 id="support-title">Méthodes supportées</h2>
         <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">oui</td><td>Domicile ou bureau (Elogistia choisit le bureau).</td></tr><tr><td><code>track</code></td><td class="ok">oui</td><td>Statut unifié + historique.</td></tr><tr><td><code>getFees</code></td><td class="ok">oui</td><td>Tarifs domicile / bureau par wilaya.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">oui</td><td>Orthographe Elogistia, recherche tolérante.</td></tr><tr><td><code>getStopDesks</code></td><td class="no">NOT_SUPPORTED</td><td>Pas de liste de bureaux dans l’API.</td></tr><tr><td><code>listParcels</code></td><td class="no">NOT_SUPPORTED</td><td>Pas de liste des colis dans l’API.</td></tr><tr><td><code>cancelParcel</code></td><td class="no">NOT_SUPPORTED</td><td>Pas d’annulation par API&nbsp;: depuis le tableau de bord.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">oui</td><td>Vérifie la clé (appel réel).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts Elogistia → statuts unifiés</h2>
+        <p>Elogistia ne documente pas ses libellés de statut. Le SDK cherche des mots-clés dans <code>Statut</code> (à défaut, dans <code>Log</code>), sans tenir compte de la casse, des accents ni des espaces, dans l’ordre du tableau&nbsp;: la première règle qui correspond l’emporte.</p>
+        <div class="table-wrap"><table><thead><tr><th>Mot-clé dans le libellé Elogistia</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>retour</code>, <code>return</code></td><td><code>returned</code></td></tr><tr><td><code>annul</code>, <code>cancel</code>, <code>supprim</code></td><td><code>cancelled</code></td></tr><tr><td><code>livreur</code>, <code>en livraison</code>, <code>sortie</code>, <code>transit</code>, <code>expédi</code>, <code>dispatch</code>, <code>vers wilaya</code>, <code>en cours</code>, <code>échec</code>, <code>tentative</code></td><td><code>in_transit</code></td></tr><tr><td><code>livré</code>, <code>delivered</code></td><td><code>delivered</code></td></tr><tr><td><code>attente</code>, <code>créé</code>, <code>nouveau</code>, <code>pending</code></td><td><code>pending</code></td></tr><tr><td>aucun mot-clé reconnu</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>Si vous recevez des libellés réels, signalez-les sur <a href="https://github.com/developing-off/dz-delivery/issues">GitHub</a> pour rendre ce tableau exact. Liste complète des statuts unifiés et de leur signification&nbsp;: <a href="../statuts/#statuses">statuts du SDK</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">

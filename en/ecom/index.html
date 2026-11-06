@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-com Delivery API for Node.js and PHP — dz-delivery SDK</title>
+  <meta name="description" content="Integrate the E-com Delivery API (v2) in TypeScript or PHP: create and track parcels, list and sync account parcels, fees, wilayas, communes and stop desks." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/ecom/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/ecom/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/ecom/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/ecom/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/ecom/" />
+  <meta property="og:title" content="E-com Delivery API for Node.js and PHP — dz-delivery SDK" />
+  <meta property="og:description" content="Integrate the E-com Delivery API (v2) in TypeScript or PHP: create and track parcels, list and sync account parcels, fees, wilayas, communes and stop desks." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-ecom.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-ecom.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "E-com Delivery API for Node.js and PHP",
+        "description": "Integrate the E-com Delivery API (v2) in TypeScript or PHP: create and track parcels, list and sync account parcels, fees, wilayas, communes and stop desks.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/ecom/",
+        "about": [
+          "E-com Delivery",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/ecom/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "E-com Delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/ecom/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/" aria-current="page">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../ecom/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Carriers</a></li>
+          <li aria-current="page">E-com Delivery</li>
+        </ol>
+      </nav>
+
+      <h1>E-com Delivery API for Node.js and PHP</h1>
+      <p class="lead">E-com Delivery offers a complete v2 API (<code>ecom-dz.com/api_v2</code>). With dz-delivery, the <code>ecom</code> provider covers all of it, including the list of your account’s parcels.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Install</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works for the other carriers: only the client configuration changes.</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">E-com Delivery credentials</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Value</th><th>Notes</th></tr></thead><tbody><tr><td><code>apiKey</code></td><td><code>KEY</code> from the « Développement » (Development) page of the dashboard</td><td>Sent as <code>X-API-Key</code></td></tr><tr><td><code>apiToken</code></td><td><code>Token</code> from the same page (can be regenerated)</td><td>Sent as <code>X-API-Token</code></td></tr><tr><td><code>autoValidate</code></td><td><code>false</code> by default</td><td><code>true</code>: the parcel is created already confirmed (« En Traitement », processing)</td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">E-com Delivery in TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> ecom = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;ecom&#x27;</span>, {
+  apiKey: process.env.<span class="c-type">ECOM_API_KEY</span>!,
+  apiToken: process.env.<span class="c-type">ECOM_API_TOKEN</span>!,
+  autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// hand the parcel to the carrier right away</span>
+});
+
+<span class="c-key">const</span> desks = <span class="c-key">await</span> ecom.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+<span class="c-key">const</span> quote = <span class="c-key">await</span> ecom.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> ecom.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaId: <span class="c-num">16</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> ecom.<span class="c-fn">track</span>(parcel.trackingNumber);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}
+
+<span class="c-cmt">// Parcels updated since yesterday, all pages</span>
+<span class="c-key">const</span> page = <span class="c-key">await</span> ecom.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-key">new</span> <span class="c-type">Date</span>(Date.now() - <span class="c-num">86400000</span>), allPages: <span class="c-key">true</span> });</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">E-com Delivery in PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$ecom</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;ecom&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ECOM_API_KEY&#x27;</span>),
+    <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ECOM_API_TOKEN&#x27;</span>),
+    <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
+]);
+
+<span class="c-var">$quote</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$parcel</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Full PHP guide (Laravel, errors, testing): <a href="../php/">PHP guide</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Supported methods</h2>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">yes</td><td>Home or stop desk. Stays « En Préparation » (preparing) without <code>autoValidate</code>.</td></tr><tr><td><code>track</code></td><td class="ok">yes</td><td>Unified status (situation + logistics state) + history.</td></tr><tr><td><code>getFees</code></td><td class="ok">yes</td><td>Home / stop desk rates per wilaya.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">yes</td><td>Deliverable communes only.</td></tr><tr><td><code>getStopDesks</code></td><td class="ok">yes</td><td>E-com offices (id = <code>code_stopdesk</code>, e.g. <code>16B</code>).</td></tr><tr><td><code>listParcels</code></td><td class="ok">yes</td><td>Pagination, filters by tracking number, order number, status and <code>updatedSince</code>.</td></tr><tr><td><code>cancelParcel</code></td><td class="ok">yes</td><td>Only parcels still « En Préparation ».</td></tr><tr><td><code>healthCheck</code></td><td class="ok">yes</td><td>Checks the credentials (real call).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">E-com Delivery statuses → unified statuses</h2>
+        <p>The SDK recognizes E-com’s situation and logistics-state labels, ignoring case and accents. For a parcel’s status, a final situation (« Livrée », « Annuler », « Commande Annuler »…) wins, then the logistics state, then any other situation.</p>
+        <div class="table-wrap"><table><thead><tr><th>E-com status (situation / logistics state)</th><th>Unified status</th></tr></thead><tbody><tr><td><code>En Préparation</code>, <code>Attend Confirmation</code>, <code>Commande Reporté</code>, <code>Commande a Relancé</code></td><td><code>pending</code></td></tr><tr><td><code>En Traitement</code>, <code>Commande Confirmée</code></td><td><code>created</code></td></tr><tr><td><code>Au Bureau</code>, <code>En livraison</code>, <code>Sortir en livraison</code>, <code>Dispatcher</code>, <code>Ne Réponde pas #1–3</code>, <code>En attente du client</code>, <code>Reporté</code>, <code>Reporté Commune Erronée</code>, <code>Reporté Wilaya Erronée</code>, <code>Appel Tel</code>, <code>SMS Envoyé</code>, <code>WhatsApp OK</code></td><td><code>in_transit</code></td></tr><tr><td><code>Livrée</code>, <code>Encaisser</code>, <code>Recouvert</code>, <code>Récupérer</code> (payment collected)</td><td><code>delivered</code></td></tr><tr><td><code>Annuler</code>, <code>Annuler x3</code>, <code>Retour de Dispatche</code>, <code>Retour Navette</code>, <code>Retour Fournisseur</code>, <code>Retour Stock</code></td><td><code>returned</code></td></tr><tr><td><code>Commande Annuler</code>, <code>Supprimée</code></td><td><code>cancelled</code></td></tr><tr><td><code>EnCours</code> (default situation), <code>BIZ</code>, <code>Suivi par E-com</code></td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>« Récupérer », « Retour Fournisseur » and « Retour Stock » are missing from the E-com documentation but are returned live. In <code>track</code> history, notes (« Information », « Type de Colis », « Type de Livraison », « BIZ », steps without a situation) keep the previous status.</p>
+        <p>Full list of unified statuses and what they mean: <a href="../statuses/#statuses">SDK statuses</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Good to know about the E-com Delivery API</h2>
+        <ul class="notes">
+          <li><strong>Tested live</strong> (October 2026): reads, create then delete, errors.</li>
+          <li>The recipient name is limited to 60 characters and the address to 100: beyond that, E-com returns an error, mapped to <code>VALIDATION_ERROR</code> on <code>recipientName</code> / <code>address</code>.</li>
+          <li>A rejected parcel still returns HTTP 201: the SDK reads the line result and throws <code>VALIDATION_ERROR</code> (e.g. unknown office → <code>stopDeskId</code>).</li>
+          <li><code>updatedSince</code> follows the date of the last logistics action: a parcel that has not been handled yet does not show up.</li>
+          <li>Statuses: « Récupérer » (payment collected) → <code>delivered</code>; « Retour Fournisseur » (returned to seller) → <code>returned</code>.</li>
+          <li>The <code>baseUrl</code> must use HTTPS.</li>
+        </ul>
+        <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#ecom">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">E-com Delivery FAQ</h2>
+        <div class="faq">
+          <details>
+            <summary>Where do I find my E-com KEY and Token?</summary>
+            <p>In the E-com dashboard, on the « Développement » (Development) page. The Token can be regenerated at any time.</p>
+          </details>
+          <details>
+            <summary>How do I sync my E-com parcels?</summary>
+            <p>With <code>listParcels({ updatedSince, allPages: true })</code>, then <code>track</code> for the detailed history.</p>
+          </details>
+          <details>
+            <summary>Why can’t I delete a parcel?</summary>
+            <p>E-com only allows deleting parcels that are still « En Préparation »; after that, <code>cancelParcel</code> returns <code>VALIDATION_ERROR</code>.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Other carriers</h2>
+        <p>Same interface, same normalized statuses (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">Yalidine API</a></li>
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../ecotrack/">Ecotrack · DHD API</a></li>
+          <li><a href="../noest/">NoEST API</a></li>
+          <li><a href="../mdm/">MDM Express API</a></li>
+          <li><a href="../elogistia/">Elogistia API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

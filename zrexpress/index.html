@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API ZRExpress (ZR Express) en TypeScript ou PHP : créer et suivre des colis, frais, wilayas, hubs/stop desks, étiquettes, envoi en masse et webhooks signés. Exemple complet avec le SDK dz-delivery." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/zrexpress/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/zrexpress/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/zrexpress/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/zrexpress/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/zrexpress/" />
   <meta property="og:title" content="API ZR Express en Node.js et PHP — SDK dz-delivery" />
   <meta property="og:description" content="Intégrer l’API ZRExpress (ZR Express) en TypeScript ou PHP : créer et suivre des colis, frais, wilayas, hubs/stop desks, étiquettes, envoi en masse et webhooks signés. Exemple complet avec le SDK dz-delivery." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/zrexpress.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/zrexpress.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/">MDM</a>
         <a href="../elogistia/">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/zrexpress/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -173,7 +180,7 @@
 } <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
     <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
 }</pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Installation, Laravel, erreurs et tests&nbsp;: consultez le <a href="../php/">guide PHP complet</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
@@ -212,6 +219,13 @@ app.<span class="c-fn">post</span>(<span class="c-str">&#x27;/webhooks/zrexpress
 <span class="c-var">$raw</span>   = <span class="c-fn">file_get_contents</span>(<span class="c-str">&#x27;php://input&#x27;</span>);
 <span class="c-var">$event</span> = <span class="c-type">Webhook</span>::<span class="c-fn">verify</span>(<span class="c-var">$raw</span>, <span class="c-fn">getallheaders</span>(), <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_WEBHOOK_SECRET&#x27;</span>));</pre></div>
         <p>Détails&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZREXPRESS.md</a>.</p>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts ZRExpress → statuts unifiés</h2>
+        <p>ZRExpress nomme ses états en slug (<code>commande_recue</code>) ou en PascalCase (<code>OutForDelivery</code>)&nbsp;: le SDK accepte les deux formes, sans tenir compte de la casse. Ce mapping est encore provisoire et sera complété à partir de réponses réelles de l’API.</p>
+        <div class="table-wrap"><table><thead><tr><th>État ZRExpress (exemples)</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>commande_recue</code>, <code>OrderReceived</code></td><td><code>pending</code></td></tr><tr><td><code>pret_a_expedier</code>, <code>ReadyToDispatch</code></td><td><code>created</code></td></tr><tr><td><code>confirme_au_bureau</code>, <code>OutForDelivery</code>, autres états de hub / transfert</td><td><code>in_transit</code></td></tr><tr><td><code>Delivered</code>, <code>livre</code>, <code>encaisse</code></td><td><code>delivered</code></td></tr><tr><td><code>Returned</code>, <code>retour*</code></td><td><code>returned</code></td></tr><tr><td><code>Cancelled</code>, <code>annule</code>, <code>supprimee</code></td><td><code>cancelled</code></td></tr><tr><td>Tout autre état</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>Signification de chaque statut unifié&nbsp;: <a href="../statuts/">liste complète des statuts unifiés</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">

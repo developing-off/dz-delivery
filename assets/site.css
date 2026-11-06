@@ -77,6 +77,15 @@ a:hover { color: var(--accent); }
   text-decoration-color: var(--accent);
   text-decoration-thickness: 2px;
 }
+.nav-links a.nav-lang {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.nav-links a.nav-lang:hover { border-color: var(--accent); }
 
 /* —— Header —— */
 .crumbs {

@@ -7,12 +7,16 @@
   <meta name="description" content="SDK open source TypeScript (npm) et PHP (Composer) pour créer, suivre et tarifer des colis avec Yalidine, GuepEx, ZRExpress, Maystro, Ecotrack, DHD, NoEST, E-com Delivery, MDM, Elogistia et plus — une seule API, wilayas et communes incluses." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <meta name="google-site-verification" content="COcuNA7z7CCYYv5dZBCZMUXZW72M5POmLb54T9EKsN4" />
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/" />
   <meta property="og:title" content="dz-delivery — SDK livraison Algérie (TypeScript &amp; PHP)" />
   <meta property="og:description" content="Une seule API pour Yalidine, ZRExpress, Maystro, Ecotrack/DHD, NoEST, E-com, MDM et Elogistia : créer, suivre et tarifer des colis." />
@@ -128,6 +132,15 @@
       font-weight: 500;
     }
     .nav-links a:hover { color: var(--ink); }
+    .nav-links a.nav-lang {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      padding: 0.1rem 0.45rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .nav-links a.nav-lang:hover { border-color: var(--accent); }
 
     .hero {
       position: relative;
@@ -675,6 +688,7 @@
         <a class="hide-sm" href="#zrexpress">ZR extras</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
         <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+        <a class="nav-lang" href="en/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -746,7 +760,7 @@
           </div>
           <p class="callout">
             Zéro dépendance runtime côté TypeScript (fetch natif). PHP : Guzzle uniquement.
-            Source de vérité : <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">CONTRACT.md</a>.
+            Référence : <a href="statuts/">modèles, statuts unifiés et codes d’erreur</a>.
           </p>
         </article>
 
@@ -1222,7 +1236,7 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
           <p class="section-desc">Hors contrat unifié : méthodes sur <span class="mono">ZRExpressProvider</span> + helpers webhooks. <span class="mono">createClient('zrexpress')</span> reste l’interface simple.</p>
           <p class="callout">
             Matrice complète et backlog :
-            <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">docs/ZREXPRESS.md</a>.
+            <a href="zrexpress/#extras">page ZR Express</a> (backlog&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZREXPRESS.md</a>).
           </p>
 
           <h3 class="sub">Webhooks (receive)</h3>
@@ -1343,8 +1357,8 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="callout warn">
             Mapping natif détaillé :
             <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>.
-            Guide PHP (Laravel, Maystro webhooks) :
-            <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.
+            Guide PHP (Laravel, webhooks Maystro) :
+            <a href="php/">intégrer la livraison en PHP</a>.
           </p>
         </article>
 
@@ -1370,7 +1384,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
             </details>
             <details>
               <summary>Ça marche avec Laravel, WooCommerce ou Shopify&nbsp;?</summary>
-              <p>Le SDK PHP s’installe dans n’importe quel projet Composer (exemple Laravel dans le <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md#6-laravel-example">guide PHP</a>). Pour un backend Node.js ou une app Shopify, utilisez le package npm.</p>
+              <p>Le SDK PHP s’installe dans n’importe quel projet Composer (exemple Laravel dans le <a href="php/#laravel">guide PHP</a>). Pour un backend Node.js ou une app Shopify, utilisez le package npm.</p>
             </details>
             <details>
               <summary>Est-ce gratuit&nbsp;?</summary>
@@ -1392,10 +1406,10 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
             <li><a href="ecom/">API E-com Delivery</a></li>
             <li><a href="mdm/">API MDM Express</a></li>
             <li><a href="elogistia/">API Elogistia</a></li>
-            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/CONTRACT.md">Contrat unifié</a></li>
+            <li><a href="statuts/">Statuts et modèle unifié</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">Mapping providers</a></li>
-            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZRExpress extras</a></li>
-            <li><a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">Guide PHP</a></li>
+            <li><a href="zrexpress/#extras">ZRExpress extras</a></li>
+            <li><a href="php/">Guide PHP / Laravel</a></li>
             <li><a href="https://github.com/developing-off/dz-delivery/blob/main/packages/ts/README.md">README TypeScript</a></li>
             <li><a href="https://www.npmjs.com/package/@dz-delivery/core">npm · @dz-delivery/core</a></li>
             <li><a href="https://packagist.org/packages/dz-delivery/sdk">Packagist · dz-delivery/sdk</a></li>

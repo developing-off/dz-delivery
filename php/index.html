@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Intégrer Yalidine, ZR Express… en PHP et Laravel — SDK dz-delivery</title>
+  <meta name="description" content="Guide PHP et Laravel du SDK dz-delivery : créer, suivre et tarifer vos colis Yalidine, ZR Express, Maystro, Ecotrack, NoEST… Statuts unifiés, erreurs, tests." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/php/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/php/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/php/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/php/" />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/php/" />
+  <meta property="og:title" content="Intégrer Yalidine, ZR Express… en PHP et Laravel — SDK dz-delivery" />
+  <meta property="og:description" content="Guide PHP et Laravel du SDK dz-delivery : créer, suivre et tarifer vos colis Yalidine, ZR Express, Maystro, Ecotrack, NoEST… Statuts unifiés, erreurs, tests." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/php.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/php.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Intégrer la livraison en PHP / Laravel",
+        "description": "Guide PHP et Laravel du SDK dz-delivery : créer, suivre et tarifer vos colis Yalidine, ZR Express, Maystro, Ecotrack, NoEST… Statuts unifiés, erreurs, tests.",
+        "inLanguage": "fr",
+        "url": "https://dz-delivery.younes-sarni.com/php/",
+        "about": [
+          "PHP",
+          "Laravel",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/php/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Guide PHP / Laravel",
+            "item": "https://dz-delivery.younes-sarni.com/php/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Transporteurs">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/php/" hreflang="en" lang="en" title="English version">EN</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Fil d’Ariane">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li aria-current="page">Guide PHP / Laravel</li>
+        </ol>
+      </nav>
+
+      <h1>Intégrer la livraison en PHP / Laravel</h1>
+      <p class="lead">Appelez <a href="../yalidine/">Yalidine</a>, <a href="../zrexpress/">ZRExpress</a>, <a href="../maystro/">Maystro</a>, <a href="../ecotrack/">Ecotrack</a> (DHD…), <a href="../noest/">NoEST</a>, <a href="../ecom/">E-com Delivery</a>, <a href="../mdm/">MDM</a> et <a href="../elogistia/">Elogistia</a> depuis votre application PHP avec une seule API&nbsp;: mêmes méthodes, mêmes modèles, mêmes statuts.</p>
+      <p>Le contrat complet (modèles, statuts, erreurs) est décrit sur la page <a href="../statuts/">Statuts, modèles et erreurs</a>&nbsp;; le mapping propre à chaque transporteur dans <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>.</p>
+      <nav aria-label="Sommaire">
+        <ul class="doc-links">
+          <li><a href="#install">1. Installer</a></li>
+          <li><a href="#configure">2. Configurer un transporteur</a></li>
+          <li><a href="#methods">3. Méthodes</a></li>
+          <li><a href="#statuses">4. Statuts</a></li>
+          <li><a href="#errors">5. Erreurs</a></li>
+          <li><a href="#laravel">6. Exemple Laravel</a></li>
+          <li><a href="#maystro-webhooks">7. Webhooks Maystro</a></li>
+          <li><a href="#testing">8. Tester</a></li>
+          <li><a href="#zrexpress-extras">9. Extras ZRExpress</a></li>
+        </ul>
+      </nav>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">1. Installer le SDK PHP</h2>
+        <p>Prérequis&nbsp;: <strong>PHP ≥ 8.2</strong> et <strong>Guzzle 7</strong> (installé par Composer). Le paquet est publié sur <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        <p><strong>Vous travaillez sur le SDK lui-même&nbsp;?</strong> Pointez votre application vers une copie locale avec un dépôt de type <code>path</code> (les modifications du SDK sont visibles immédiatement)&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>composer.json</span></div><pre>{
+  <span class="c-str">&quot;repositories&quot;</span>: [
+    { <span class="c-str">&quot;type&quot;</span>: <span class="c-str">&quot;path&quot;</span>, <span class="c-str">&quot;url&quot;</span>: <span class="c-str">&quot;../dz-delivery/packages/php&quot;</span> }
+  ],
+  <span class="c-str">&quot;require&quot;</span>: {
+    <span class="c-str">&quot;dz-delivery/sdk&quot;</span>: <span class="c-str">&quot;*@dev&quot;</span>
+  }
+}</pre></div>
+        <p>Tout se trouve sous l’espace de noms <code>DzDelivery\</code> (PSR-4).</p>
+      </section>
+
+      <section id="configure" aria-labelledby="configure-title">
+        <h2 id="configure-title">2. Configurer un transporteur</h2>
+        <p>Créez un client par transporteur avec <code>ClientFactory::create($provider, $options)</code>. Gardez les identifiants dans des variables d’environnement ou un fichier <code>.env</code> (voir <a href="https://github.com/developing-off/dz-delivery/blob/main/.env.example">.env.example</a>)&nbsp;: ne les écrivez jamais en dur et ne les commitez pas.</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+
+<span class="c-var">$zr</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;zrexpress&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_API_KEY&#x27;</span>),   <span class="c-cmt">// envoyé en X-Api-Key</span>
+    <span class="c-str">&#x27;tenant&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_TENANT&#x27;</span>),    <span class="c-cmt">// envoyé en X-Tenant</span>
+]);
+
+<span class="c-var">$yalidine</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, [
+    <span class="c-str">&#x27;apiId&#x27;</span>        =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;YALIDINE_API_ID&#x27;</span>),     <span class="c-cmt">// envoyé en X-API-ID</span>
+    <span class="c-str">&#x27;apiToken&#x27;</span>     =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;YALIDINE_API_TOKEN&#x27;</span>),  <span class="c-cmt">// envoyé en X-API-TOKEN</span>
+    <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>,                            <span class="c-cmt">// ou &#x27;fromWilayaName&#x27; =&gt; &#x27;Alger&#x27;</span>
+]);
+
+<span class="c-var">$maystro</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;maystro&#x27;</span>, [
+    <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_API_TOKEN&#x27;</span>),  <span class="c-cmt">// envoyé en Authorization: Token &lt;apiToken&gt;</span>
+]);
+
+<span class="c-var">$dhd</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;ecotrack&#x27;</span>, [
+    <span class="c-str">&#x27;token&#x27;</span>   =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ECOTRACK_TOKEN&#x27;</span>),  <span class="c-cmt">// envoyé en Authorization: Bearer &lt;token&gt;</span>
+    <span class="c-str">&#x27;courier&#x27;</span> =&gt; <span class="c-str">&#x27;dhd&#x27;</span>,                     <span class="c-cmt">// ou &#x27;baseUrl&#x27; =&gt; &#x27;https://&lt;tenant&gt;.ecotrack.dz&#x27;</span>
+    <span class="c-cmt">// &#x27;autoValidate&#x27; =&gt; true,              // valide chaque commande auprès du livreur dès sa création</span>
+]);
+
+<span class="c-var">$noest</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;noest&#x27;</span>, [
+    <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;NOEST_API_TOKEN&#x27;</span>),  <span class="c-cmt">// envoyé en Authorization: Bearer &lt;apiToken&gt;</span>
+    <span class="c-str">&#x27;userGuid&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;NOEST_USER_GUID&#x27;</span>),  <span class="c-cmt">// GUID partenaire, envoyé en user_guid</span>
+    <span class="c-cmt">// &#x27;autoValidate&#x27; =&gt; true,                // valide chaque commande auprès de NOEST dès sa création</span>
+]);
+
+<span class="c-var">$ecom</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;ecom&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span>   =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ECOM_API_KEY&#x27;</span>),    <span class="c-cmt">// KEY, envoyé en X-API-Key</span>
+    <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ECOM_API_TOKEN&#x27;</span>),  <span class="c-cmt">// Token, envoyé en X-API-Token</span>
+    <span class="c-cmt">// &#x27;autoValidate&#x27; =&gt; true,               // crée les colis déjà confirmés</span>
+]);
+
+<span class="c-var">$mdm</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;mdm&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span>  =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MDM_API_KEY&#x27;</span>),   <span class="c-cmt">// envoyé en x-api-key</span>
+    <span class="c-str">&#x27;storeId&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MDM_STORE_ID&#x27;</span>),  <span class="c-cmt">// STR-…, requis pour créer des colis</span>
+]);
+
+<span class="c-var">$elogistia</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;elogistia&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ELOGISTIA_API_KEY&#x27;</span>),  <span class="c-cmt">// envoyé dans la query string (choix d&#x27;Elogistia)</span>
+]);</pre></div>
+        <div class="table-wrap"><table><thead><tr><th>Transporteur</th><th>Clés requises</th><th>Notes</th></tr></thead><tbody>
+          <tr><td><a href="../zrexpress/"><code>zrexpress</code></a></td><td><code>apiKey</code>, <code>tenant</code></td><td>—</td></tr>
+          <tr><td><a href="../yalidine/"><code>yalidine</code></a></td><td><code>apiId</code>, <code>apiToken</code></td><td>Plus <code>fromWilayaId</code> (code <code>1</code>–<code>58</code>) <strong>ou</strong> <code>fromWilayaName</code>&nbsp;: votre wilaya d’origine, nécessaire à <code>createParcel</code> et <code>getFees</code>. GuepEx (même API)&nbsp;: <code>'baseUrl' =&gt; YalidineProvider::GUEPEX_DEFAULT_BASE_URL</code>.</td></tr>
+          <tr><td><a href="../maystro/"><code>maystro</code></a></td><td><code>apiToken</code></td><td>Token de la boutique. Une valeur commençant déjà par <code>Token </code> est envoyée telle quelle.</td></tr>
+          <tr><td><a href="../ecotrack/"><code>ecotrack</code></a></td><td><code>token</code> + exactement un de <code>courier</code> / <code>baseUrl</code></td><td>Un seul provider pour tous les livreurs de la plateforme Ecotrack. <code>courier</code>&nbsp;: <code>dhd</code>, <code>anderson</code>, <code>worldexpress</code>, <code>48hrexpress</code>, <code>ecorapid</code>, <code>conexlog</code>, <code>msmgo</code>, <code>packers</code>, <code>rocketdelivery</code> (plus l’alias <code>andersondelivery</code>). Tout autre tenant&nbsp;: <code>baseUrl</code> (<code>https</code> uniquement). <code>autoValidate</code> (par défaut <code>false</code>)&nbsp;: sans lui, les commandes restent <code>pending</code> jusqu’à leur validation dans le tableau de bord du livreur.</td></tr>
+          <tr><td><a href="../noest/"><code>noest</code></a></td><td><code>apiToken</code>, <code>userGuid</code></td><td>Tous deux dans le tableau de bord partenaire NOEST. <code>autoValidate</code> (par défaut <code>false</code>)&nbsp;: sans lui, les commandes restent <code>pending</code> (encore modifiables) jusqu’à validation. Les noms de communes suivent l’orthographe NOEST (<code>Bab Azzouar</code>)&nbsp;: utilisez les ids de <code>getCommunes()</code>.</td></tr>
+          <tr><td><a href="../ecom/"><code>ecom</code></a></td><td><code>apiKey</code>, <code>apiToken</code></td><td><code>KEY</code> et <code>Token</code> de la page développeur E-com. <code>autoValidate</code> (par défaut <code>false</code>)&nbsp;: sans lui, les colis restent <code>pending</code> (« En Préparation », encore modifiables) jusqu’à confirmation.</td></tr>
+          <tr><td><a href="../mdm/"><code>mdm</code></a></td><td><code>apiKey</code> (+ <code>storeId</code> pour créer)</td><td>MDM expédie des produits <strong>stockés chez MDM</strong>&nbsp;: chaque ligne de <code>productList</code> doit porter son id produit MDM (<code>productId</code> ou <code>sku</code>, <code>PRD-…</code>). Pas de <code>cancelParcel</code>.</td></tr>
+          <tr><td><a href="../elogistia/"><code>elogistia</code></a></td><td><code>apiKey</code></td><td><code>email</code> optionnel (envoyé en <code>mail</code>, exigé par Elogistia&nbsp;; par défaut <code>customer@example.com</code>). Pas de liste de stop desks, ni de <code>listParcels</code> ni de <code>cancelParcel</code>.</td></tr>
+        </tbody></table></div>
+        <p>Des identifiants manquants lèvent une <code>ShippingError</code> de code <code>AUTH_FAILED</code> dès la création du client.</p>
+        <h3>Options communes (tous les transporteurs)</h3>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Type</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>baseUrl</code></td><td><code>string</code></td><td>URL de production du transporteur</td><td>Remplace l’URL de l’API (proxy, préproduction).</td></tr>
+          <tr><td><code>timeoutMs</code></td><td><code>int</code></td><td><code>15000</code></td><td>Délai de connexion + requête.</td></tr>
+          <tr><td><code>includeRaw</code></td><td><code>bool</code></td><td><code>true</code></td><td>Attache la réponse native du transporteur en <code>-&gt;raw</code> sur les modèles renvoyés. <code>false</code> pour garder des objets légers.</td></tr>
+          <tr><td><code>handler</code></td><td><code>callable</code></td><td>—</td><td>Handler / HandlerStack Guzzle, surtout pour les tests (voir <a href="#testing">§8</a>).</td></tr>
+        </tbody></table></div>
+        <p><code>ClientFactory::providers()</code> renvoie les clés supportées (<code>['zrexpress', 'yalidine', 'maystro', 'ecotrack', 'noest', 'ecom', 'mdm', 'elogistia']</code>). Une clé inconnue lève <code>NOT_SUPPORTED</code>.</p>
+        <p>Chaque client implémente <code>DzDelivery\Contracts\ShippingProviderInterface</code>&nbsp;: typez vos dépendances sur l’interface et changez de transporteur sans toucher au reste du code.</p>
+      </section>
+
+      <section id="methods" aria-labelledby="methods-title">
+        <h2 id="methods-title">3. Méthodes</h2>
+        <p>Toutes les méthodes acceptent soit un <strong>tableau</strong>, soit l’objet modèle correspondant (<code>ParcelInput</code>, <code>FeeQuery</code>, <code>StopDeskQuery</code>). Tous les modèles renvoyés exposent des <strong>propriétés publiques readonly en camelCase</strong>. Toute erreur lève <code>DzDelivery\Errors\ShippingError</code> (voir <a href="#errors">§5</a>).</p>
+
+        <h3>Méthodes supportées par transporteur</h3>
+        <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>ZRExpress</th><th>Yalidine</th><th>Maystro</th><th>Ecotrack</th><th>NoEST</th><th>E-com</th><th>MDM</th><th>Elogistia</th></tr></thead><tbody>
+          <tr><td><code>createParcel</code></td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui (<code>pending</code> jusqu’à validation, voir <code>autoValidate</code>)</td><td class="ok">oui (idem, <code>autoValidate</code>)</td><td class="ok">oui (idem, <code>autoValidate</code>)</td><td class="ok">oui (produits du catalogue MDM, <code>storeId</code>)</td><td class="ok">oui</td></tr>
+          <tr><td><code>track</code></td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui (ou <a href="#maystro-webhooks">webhooks</a>)</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td></tr>
+          <tr><td><code>getFees</code></td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui (par wilaya)</td><td class="ok">oui (par wilaya)</td><td class="ok">oui (par wilaya)</td><td class="ok">oui (par commune)</td><td class="ok">oui (par wilaya)</td></tr>
+          <tr><td><code>getWilayas</code> / <code>getCommunes</code></td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td></tr>
+          <tr><td><code>getStopDesks</code></td><td class="ok">oui (hubs / points relais)</td><td class="ok">oui (centres)</td><td class="ok">oui (<code>communeId</code> requis)</td><td class="ok">oui (communes avec stop desk)</td><td class="ok">oui (stations)</td><td class="ok">oui (bureaux)</td><td class="ok">oui (bureaux partenaires)</td><td class="no"><code>NOT_SUPPORTED</code> (Elogistia choisit le bureau)</td></tr>
+          <tr><td><code>listParcels</code></td><td class="ok">oui (<code>parcels/search</code>)</td><td class="ok">oui (<code>GET parcels/</code>, <code>status</code> / <code>updatedSince</code> côté SDK)</td><td class="ok">oui (20 par page, filtres côté SDK)</td><td class="no"><code>NOT_SUPPORTED</code> (bientôt)</td><td class="no"><code>NOT_SUPPORTED</code></td><td class="ok">oui (<code>GET /colis</code>)</td><td class="ok">oui (<code>parcels/search</code>)</td><td class="no"><code>NOT_SUPPORTED</code></td></tr>
+          <tr><td><code>cancelParcel</code></td><td class="ok">oui</td><td class="ok">oui (seulement les colis encore « En préparation »)</td><td class="ok">oui (<code>PATCH</code> statut <code>50</code>)</td><td class="ok">oui (seulement les commandes pas encore validées)</td><td class="ok">oui (seulement les commandes pas encore validées)</td><td class="ok">oui (seulement les colis « En Préparation »)</td><td class="no"><code>NOT_SUPPORTED</code></td><td class="no"><code>NOT_SUPPORTED</code></td></tr>
+          <tr><td><code>healthCheck</code></td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td><td class="ok">oui</td></tr>
+        </tbody></table></div>
+
+        <h3 id="createParcel">3.1 <code>createParcel(ParcelInput|array $input): Parcel</code></h3>
+        <p>Livraison à domicile&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$parcel</span> = <span class="c-var">$client</span>-&gt;<span class="c-fn">createParcel</span>([
+    <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Client Test&#x27;</span>,
+    <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+    <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;12 rue des Tests&#x27;</span>,
+    <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,               <span class="c-cmt">// ou &#x27;wilayaName&#x27; =&gt; &#x27;Alger&#x27;</span>
+    <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,    <span class="c-cmt">// ou &#x27;communeId&#x27; =&gt; ...</span>
+    <span class="c-str">&#x27;productList&#x27;</span>   =&gt; [
+        [<span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;Mug&#x27;</span>, <span class="c-str">&#x27;quantity&#x27;</span> =&gt; <span class="c-num">2</span>],
+        [<span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>],
+    ],                                   <span class="c-cmt">// ou &#x27;productName&#x27; =&gt; &#x27;T-shirt&#x27;</span>
+    <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">3200</span>,             <span class="c-cmt">// montant payé par le destinataire, en DZD</span>
+    <span class="c-str">&#x27;weight&#x27;</span>        =&gt; <span class="c-num">1.5</span>,
+    <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORD-1001&#x27;</span>,
+]);
+
+<span class="c-key">echo</span> <span class="c-var">$parcel</span>-&gt;trackingNumber;  <span class="c-cmt">// à enregistrer avec votre commande</span>
+<span class="c-key">echo</span> <span class="c-var">$parcel</span>-&gt;status;          <span class="c-cmt">// en général &#x27;pending&#x27; juste après la création</span></pre></div>
+        <p>Livraison en stop desk (bureau)&nbsp;: récupérez l’id du bureau avec <a href="#getStopDesks"><code>getStopDesks</code></a> et passez-le en <code>stopDeskId</code>.</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$desks</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getStopDesks</span>([<span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-num">16</span>, <span class="c-str">&#x27;communeId&#x27;</span> =&gt; <span class="c-num">1630</span>]);
+
+<span class="c-var">$parcel</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">createParcel</span>([
+    <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Client Test&#x27;</span>,
+    <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+    <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Retrait au bureau&#x27;</span>,
+    <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+    <span class="c-str">&#x27;communeId&#x27;</span>     =&gt; <span class="c-num">1630</span>,
+    <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+    <span class="c-str">&#x27;isStopDesk&#x27;</span>    =&gt; <span class="c-key">true</span>,
+    <span class="c-str">&#x27;stopDeskId&#x27;</span>    =&gt; <span class="c-var">$desks</span>[<span class="c-num">0</span>]-&gt;id,
+]);</pre></div>
+        <p>Entrée (<code>ParcelInput</code>)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Champ</th><th>Type</th><th>Requis</th><th>Notes</th></tr></thead><tbody>
+          <tr><td><code>recipientName</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Nom complet. Yalidine le coupe au premier espace en prénom / nom.</td></tr>
+          <tr><td><code>phone</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Tout format algérien courant (<code>0550…</code>, <code>+213 550…</code>). Normalisé par transporteur (ZRExpress reçoit <code>+213…</code>, les autres <code>0…</code>). Numéro invalide → <code>VALIDATION_ERROR</code> avant tout appel HTTP.</td></tr>
+          <tr><td><code>phone2</code></td><td><code>string</code></td><td>non</td><td>Second numéro.</td></tr>
+          <tr><td><code>address</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Texte libre.</td></tr>
+          <tr><td><code>wilayaId</code></td><td><code>int|string</code></td><td>l’un des deux</td><td>Code officiel <code>1</code>–<code>58</code> ou <code>Location-&gt;id</code> du transporteur.</td></tr>
+          <tr><td><code>wilayaName</code></td><td><code>string</code></td><td>l’un des deux</td><td>Résolu sans tenir compte de la casse ni des accents.</td></tr>
+          <tr><td><code>communeId</code></td><td><code>int|string</code></td><td>l’un des deux</td><td><code>Location-&gt;id</code> du transporteur, issu de <code>getCommunes</code>.</td></tr>
+          <tr><td><code>communeName</code></td><td><code>string</code></td><td>l’un des deux</td><td>Résolu dans la wilaya.</td></tr>
+          <tr><td><code>productName</code></td><td><code>string</code></td><td>l’un des deux</td><td>Description d’un seul produit.</td></tr>
+          <tr><td><code>productList</code></td><td><code>array</code></td><td>l’un des deux</td><td><code>[['name' =&gt; string, 'quantity' =&gt; int ≥ 1, 'unitPrice' =&gt; ?number, 'sku' =&gt; ?string], …]</code>.</td></tr>
+          <tr><td><code>price</code></td><td><code>number</code></td><td><strong>oui</strong></td><td>Montant encaissé auprès du destinataire (COD), en DZD. <code>0</code> si prépayé. C’est le total payé par le destinataire&nbsp;: le transporteur en déduit ses frais.</td></tr>
+          <tr><td><code>weight</code></td><td><code>number</code></td><td>non</td><td>kg.</td></tr>
+          <tr><td><code>length</code>, <code>width</code>, <code>height</code></td><td><code>number</code></td><td>non</td><td>cm. <strong>Yalidine</strong> reçoit toujours ces quatre champs en entiers&nbsp;: <code>0</code> s’ils manquent, décimales arrondies au supérieur. ZRExpress place les dimensions sur le premier produit. Maystro ignore poids et dimensions.</td></tr>
+          <tr><td><code>isStopDesk</code></td><td><code>bool</code></td><td>non</td><td><code>false</code> par défaut (livraison à domicile).</td></tr>
+          <tr><td><code>stopDeskId</code></td><td><code>string</code></td><td>si <code>isStopDesk</code></td><td>Id du bureau renvoyé par <code>getStopDesks</code> (ZRExpress&nbsp;: l’UUID du hub).</td></tr>
+          <tr><td><code>stockType</code></td><td><code>?string</code></td><td>non</td><td>ZRExpress uniquement&nbsp;: <code>"none"</code> (défaut) | <code>"local"</code> | <code>"warehouse"</code>. Surcharge par article via <code>productList[].stockType</code>&nbsp;; <code>local</code> / <code>warehouse</code> exigent <code>productId</code> + <code>sku</code>.</td></tr>
+          <tr><td><code>remark</code></td><td><code>string</code></td><td>non</td><td>Note pour le livreur (envoyée à Maystro uniquement, pas à ZRExpress ni à Yalidine).</td></tr>
+          <tr><td><code>orderId</code></td><td><code>string</code></td><td>non</td><td>Votre référence de commande. Yalidine en exige une et génère <code>dzd-…</code> si elle manque.</td></tr>
+        </tbody></table></div>
+        <p>Nom ou id de wilaya / commune inconnu → <code>NOT_FOUND</code> avant l’envoi du colis.</p>
+        <p>Sortie (<code>Parcel</code>)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td><code>string</code></td><td>Id chez le transporteur (UUID chez ZRExpress / Maystro&nbsp;; Yalidine&nbsp;: le numéro de suivi). À utiliser pour <code>cancelParcel</code>.</td></tr>
+          <tr><td><code>trackingNumber</code></td><td><code>string</code></td><td>Numéro de suivi à montrer au client et à passer à <code>track</code>.</td></tr>
+          <tr><td><code>status</code></td><td><code>string</code></td><td>Statut unifié (voir <a href="#statuses">§4</a>).</td></tr>
+          <tr><td><code>provider</code></td><td><code>string</code></td><td>Clé du transporteur (<code>zrexpress</code>, <code>yalidine</code>, <code>maystro</code>…).</td></tr>
+          <tr><td><code>labelUrl</code></td><td><code>?string</code></td><td>URL du bordereau quand le transporteur la renvoie avec le colis (Yalidine).</td></tr>
+          <tr><td><code>raw</code></td><td><code>mixed</code></td><td>Réponse native (avec <code>includeRaw</code>).</td></tr>
+        </tbody></table></div>
+        <p class="callout"><strong>Maystro</strong> refuse une commande avec le même nom de client + téléphone qu’une autre commande créée dans les dernières 24&nbsp;heures. Relancer après un timeout peut donc échouer en <code>VALIDATION_ERROR</code> alors que la première commande a bien été créée.</p>
+
+        <h3 id="track">3.2 <code>track(string $trackingNumber): TrackResult</code></h3>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$result</span> = <span class="c-var">$client</span>-&gt;<span class="c-fn">track</span>(<span class="c-str">&#x27;yal-ABC123&#x27;</span>);
+
+<span class="c-key">echo</span> <span class="c-var">$result</span>-&gt;parcel-&gt;status;               <span class="c-cmt">// statut unifié actuel</span>
+<span class="c-key">foreach</span> (<span class="c-var">$result</span>-&gt;events <span class="c-key">as</span> <span class="c-var">$event</span>) {        <span class="c-cmt">// le plus ancien en premier</span>
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$event-&gt;at}  {$event-&gt;status}  {$event-&gt;label}\n&quot;</span>;
+}</pre></div>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>parcel</code></td><td><code>Parcel</code></td><td>État actuel (voir ci-dessus).</td></tr>
+          <tr><td><code>events</code></td><td><code>TrackingEvent[]</code></td><td>Historique, du plus ancien au plus récent. Peut être vide.</td></tr>
+        </tbody></table></div>
+        <p><code>TrackingEvent</code>&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>status</code></td><td><code>string</code></td><td>Statut unifié.</td></tr>
+          <tr><td><code>label</code></td><td><code>string</code></td><td>Libellé natif, par exemple <code>Tentative échouée (Client ne répond pas)</code>.</td></tr>
+          <tr><td><code>at</code></td><td><code>string</code></td><td>Date ISO 8601 avec décalage horaire, par exemple <code>2025-12-30T13:24:34+01:00</code>.</td></tr>
+          <tr><td><code>raw</code></td><td><code>mixed</code></td><td>Événement natif.</td></tr>
+        </tbody></table></div>
+        <p>Un numéro de suivi inconnu lève <code>NOT_FOUND</code>. Maystro accepte l’id de commande (<code>$parcel-&gt;id</code>) ou le numéro de suivi.</p>
+
+        <h3 id="getFees">3.3 <code>getFees(FeeQuery|array $query): FeeQuote</code></h3>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$quote</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getFees</span>([
+    <span class="c-str">&#x27;toWilayaId&#x27;</span>  =&gt; <span class="c-num">31</span>,
+    <span class="c-str">&#x27;toCommuneId&#x27;</span> =&gt; <span class="c-num">3101</span>,   <span class="c-cmt">// tarifs par commune chez Yalidine et Maystro</span>
+    <span class="c-str">&#x27;weight&#x27;</span>      =&gt; <span class="c-num">2</span>,
+    <span class="c-str">&#x27;length&#x27;</span>      =&gt; <span class="c-num">50</span>,     <span class="c-cmt">// cm : Yalidine facture le poids volumétrique s&#x27;il est plus élevé</span>
+    <span class="c-str">&#x27;width&#x27;</span>       =&gt; <span class="c-num">40</span>,
+    <span class="c-str">&#x27;height&#x27;</span>      =&gt; <span class="c-num">30</span>,
+]);
+
+<span class="c-key">echo</span> <span class="c-var">$quote</span>-&gt;deliveryFee;   <span class="c-cmt">// 950 si oversize_fee = 50 DA/kg (voir ci-dessous)</span>
+<span class="c-key">echo</span> <span class="c-var">$quote</span>-&gt;stopDeskFee;
+<span class="c-key">echo</span> <span class="c-var">$quote</span>-&gt;returnFee;</pre></div>
+        <p>Entrée (<code>FeeQuery</code>)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Champ</th><th>Type</th><th>Requis</th><th>Notes</th></tr></thead><tbody>
+          <tr><td><code>toWilayaId</code></td><td><code>int|string</code></td><td><strong>oui</strong></td><td>Code <code>1</code>–<code>58</code> ou id du transporteur.</td></tr>
+          <tr><td><code>toCommuneId</code></td><td><code>int|string</code></td><td>non</td><td>Yalidine / Maystro&nbsp;: sans lui, la première commune de la wilaya est utilisée.</td></tr>
+          <tr><td><code>fromWilayaId</code></td><td><code>int|string</code></td><td>non</td><td>Yalidine&nbsp;: remplace le <code>fromWilayaId</code> du client.</td></tr>
+          <tr><td><code>weight</code></td><td><code>number</code></td><td>non</td><td>kg.</td></tr>
+          <tr><td><code>length</code>, <code>width</code>, <code>height</code></td><td><code>number</code></td><td>non</td><td>cm. Utilisés par Yalidine uniquement.</td></tr>
+          <tr><td><code>isStopDesk</code></td><td><code>bool</code></td><td>non</td><td><code>true</code>&nbsp;: <code>deliveryFee</code> est le tarif stop desk.</td></tr>
+        </tbody></table></div>
+        <p>Sortie (<code>FeeQuote</code>)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>deliveryFee</code></td><td><code>int|float</code></td><td>Tarif pour le mode demandé (domicile ou stop desk).</td></tr>
+          <tr><td><code>stopDeskFee</code></td><td><code>int|float|null</code></td><td>Tarif stop desk, quand le transporteur le fournit.</td></tr>
+          <tr><td><code>returnFee</code></td><td><code>int|float|null</code></td><td>Frais de retour (Yalidine uniquement pour l’instant).</td></tr>
+          <tr><td><code>currency</code></td><td><code>string</code></td><td>Toujours <code>DZD</code>.</td></tr>
+          <tr><td><code>raw</code></td><td><code>mixed</code></td><td>Réponse native.</td></tr>
+        </tbody></table></div>
+        <p><strong>Surpoids Yalidine.</strong> Poids facturé = max(<code>weight</code>, <code>length × width × height × 0.0002</code>)&nbsp;; le poids volumétrique n’est utilisé que si les trois dimensions sont fournies. Au-delà de 5&nbsp;kg, <code>(facturé − 5) × oversize_fee</code> (arrondi au dinar supérieur) s’ajoute aux deux tarifs. Dans l’exemple&nbsp;: 50 × 40 × 30 × 0,0002 = 12&nbsp;kg → (12 − 5) × 50 = 350&nbsp;DA, en plus d’un tarif domicile de 600&nbsp;DA.</p>
+        <p>ZRExpress et Maystro ignorent poids et dimensions. Aucun tarif pour le mode demandé → <code>NOT_FOUND</code>.</p>
+
+        <h3 id="getWilayas">3.4 <code>getWilayas(): Location[]</code></h3>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">foreach</span> (<span class="c-var">$client</span>-&gt;<span class="c-fn">getWilayas</span>() <span class="c-key">as</span> <span class="c-var">$wilaya</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$wilaya-&gt;code} {$wilaya-&gt;name} ({$wilaya-&gt;id})\n&quot;</span>;
+}</pre></div>
+
+        <h3 id="getCommunes">3.5 <code>getCommunes(int|string $wilayaId): Location[]</code></h3>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$communes</span> = <span class="c-var">$client</span>-&gt;<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);       <span class="c-cmt">// code, id transporteur ou (Yalidine/Maystro) nom</span></pre></div>
+        <p>Sortie (<code>Location</code>, pour les deux méthodes)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td><code>string</code></td><td>Id du transporteur&nbsp;: à passer en <code>wilayaId</code> / <code>communeId</code>. ZRExpress utilise des UUID&nbsp;; Yalidine et Maystro des nombres (id de wilaya = code officiel).</td></tr>
+          <tr><td><code>name</code></td><td><code>string</code></td><td>Nom (français / latin).</td></tr>
+          <tr><td><code>parentId</code></td><td><code>?string</code></td><td>Communes&nbsp;: l’id de la wilaya.</td></tr>
+          <tr><td><code>code</code></td><td><code>?string</code></td><td>Wilayas&nbsp;: code officiel <code>1</code>–<code>58</code>. Communes&nbsp;: code postal quand il est connu (Maystro).</td></tr>
+          <tr><td><code>raw</code></td><td><code>mixed</code></td><td>Élément natif.</td></tr>
+        </tbody></table></div>
+        <p>Les wilayas et communes non livrables sont ignorées. Les résultats sont mis en cache pendant toute la vie de l’objet client&nbsp;: réutilisez un même client plutôt que d’en créer un par requête.</p>
+
+        <h3 id="getStopDesks">3.6 <code>getStopDesks(StopDeskQuery|array $query): array</code></h3>
+        <p>Liste les stop desks / points relais où le colis peut être retiré. Utilisez l’<code>id</code> renvoyé comme <code>stopDeskId</code> dans <code>createParcel</code>.</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-cmt">// ZRExpress : commencez par la wilaya seule, le filtre commune renvoie souvent zéro hub.</span>
+<span class="c-var">$desks</span> = <span class="c-var">$client</span>-&gt;<span class="c-fn">getStopDesks</span>([<span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
+<span class="c-key">foreach</span> (<span class="c-var">$desks</span> <span class="c-key">as</span> <span class="c-var">$desk</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$desk-&gt;id}  {$desk-&gt;name}  {$desk-&gt;address}\n&quot;</span>;
+}</pre></div>
+        <p>Entrée (<code>StopDeskQuery</code>)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Champ</th><th>Type</th><th>Requis</th><th>Notes</th></tr></thead><tbody>
+          <tr><td><code>wilayaId</code></td><td><code>int|string</code></td><td><strong>oui</strong></td><td>Code <code>1</code>–<code>58</code>, id du transporteur ou nom.</td></tr>
+          <tr><td><code>communeId</code></td><td><code>int|string</code></td><td>Maystro&nbsp;: <strong>oui</strong>&nbsp;; autres&nbsp;: non</td><td>Id du transporteur ou nom. Filtre optionnel pour Yalidine / ZRExpress / Ecotrack.</td></tr>
+        </tbody></table></div>
+        <p>Sortie (<code>StopDesk[]</code>)&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td><code>string</code></td><td>À passer en <code>stopDeskId</code>.</td></tr>
+          <tr><td><code>name</code></td><td><code>string</code></td><td>Nom du bureau.</td></tr>
+          <tr><td><code>address</code></td><td><code>?string</code></td><td>Quand le transporteur la fournit.</td></tr>
+          <tr><td><code>communeId</code></td><td><code>?string</code></td><td>Commune du bureau.</td></tr>
+          <tr><td><code>wilayaId</code></td><td><code>?string</code></td><td>Wilaya du bureau.</td></tr>
+          <tr><td><code>phone</code></td><td><code>?string</code></td><td>Téléphone principal si disponible.</td></tr>
+          <tr><td><code>openingHours</code></td><td><code>?string</code></td><td>Horaires d’ouverture (texte) si disponibles.</td></tr>
+          <tr><td><code>lat</code> / <code>lng</code></td><td><code>?float</code></td><td>Coordonnées si disponibles.</td></tr>
+          <tr><td><code>type</code></td><td><code>?string</code></td><td>Type de hub chez le transporteur (par exemple ZRExpress <code>"stopdesk"</code>).</td></tr>
+          <tr><td><code>raw</code></td><td><code>mixed</code></td><td>Élément natif.</td></tr>
+        </tbody></table></div>
+        <ul class="notes">
+          <li><strong><a href="../yalidine/">Yalidine</a></strong>&nbsp;: les « centres » Yalidine. <code>communeId</code> est un filtre optionnel.</li>
+          <li><strong><a href="../maystro/">Maystro</a></strong>&nbsp;: <code>communeId</code> est obligatoire. Le stop desk propre à la commune a pour <code>id</code> l’<strong>id de la commune</strong>&nbsp;; les points relais partenaires ont leur propre id.</li>
+          <li><strong><a href="../zrexpress/">ZRExpress</a></strong>&nbsp;: <a href="https://docs.zrexpress.app/reference/searchhubsendpoint"><code>POST /api/v1/hubs/search</code></a> avec <code>isPickupPoint = true</code>. Préférez la liste <strong>par wilaya seule</strong>&nbsp;: si <code>communeId</code> ne renvoie aucun bureau alors que la wilaya a des hubs, le SDK lève <code>NOT_FOUND</code> avec <code>EMPTY_COMMUNE_HUBS</code>. Utilisez l’UUID du hub renvoyé comme <code>stopDeskId</code>.</li>
+        </ul>
+
+        <h3 id="listParcels">3.7 <code>listParcels(ParcelListQuery|array|null $query = null): ParcelListPage</code></h3>
+        <p>Liste paginée des colis du compte avec leur <code>status</code> unifié actuel (sans historique&nbsp;: utilisez <code>track()</code> pour cela).</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$page</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">listParcels</span>([<span class="c-str">&#x27;page&#x27;</span> =&gt; <span class="c-num">1</span>, <span class="c-str">&#x27;pageSize&#x27;</span> =&gt; <span class="c-num">50</span>]);
+<span class="c-key">foreach</span> (<span class="c-var">$page</span>-&gt;parcels <span class="c-key">as</span> <span class="c-var">$parcel</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$parcel-&gt;trackingNumber} {$parcel-&gt;status}\n&quot;</span>;
+}
+
+<span class="c-cmt">// Pour synchroniser :</span>
+<span class="c-cmt">// $zr-&gt;listParcels([&#x27;orderId&#x27; =&gt; &#x27;ORD-1001&#x27;]);</span>
+<span class="c-cmt">// $zr-&gt;listParcels([&#x27;keyword&#x27; =&gt; &#x27;0550&#x27;, &#x27;status&#x27; =&gt; &#x27;pending&#x27;]);</span>
+<span class="c-cmt">// $zr-&gt;listParcels([&#x27;updatedSince&#x27; =&gt; &#x27;2026-10-01T00:00:00+00:00&#x27;, &#x27;allPages&#x27; =&gt; true]);</span></pre></div>
+        <div class="table-wrap"><table><thead><tr><th>Champ</th><th>Notes</th></tr></thead><tbody>
+          <tr><td><code>page</code> / <code>pageSize</code></td><td>Par défaut <code>1</code> / <code>50</code> (ZRExpress plafonne à 1000).</td></tr>
+          <tr><td><code>keyword</code></td><td>Texte libre (numéro de suivi, nom, téléphone…).</td></tr>
+          <tr><td><code>orderId</code></td><td>Référence marchand (<code>externalId</code> chez ZRExpress).</td></tr>
+          <tr><td><code>status</code></td><td>Statut unifié&nbsp;; filtré après le mapping.</td></tr>
+          <tr><td><code>updatedSince</code></td><td>ISO 8601. ZRExpress filtre sur <code>lastStateUpdateAt</code>.</td></tr>
+          <tr><td><code>allPages</code></td><td>Suit la pagination (avec un plafond de sécurité).</td></tr>
+        </tbody></table></div>
+        <ul class="notes">
+          <li><strong>ZRExpress</strong>&nbsp;: <a href="https://docs.zrexpress.app/reference/searchsupplierparcelsendpoint"><code>POST /api/v1/parcels/search</code></a>.</li>
+          <li><strong>Maystro</strong>&nbsp;: <code>GET /api/stores/orders/</code> (20 par page, fixe)&nbsp;; <code>status</code>, <code>orderId</code>, <code>keyword</code> et <code>updatedSince</code> filtrent chaque page côté SDK.</li>
+          <li><strong>Yalidine</strong>&nbsp;: <code>GET parcels/</code> (jusqu’à 1000 par page)&nbsp;; <code>keyword</code> → <code>tracking</code> (plusieurs numéros séparés par des virgules acceptés), <code>orderId</code> → <code>order_id</code>&nbsp;; <code>status</code> et <code>updatedSince</code> (<code>date_last_status</code>) filtrent chaque page côté SDK. Une page courte peut donc avoir <code>hasNext</code> à <code>true</code>&nbsp;: suivez <code>hasNext</code>, pas la taille de la page.</li>
+          <li><strong>Ecotrack</strong>&nbsp;: <code>NOT_SUPPORTED</code> pour l’instant.</li>
+        </ul>
+
+        <h3 id="cancelParcel">3.8 <code>cancelParcel(string $trackingNumberOrId): void</code></h3>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$client</span>-&gt;<span class="c-fn">cancelParcel</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);</pre></div>
+        <ul class="notes">
+          <li><strong>ZRExpress</strong>&nbsp;: accepte l’UUID ou le numéro de suivi.</li>
+          <li><strong>Yalidine</strong>&nbsp;: seuls les colis encore « En préparation » peuvent être supprimés&nbsp;; sinon <code>VALIDATION_ERROR</code>.</li>
+          <li><strong>Maystro</strong>&nbsp;: accepte l’id de commande ou le numéro de suivi&nbsp;; annule la commande (<code>PATCH /api/shared/status/{id}/</code>, statut <code>50</code>).</li>
+        </ul>
+
+        <h3 id="healthCheck">3.9 <code>healthCheck(): HealthCheckResult</code></h3>
+        <p>Vérification légère et authentifiée (liste des wilayas). <strong>Appelle toujours le réseau</strong> (ignore le cache en mémoire). En cas de succès, renvoie <code>{ ok: true, provider, latencyMs }</code>&nbsp;; en cas d’échec, lève une <code>ShippingError</code> (<code>AUTH_FAILED</code>, <code>NETWORK_ERROR</code>…).</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$health</span> = <span class="c-var">$client</span>-&gt;<span class="c-fn">healthCheck</span>();
+<span class="c-cmt">// $health-&gt;ok === true</span>
+<span class="c-cmt">// $health-&gt;provider  // &#x27;yalidine&#x27; | ...</span>
+<span class="c-cmt">// $health-&gt;latencyMs // millisecondes</span></pre></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">4. Statuts de colis</h2>
+        <p>Chaque statut natif des transporteurs est converti en l’un de ces statuts unifiés&nbsp;:</p>
+        <div class="table-wrap"><table><thead><tr><th>Statut</th><th>Signification</th></tr></thead><tbody>
+          <tr><td><code>pending</code></td><td>Enregistré mais pas encore confirmé / prêt pour l’enlèvement.</td></tr>
+          <tr><td><code>created</code></td><td>Confirmé, prêt à être enlevé ou expédié.</td></tr>
+          <tr><td><code>in_transit</code></td><td>Enlevé et en mouvement&nbsp;: hub, transfert, en cours de livraison, tentative échouée…</td></tr>
+          <tr><td><code>delivered</code></td><td>Livré (COD encaissé).</td></tr>
+          <tr><td><code>returned</code></td><td>Retourné ou en retour vers l’expéditeur.</td></tr>
+          <tr><td><code>cancelled</code></td><td>Annulé / supprimé avant livraison.</td></tr>
+          <tr><td><code>unknown</code></td><td>Pas encore mappé. Jamais une erreur&nbsp;: consultez <code>$event-&gt;label</code> / <code>-&gt;raw</code>.</td></tr>
+        </tbody></table></div>
+        <p>Les constantes sont dans <code>DzDelivery\Models\ParcelStatus</code> (<code>ParcelStatus::DELIVERED</code>, …, <code>ParcelStatus::ALL</code>).</p>
+        <p>Pour convertir vous-même un statut natif (par exemple reçu par webhook), utilisez <code>DzDelivery\Support\StatusMapper</code>&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Support</span>\<span class="c-type">StatusMapper</span>;
+
+<span class="c-type">StatusMapper</span>::<span class="c-fn">map</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, <span class="c-str">&#x27;Sorti en livraison&#x27;</span>);  <span class="c-cmt">// &#x27;in_transit&#x27;</span>
+<span class="c-type">StatusMapper</span>::<span class="c-fn">maystro</span>(<span class="c-num">41</span>);                             <span class="c-cmt">// &#x27;delivered&#x27; (code ou nom)</span></pre></div>
+        <p>Détail des statuts et exemples par transporteur&nbsp;: <a href="../statuts/#statuses">Statuts de colis unifiés</a>. Tables complètes natif → unifié&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="errors" aria-labelledby="errors-title">
+        <h2 id="errors-title">5. Gestion des erreurs</h2>
+        <p>Tout lève <code>DzDelivery\Errors\ShippingError</code> (qui étend <code>\RuntimeException</code>).</p>
+        <div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>code</code></td><td><code>string</code></td><td>Un des codes ci-dessous (une chaîne, pas un entier).</td></tr>
+          <tr><td><code>getMessage()</code></td><td><code>string</code></td><td>Message du transporteur quand il existe.</td></tr>
+          <tr><td><code>httpStatus</code></td><td><code>?int</code></td><td>Statut HTTP de l’appel en échec.</td></tr>
+          <tr><td><code>details</code></td><td><code>?array</code></td><td>Par exemple les erreurs de validation <code>[['field' =&gt; 'phone', 'message' =&gt; '…'], …]</code>.</td></tr>
+          <tr><td><code>raw</code></td><td><code>mixed</code></td><td>Corps d’erreur natif.</td></tr>
+          <tr><td><code>provider</code></td><td><code>?string</code></td><td>Clé du transporteur.</td></tr>
+          <tr><td><code>retryAfter</code></td><td><code>?int</code></td><td><code>RATE_LIMITED</code> uniquement&nbsp;: secondes d’attente, issues de l’en-tête <code>Retry-After</code> quand il est envoyé.</td></tr>
+        </tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Code</th><th>Quand</th></tr></thead><tbody>
+          <tr><td><code>AUTH_FAILED</code></td><td>Identifiants manquants ou invalides (401 / 403).</td></tr>
+          <tr><td><code>VALIDATION_ERROR</code></td><td>Entrée invalide (vérifiée avant l’appel), 400 / 422, ou colis refusé par le transporteur.</td></tr>
+          <tr><td><code>NOT_FOUND</code></td><td>404, colis, wilaya ou commune inconnus.</td></tr>
+          <tr><td><code>RATE_LIMITED</code></td><td>429. Limites Yalidine par défaut&nbsp;: 5 req/s, 50/min, 1 000/h, 10 000/jour.</td></tr>
+          <tr><td><code>NOT_SUPPORTED</code></td><td>Le transporteur ne propose pas cette opération.</td></tr>
+          <tr><td><code>PROVIDER_ERROR</code></td><td>5xx ou réponse inattendue.</td></tr>
+          <tr><td><code>NETWORK_ERROR</code></td><td>Timeout, DNS, connexion refusée.</td></tr>
+          <tr><td><code>UNKNOWN</code></td><td>Tout le reste.</td></tr>
+        </tbody></table></div>
+        <p>Le SDK ne relance jamais un appel de lui-même. Une relance simple pour les limites de débit&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-key">function</span> <span class="c-fn">withRetry</span>(<span class="c-type">callable</span> <span class="c-var">$call</span>, <span class="c-type">int</span> <span class="c-var">$attempts</span> = <span class="c-num">3</span>): <span class="c-type">mixed</span>
+{
+    <span class="c-key">for</span> (<span class="c-var">$i</span> = <span class="c-num">1</span>; ; <span class="c-var">$i</span>++) {
+        <span class="c-key">try</span> {
+            <span class="c-key">return</span> <span class="c-var">$call</span>();
+        } <span class="c-key">catch</span> (<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+            <span class="c-key">if</span> (<span class="c-var">$e</span>-&gt;code !== <span class="c-type">ShippingError</span>::<span class="c-type">RATE_LIMITED</span> || <span class="c-var">$i</span> &gt;= <span class="c-var">$attempts</span>) {
+                <span class="c-key">throw</span> <span class="c-var">$e</span>;
+            }
+            <span class="c-fn">sleep</span>(<span class="c-var">$e</span>-&gt;retryAfter ?? <span class="c-num">2</span> ** <span class="c-var">$i</span>);
+        }
+    }
+}
+
+<span class="c-var">$wilayas</span> = <span class="c-fn">withRetry</span>(<span class="c-key">fn</span> () =&gt; <span class="c-var">$client</span>-&gt;<span class="c-fn">getWilayas</span>());</pre></div>
+        <p class="callout">Ne relancez <strong>pas</strong> aveuglément <code>createParcel</code> sur <code>NETWORK_ERROR</code>&nbsp;: le colis existe peut-être déjà. Vérifiez d’abord, ou appuyez-vous sur votre <code>orderId</code>.</p>
+        <p>Afficher les erreurs de validation à l’utilisateur&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">try</span> {
+    <span class="c-var">$client</span>-&gt;<span class="c-fn">createParcel</span>(<span class="c-var">$input</span>);
+} <span class="c-key">catch</span> (<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">if</span> (<span class="c-var">$e</span>-&gt;code === <span class="c-type">ShippingError</span>::<span class="c-type">VALIDATION_ERROR</span>) {
+        <span class="c-key">foreach</span> (<span class="c-var">$e</span>-&gt;details ?? [] <span class="c-key">as</span> <span class="c-var">$d</span>) {
+            <span class="c-var">$errors</span>[<span class="c-var">$d</span>[<span class="c-str">&#x27;field&#x27;</span>] ?? <span class="c-str">&#x27;general&#x27;</span>][] = <span class="c-var">$d</span>[<span class="c-str">&#x27;message&#x27;</span>];
+        }
+    } <span class="c-key">else</span> {
+        <span class="c-fn">error_log</span>(<span class="c-str">&quot;[{$e-&gt;provider}] {$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>);
+        <span class="c-key">throw</span> <span class="c-var">$e</span>;
+    }
+}</pre></div>
+      </section>
+
+      <section id="laravel" aria-labelledby="laravel-title">
+        <h2 id="laravel-title">6. Exemple Laravel</h2>
+        <p><code>config/services.php</code>&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>config/services.php</span></div><pre><span class="c-str">&#x27;dz_delivery&#x27;</span> =&gt; [
+    <span class="c-str">&#x27;default&#x27;</span> =&gt; <span class="c-fn">env</span>(<span class="c-str">&#x27;DZ_DELIVERY_PROVIDER&#x27;</span>, <span class="c-str">&#x27;yalidine&#x27;</span>),
+    <span class="c-str">&#x27;zrexpress&#x27;</span> =&gt; [<span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">env</span>(<span class="c-str">&#x27;ZREXPRESS_API_KEY&#x27;</span>), <span class="c-str">&#x27;tenant&#x27;</span> =&gt; <span class="c-fn">env</span>(<span class="c-str">&#x27;ZREXPRESS_TENANT&#x27;</span>)],
+    <span class="c-str">&#x27;yalidine&#x27;</span> =&gt; [
+        <span class="c-str">&#x27;apiId&#x27;</span> =&gt; <span class="c-fn">env</span>(<span class="c-str">&#x27;YALIDINE_API_ID&#x27;</span>),
+        <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">env</span>(<span class="c-str">&#x27;YALIDINE_API_TOKEN&#x27;</span>),
+        <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; (<span class="c-type">int</span>) <span class="c-fn">env</span>(<span class="c-str">&#x27;YALIDINE_FROM_WILAYA_ID&#x27;</span>, <span class="c-num">16</span>),
+    ],
+    <span class="c-str">&#x27;maystro&#x27;</span> =&gt; [<span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-fn">env</span>(<span class="c-str">&#x27;MAYSTRO_API_TOKEN&#x27;</span>)],
+],</pre></div>
+        <p><code>app/Providers/ShippingServiceProvider.php</code> (à enregistrer dans <code>bootstrap/providers.php</code> ou <code>config/app.php</code>)&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>app/Providers/ShippingServiceProvider.php</span></div><pre><span class="c-key">namespace</span> <span class="c-type">App</span>\<span class="c-type">Providers</span>;
+
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Contracts</span>\<span class="c-type">ShippingProviderInterface</span>;
+<span class="c-key">use</span> <span class="c-type">Illuminate</span>\<span class="c-type">Support</span>\<span class="c-type">ServiceProvider</span>;
+
+<span class="c-key">final</span> <span class="c-key">class</span> <span class="c-type">ShippingServiceProvider</span> <span class="c-key">extends</span> <span class="c-type">ServiceProvider</span>
+{
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">register</span>(): <span class="c-type">void</span>
+    {
+        <span class="c-cmt">// Transporteur par défaut, injectable partout. Une instance par app = caches de localités partagés.</span>
+        <span class="c-var">$this</span>-&gt;app-&gt;<span class="c-fn">singleton</span>(<span class="c-type">ShippingProviderInterface</span>::<span class="c-key">class</span>, <span class="c-key">function</span> () {
+            <span class="c-var">$provider</span> = <span class="c-fn">config</span>(<span class="c-str">&#x27;services.dz_delivery.default&#x27;</span>);
+
+            <span class="c-key">return</span> <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-var">$provider</span>, <span class="c-fn">config</span>(<span class="c-str">&quot;services.dz_delivery.$provider&quot;</span>));
+        });
+    }
+}</pre></div>
+        <p>Contrôleur&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Contracts</span>\<span class="c-type">ShippingProviderInterface</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-key">final</span> <span class="c-key">class</span> <span class="c-type">ShipmentController</span>
+{
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">store</span>(<span class="c-type">Order</span> <span class="c-var">$order</span>, <span class="c-type">ShippingProviderInterface</span> <span class="c-var">$shipping</span>)
+    {
+        <span class="c-key">try</span> {
+            <span class="c-var">$parcel</span> = <span class="c-var">$shipping</span>-&gt;<span class="c-fn">createParcel</span>([
+                <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;customer_name,
+                <span class="c-str">&#x27;phone&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;phone,
+                <span class="c-str">&#x27;address&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;address,
+                <span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;wilaya_code,
+                <span class="c-str">&#x27;communeName&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;commune,
+                <span class="c-str">&#x27;productName&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;<span class="c-fn">summary</span>(),
+                <span class="c-str">&#x27;price&#x27;</span> =&gt; <span class="c-var">$order</span>-&gt;total,
+                <span class="c-str">&#x27;orderId&#x27;</span> =&gt; (<span class="c-type">string</span>) <span class="c-var">$order</span>-&gt;id,
+            ]);
+        } <span class="c-key">catch</span> (<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+            <span class="c-key">return</span> <span class="c-fn">back</span>()-&gt;<span class="c-fn">withErrors</span>([<span class="c-str">&#x27;shipping&#x27;</span> =&gt; <span class="c-var">$e</span>-&gt;<span class="c-fn">getMessage</span>()]);
+        }
+
+        <span class="c-var">$order</span>-&gt;<span class="c-fn">update</span>([<span class="c-str">&#x27;tracking&#x27;</span> =&gt; <span class="c-var">$parcel</span>-&gt;trackingNumber, <span class="c-str">&#x27;carrier&#x27;</span> =&gt; <span class="c-var">$parcel</span>-&gt;provider]);
+
+        <span class="c-key">return</span> <span class="c-fn">back</span>();
+    }
+}</pre></div>
+        <p>Plusieurs transporteurs à la fois&nbsp;? Liez plutôt une petite factory (par exemple <code>fn (string $p) =&gt; ClientFactory::create($p, config("services.dz_delivery.$p"))</code>) et gardez un client par transporteur.</p>
+      </section>
+
+      <section id="maystro-webhooks" aria-labelledby="maystro-webhooks-title">
+        <h2 id="maystro-webhooks-title">7. Webhooks Maystro</h2>
+        <p><code>track()</code> lit une commande <a href="../maystro/">Maystro</a> et son historique à la demande. Pour être notifié au lieu d’interroger l’API, Maystro peut aussi <strong>pousser</strong> les changements de statut vers une URL HTTPS configurée dans l’application Maystro (Paramètres → Webhooks). L’événement utile est <code>OrderStatusChanged</code>, dont le <code>payload</code> vaut <code>{ "id": "&lt;uuid de la commande&gt;", "status": &lt;code numérique&gt; }</code>. <code>payload.id</code> est l’id de commande renvoyé en <code>$parcel-&gt;id</code> par <code>createParcel</code>.</p>
+        <p>Ce que dit la documentation Maystro du corps de la requête (aucune requête réelle capturée pour l’instant&nbsp;: à considérer comme non vérifié)&nbsp;:</p>
+        <ul class="notes">
+          <li>l’événement JSON est encodé en base64 et envoyé dans <code>message.data</code>&nbsp;;</li>
+          <li>le texte dit de le décoder « deux fois en base64 », alors que leur exemple Django ne le décode qu’une fois. L’exemple ci-dessous gère les deux cas.</li>
+        </ul>
+        <div class="panel"><div class="panel-head"><span>public/maystro-webhook.php</span></div><pre><span class="c-key">&lt;?php</span>
+<span class="c-cmt">// public/maystro-webhook.php</span>
+
+<span class="c-key">require</span> __DIR__ . <span class="c-str">&#x27;/../vendor/autoload.php&#x27;</span>;
+
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Support</span>\<span class="c-type">StatusMapper</span>;
+
+<span class="c-var">$body</span> = <span class="c-fn">json_decode</span>(<span class="c-fn">file_get_contents</span>(<span class="c-str">&#x27;php://input&#x27;</span>) ?: <span class="c-str">&#x27;&#x27;</span>, <span class="c-key">true</span>);
+<span class="c-var">$data</span> = <span class="c-var">$body</span>[<span class="c-str">&#x27;message&#x27;</span>][<span class="c-str">&#x27;data&#x27;</span>] ?? <span class="c-key">null</span>;
+
+<span class="c-var">$event</span> = <span class="c-key">null</span>;
+<span class="c-key">if</span> (<span class="c-fn">is_string</span>(<span class="c-var">$data</span>)) {
+    <span class="c-var">$decoded</span> = <span class="c-fn">base64_decode</span>(<span class="c-var">$data</span>, <span class="c-key">true</span>);
+    <span class="c-var">$event</span> = <span class="c-fn">json_decode</span>((<span class="c-type">string</span>) <span class="c-var">$decoded</span>, <span class="c-key">true</span>);
+    <span class="c-key">if</span> (!<span class="c-fn">is_array</span>(<span class="c-var">$event</span>)) {                       <span class="c-cmt">// décodé une fois, c&#x27;est encore du base64</span>
+        <span class="c-var">$event</span> = <span class="c-fn">json_decode</span>((<span class="c-type">string</span>) <span class="c-fn">base64_decode</span>((<span class="c-type">string</span>) <span class="c-var">$decoded</span>, <span class="c-key">true</span>), <span class="c-key">true</span>);
+    }
+}
+
+<span class="c-key">if</span> (!<span class="c-fn">is_array</span>(<span class="c-var">$event</span>)) {
+    <span class="c-fn">http_response_code</span>(<span class="c-num">400</span>);
+    <span class="c-key">exit</span>;
+}
+
+<span class="c-key">if</span> ((<span class="c-var">$event</span>[<span class="c-str">&#x27;event&#x27;</span>] ?? <span class="c-key">null</span>) === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
+    <span class="c-var">$orderId</span> = (<span class="c-type">string</span>) (<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;id&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>);
+    <span class="c-var">$status</span> = <span class="c-type">StatusMapper</span>::<span class="c-fn">maystro</span>(<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;status&#x27;</span>] ?? <span class="c-key">null</span>);  <span class="c-cmt">// ex. 41 → &#x27;delivered&#x27;</span>
+
+    <span class="c-cmt">// mettre à jour votre commande dont carrier_id = $orderId ...</span>
+}
+
+<span class="c-fn">http_response_code</span>(<span class="c-num">201</span>);</pre></div>
+        <p>La documentation ne décrit aucune signature des requêtes webhook. Protégez l’endpoint vous-même, par exemple avec un long secret dans l’URL (<code>/maystro-webhook.php?key=…</code>) vérifié avant tout traitement. Voir aussi <a href="../maystro/#webhooks">les webhooks sur la page Maystro</a>.</p>
+      </section>
+
+      <section id="testing" aria-labelledby="testing-title">
+        <h2 id="testing-title">8. Tester votre intégration</h2>
+        <p>Passez un handler Guzzle via l’option <code>handler</code> pour remplacer le réseau par des réponses préparées&nbsp;:</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">GuzzleHttp</span>\<span class="c-type">Handler</span>\<span class="c-type">MockHandler</span>;
+<span class="c-key">use</span> <span class="c-type">GuzzleHttp</span>\<span class="c-type">HandlerStack</span>;
+<span class="c-key">use</span> <span class="c-type">GuzzleHttp</span>\<span class="c-type">Psr7</span>\<span class="c-type">Response</span>;
+
+<span class="c-var">$mock</span> = <span class="c-key">new</span> <span class="c-fn">MockHandler</span>([
+    <span class="c-key">new</span> <span class="c-fn">Response</span>(<span class="c-num">200</span>, [<span class="c-str">&#x27;Content-Type&#x27;</span> =&gt; <span class="c-str">&#x27;application/json&#x27;</span>], <span class="c-fn">json_encode</span>([
+        <span class="c-str">&#x27;has_more&#x27;</span> =&gt; <span class="c-key">false</span>,
+        <span class="c-str">&#x27;data&#x27;</span> =&gt; [[<span class="c-str">&#x27;id&#x27;</span> =&gt; <span class="c-num">16</span>, <span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;Alger&#x27;</span>, <span class="c-str">&#x27;zone&#x27;</span> =&gt; <span class="c-num">1</span>, <span class="c-str">&#x27;is_deliverable&#x27;</span> =&gt; <span class="c-num">1</span>]],
+    ])),
+]);
+
+<span class="c-var">$client</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, [
+    <span class="c-str">&#x27;apiId&#x27;</span> =&gt; <span class="c-str">&#x27;test&#x27;</span>, <span class="c-str">&#x27;apiToken&#x27;</span> =&gt; <span class="c-str">&#x27;test&#x27;</span>, <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>,
+    <span class="c-str">&#x27;handler&#x27;</span> =&gt; <span class="c-type">HandlerStack</span>::<span class="c-fn">create</span>(<span class="c-var">$mock</span>),
+]);
+
+<span class="c-var">$wilayas</span> = <span class="c-var">$client</span>-&gt;<span class="c-fn">getWilayas</span>();   <span class="c-cmt">// servi par le mock, aucun appel HTTP</span></pre></div>
+        <p>Ajoutez <code>GuzzleHttp\Middleware::history($container)</code> à la pile pour vérifier les requêtes envoyées. Des réponses natives réalistes pour chaque transporteur sont disponibles dans <a href="https://github.com/developing-off/dz-delivery/tree/main/docs/fixtures">docs/fixtures/</a>.</p>
+        <p>Dans le code applicatif, typez sur <code>ShippingProviderInterface</code>&nbsp;: vous pourrez alors injecter votre propre implémentation factice dans les tests au lieu de simuler HTTP.</p>
+      </section>
+
+      <section id="zrexpress-extras" aria-labelledby="zrexpress-extras-title">
+        <h2 id="zrexpress-extras-title">9. Extras ZRExpress</h2>
+        <p>La création / suppression en masse, les étiquettes et la vérification des webhooks signés sont disponibles sur <code>ZRExpressProvider</code> (et <code>DzDelivery\Providers\ZRExpress\Webhook</code>), <strong>pas</strong> sur <code>ShippingProviderInterface</code>. Présentation sur la <a href="../zrexpress/#extras">page ZRExpress</a>&nbsp;; matrice complète et exemples dans <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZREXPRESS.md</a>.</p>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpressProvider</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpress</span>\<span class="c-type">Webhook</span>;
+
+<span class="c-var">$zr</span> = <span class="c-key">new</span> <span class="c-fn">ZRExpressProvider</span>([
+    <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_API_KEY&#x27;</span>),
+    <span class="c-str">&#x27;tenant&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_TENANT&#x27;</span>),
+]);
+
+<span class="c-var">$bulk</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">createParcelsBulk</span>([
+    <span class="c-cmt">// chaque élément DOIT contenir orderId (externalId)</span>
+    [...<span class="c-var">$parcelInput</span>, <span class="c-str">&#x27;orderId&#x27;</span> =&gt; <span class="c-str">&#x27;ORD-1&#x27;</span>],
+]);
+<span class="c-var">$labels</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">generateLabels</span>([<span class="c-str">&#x27;16-AAA111-ZR&#x27;</span>]);
+
+<span class="c-cmt">// Webhooks : utilisez le corps brut de la requête (avant json_decode)</span>
+<span class="c-var">$raw</span> = <span class="c-fn">file_get_contents</span>(<span class="c-str">&#x27;php://input&#x27;</span>);
+<span class="c-var">$event</span> = <span class="c-type">Webhook</span>::<span class="c-fn">verify</span>(<span class="c-var">$raw</span>, <span class="c-fn">getallheaders</span>(), <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_WEBHOOK_SECRET&#x27;</span>));
+<span class="c-cmt">// $event-&gt;type, $event-&gt;parcelId, $event-&gt;trackingNumber, $event-&gt;status</span></pre></div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Pages transporteurs</h2>
+        <p>Identifiants, particularités et exemples TypeScript / PHP pour chaque API.</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">API Yalidine</a></li>
+          <li><a href="../zrexpress/">API ZRExpress</a></li>
+          <li><a href="../maystro/">API Maystro</a></li>
+          <li><a href="../ecotrack/">API Ecotrack</a></li>
+          <li><a href="../noest/">API NoEST</a></li>
+          <li><a href="../ecom/">API E-com Delivery</a></li>
+          <li><a href="../mdm/">API MDM Express</a></li>
+          <li><a href="../elogistia/">API Elogistia</a></li>
+          <li><a href="../statuts/">Statuts, modèles et erreurs</a></li>
+          <li><a href="../">Documentation complète</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copié";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copier"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

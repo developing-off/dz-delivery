@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elogistia API for Node.js and PHP — dz-delivery SDK</title>
+  <meta name="description" content="Integrate the Elogistia API in TypeScript or PHP: create and track parcels, home and office fees, wilayas and communes, no official documentation needed." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/elogistia/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/elogistia/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/elogistia/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/elogistia/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/elogistia/" />
+  <meta property="og:title" content="Elogistia API for Node.js and PHP — dz-delivery SDK" />
+  <meta property="og:description" content="Integrate the Elogistia API in TypeScript or PHP: create and track parcels, home and office fees, wilayas and communes, no official documentation needed." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-elogistia.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-elogistia.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Elogistia API for Node.js and PHP",
+        "description": "Integrate the Elogistia API in TypeScript or PHP: create and track parcels, home and office fees, wilayas and communes, no official documentation needed.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/elogistia/",
+        "about": [
+          "Elogistia",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/elogistia/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Elogistia",
+            "item": "https://dz-delivery.younes-sarni.com/en/elogistia/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/" aria-current="page">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../elogistia/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li><a href="../#matrix">Carriers</a></li>
+          <li aria-current="page">Elogistia</li>
+        </ol>
+      </nav>
+
+      <h1>Elogistia API for Node.js and PHP</h1>
+      <p class="lead">Elogistia publishes no API documentation. dz-delivery rebuilt it from a production integration and checked it live: the <code>elogistia</code> provider works like every other one.</p>
+
+      <section id="install" aria-labelledby="install-title">
+        <h2 id="install-title">Install</h2>
+        <div class="install-grid">
+          <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
+          <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
+        </div>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works for the other carriers: only the client configuration changes.</p>
+      </section>
+
+      <section id="credentials" aria-labelledby="cred-title">
+        <h2 id="cred-title">Elogistia credentials</h2>
+        <div class="table-wrap"><table><thead><tr><th>Option</th><th>Value</th><th>Notes</th></tr></thead><tbody><tr><td><code>apiKey</code></td><td>API key of your Elogistia account</td><td>Sent in the URL (Elogistia’s design)</td></tr><tr><td><code>email</code></td><td><code>customer@example.com</code> by default</td><td>Sent as <code>mail</code>, required by Elogistia</td></tr></tbody></table></div>
+      </section>
+
+      <section id="typescript" aria-labelledby="ts-title">
+        <h2 id="ts-title">Elogistia in TypeScript / Node.js</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { createClient, isShippingError } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-key">const</span> elogistia = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;elogistia&#x27;</span>, {
+  apiKey: process.env.<span class="c-type">ELOGISTIA_API_KEY</span>!,
+});
+
+<span class="c-key">const</span> quote = <span class="c-key">await</span> elogistia.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, isStopDesk: <span class="c-key">true</span> });
+
+<span class="c-key">try</span> {
+  <span class="c-key">const</span> parcel = <span class="c-key">await</span> elogistia.<span class="c-fn">createParcel</span>({
+    recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+    phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
+    address: <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+    wilayaId: <span class="c-num">16</span>,
+    communeName: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+    productName: <span class="c-str">&#x27;T-shirt&#x27;</span>,
+    price: <span class="c-num">2500</span>,
+    orderId: <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+  });
+
+  <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> elogistia.<span class="c-fn">track</span>(parcel.trackingNumber);
+} <span class="c-key">catch </span>(err) {
+  <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
+}</pre></div>
+      </section>
+
+      <section id="php" aria-labelledby="php-title">
+        <h2 id="php-title">Elogistia in PHP / Laravel</h2>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">ClientFactory</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Errors</span>\<span class="c-type">ShippingError</span>;
+
+<span class="c-var">$elogistia</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;elogistia&#x27;</span>, [
+    <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ELOGISTIA_API_KEY&#x27;</span>),
+]);
+
+<span class="c-key">try</span> {
+    <span class="c-var">$parcel</span> = <span class="c-var">$elogistia</span>-&gt;<span class="c-fn">createParcel</span>([
+        <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
+        <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
+        <span class="c-str">&#x27;address&#x27;</span>       =&gt; <span class="c-str">&#x27;Cité 221 lots, n°98&#x27;</span>,
+        <span class="c-str">&#x27;wilayaId&#x27;</span>      =&gt; <span class="c-num">16</span>,
+        <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,
+        <span class="c-str">&#x27;productName&#x27;</span>   =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>,
+        <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">2500</span>,
+        <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
+    ]);
+
+    <span class="c-var">$result</span> = <span class="c-var">$elogistia</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber);
+} <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
+    <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
+}</pre></div>
+        <p>Full PHP guide (Laravel, errors, testing): <a href="../php/">PHP guide</a>.</p>
+      </section>
+
+      <section id="support" aria-labelledby="support-title">
+        <h2 id="support-title">Supported methods</h2>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Support</th><th>Notes</th></tr></thead><tbody><tr><td><code>createParcel</code></td><td class="ok">yes</td><td>Home or office delivery (Elogistia picks the office).</td></tr><tr><td><code>track</code></td><td class="ok">yes</td><td>Unified status + history.</td></tr><tr><td><code>getFees</code></td><td class="ok">yes</td><td>Home / office rates per wilaya.</td></tr><tr><td><code>getWilayas / getCommunes</code></td><td class="ok">yes</td><td>Elogistia spelling, spelling-tolerant lookup.</td></tr><tr><td><code>getStopDesks</code></td><td class="no">NOT_SUPPORTED</td><td>No office list in the API.</td></tr><tr><td><code>listParcels</code></td><td class="no">NOT_SUPPORTED</td><td>No parcel list in the API.</td></tr><tr><td><code>cancelParcel</code></td><td class="no">NOT_SUPPORTED</td><td>No cancellation through the API: use the dashboard.</td></tr><tr><td><code>healthCheck</code></td><td class="ok">yes</td><td>Checks the key (real call).</td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Elogistia statuses → unified statuses</h2>
+        <p>Elogistia does not document its status labels. The SDK looks for keywords in <code>Statut</code> (or, when it is missing, in <code>Log</code>), ignoring case, accents and spaces, in the order of the table: the first matching rule wins.</p>
+        <div class="table-wrap"><table><thead><tr><th>Keyword in the Elogistia label</th><th>Unified status</th></tr></thead><tbody><tr><td><code>retour</code>, <code>return</code></td><td><code>returned</code></td></tr><tr><td><code>annul</code>, <code>cancel</code>, <code>supprim</code></td><td><code>cancelled</code></td></tr><tr><td><code>livreur</code>, <code>en livraison</code>, <code>sortie</code>, <code>transit</code>, <code>expédi</code>, <code>dispatch</code>, <code>vers wilaya</code>, <code>en cours</code>, <code>échec</code>, <code>tentative</code></td><td><code>in_transit</code></td></tr><tr><td><code>livré</code>, <code>delivered</code></td><td><code>delivered</code></td></tr><tr><td><code>attente</code>, <code>créé</code>, <code>nouveau</code>, <code>pending</code></td><td><code>pending</code></td></tr><tr><td>no known keyword</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>If you receive real labels, please report them on <a href="https://github.com/developing-off/dz-delivery/issues">GitHub</a> so this table can become exact. Full list of unified statuses and what they mean: <a href="../statuses/#statuses">SDK statuses</a>.</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Good to know about the Elogistia API</h2>
+        <ul class="notes">
+          <li><strong>Tested live</strong> (October 2026, read-only): wilayas, communes, fees, unknown parcel, errors.</li>
+          <li>The API key travels in the URL (Elogistia’s choice): avoid logging full URLs.</li>
+          <li>A freshly created parcel can return <code>NOT_FOUND</code> on tracking until Elogistia has some history for it.</li>
+          <li>Status labels are not documented: they are recognized by keywords (« livré », « retour », « annulé », « en livraison »…).</li>
+          <li>The <code>baseUrl</code> must use HTTPS.</li>
+        </ul>
+        <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#elogistia">PROVIDERS.md</a>.</p>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">Elogistia FAQ</h2>
+        <div class="faq">
+          <details>
+            <summary>Does Elogistia have API documentation?</summary>
+            <p>Not publicly. The SDK follows a production integration, checked live: you don’t have to reverse-engineer it yourself.</p>
+          </details>
+          <details>
+            <summary>How do I choose the pickup office?</summary>
+            <p>Elogistia assigns it itself: pass <code>isStopDesk: true</code> (with any <code>stopDeskId</code> value).</p>
+          </details>
+          <details>
+            <summary>Why an email address?</summary>
+            <p>Elogistia requires a <code>mail</code> field on every order. Pass the <code>email</code> option to use your own.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Other carriers</h2>
+        <p>Same interface, same normalized statuses (<code>pending</code>, <code>in_transit</code>, <code>delivered</code>…).</p>
+        <ul class="doc-links">
+          <li><a href="../yalidine/">Yalidine API</a></li>
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../ecotrack/">Ecotrack · DHD API</a></li>
+          <li><a href="../noest/">NoEST API</a></li>
+          <li><a href="../ecom/">E-com Delivery API</a></li>
+          <li><a href="../mdm/">MDM Express API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

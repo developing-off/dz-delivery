@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parcel tracking statuses for Algerian carriers — dz-delivery</title>
+  <meta name="description" content="The 7 unified parcel statuses (pending, in_transit, delivered…) for Yalidine, ZR Express, Maystro, Ecotrack, NoEST, plus models, error codes and SDK interface." />
+  <meta name="theme-color" content="#f4f5f2" />
+  <link rel="canonical" href="https://dz-delivery.younes-sarni.com/en/statuses/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/statuts/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/statuses/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/statuts/" />
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="dz-delivery" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:url" content="https://dz-delivery.younes-sarni.com/en/statuses/" />
+  <meta property="og:title" content="Parcel tracking statuses for Algerian carriers — dz-delivery" />
+  <meta property="og:description" content="The 7 unified parcel statuses (pending, in_transit, delivered…) for Yalidine, ZR Express, Maystro, Ecotrack, NoEST, plus models, error codes and SDK interface." />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-statuses.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/en-statuses.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/site.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Parcel statuses, models and error codes",
+        "description": "The 7 unified parcel statuses (pending, in_transit, delivered…) for Yalidine, ZR Express, Maystro, Ecotrack, NoEST, plus models, error codes and SDK interface.",
+        "inLanguage": "en",
+        "url": "https://dz-delivery.younes-sarni.com/en/statuses/",
+        "about": [
+          "Parcel tracking",
+          "dz-delivery"
+        ],
+        "isPartOf": {
+          "@id": "https://dz-delivery.younes-sarni.com/#website"
+        },
+        "mainEntityOfPage": "https://dz-delivery.younes-sarni.com/en/statuses/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "dz-delivery",
+            "item": "https://dz-delivery.younes-sarni.com/en/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Statuses, models and errors",
+            "item": "https://dz-delivery.younes-sarni.com/en/statuses/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="nav-brand" href="../">dz-delivery</a>
+      <nav class="nav-links" aria-label="Carriers">
+        <a href="../yalidine/">Yalidine</a>
+        <a href="../zrexpress/">ZRExpress</a>
+        <a href="../maystro/">Maystro</a>
+        <a href="../ecotrack/">Ecotrack</a>
+        <a href="../noest/">NoEST</a>
+        <a href="../ecom/">E-com</a>
+        <a href="../mdm/">MDM</a>
+        <a href="../elogistia/">Elogistia</a>
+        <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../../statuts/" hreflang="fr" lang="fr" title="Version française">FR</a>
+      </nav>
+    </header>
+
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">dz-delivery</a></li>
+          <li aria-current="page">Statuses, models and errors</li>
+        </ol>
+      </nav>
+
+      <h1>Parcel statuses, models and error codes</h1>
+      <p class="lead">Every Algerian carrier has its own statuses: French labels at <a href="../yalidine/">Yalidine</a>, numeric codes at <a href="../maystro/">Maystro</a>, their own states at <a href="../zrexpress/">ZRExpress</a>, <a href="../ecotrack/">Ecotrack</a> or <a href="../noest/">NoEST</a>. dz-delivery maps them to seven unified statuses, with the same models and error codes in TypeScript and PHP.</p>
+      <nav aria-label="Contents">
+        <ul class="doc-links">
+          <li><a href="#statuses">Unified statuses</a></li>
+          <li><a href="#errors">Error codes</a></li>
+          <li><a href="#conventions">Conventions</a></li>
+          <li><a href="#models">Models</a></li>
+          <li><a href="#interface">ShippingProvider interface</a></li>
+          <li><a href="#client">Creating a client</a></li>
+        </ul>
+      </nav>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">The 7 unified parcel statuses</h2>
+        <p><code>Parcel.status</code> and <code>TrackingEvent.status</code> always hold one of these values, whatever the carrier:</p>
+        <div class="panel"><div class="panel-head"><span>ParcelStatus</span></div><pre>pending | created | in_transit | delivered | returned | cancelled | unknown</pre></div>
+        <div class="table-wrap"><table><thead><tr><th>Status</th><th>Meaning</th><th>Yalidine examples</th><th>Maystro examples (code)</th></tr></thead><tbody>
+          <tr><td><code>pending</code></td><td>Order registered but not yet confirmed or ready for pickup (draft, “order received”).</td><td>“En préparation” (preparing), “A vérifier” (to check)</td><td><code>4</code> CREATED, <code>11</code> PENDING, <code>12</code> OUT_OF_STOCK</td></tr>
+          <tr><td><code>created</code></td><td>Confirmed and ready to be picked up or dispatched by the carrier.</td><td>“Prêt à expédier” (ready to ship), “Pas encore ramassé” (not picked up yet), “Pas encore expédié”, “En passation”</td><td><code>5</code> PICK_UP_REQUESTED, <code>6</code> IN_PROCESS</td></tr>
+          <tr><td><code>in_transit</code></td><td>Picked up and moving: in hub, in transfer, out for delivery, failed attempt, etc.</td><td>“Ramassé” (picked up), “En transit”, “Vers Wilaya”, “Sorti en livraison” (out for delivery), “Tentative échouée” (failed attempt), “En alerte”…</td><td><code>8</code> WAITING_TRANSIT, <code>9</code> IN_TRANSIT_TO_BE_SHIPPED, <code>15</code> READY_TO_SHIP, <code>22</code> ASSIGNED, <code>31</code> SHIPPED, <code>32</code> ALERTED, <code>42</code> POSTPONED</td></tr>
+          <tr><td><code>delivered</code></td><td>Delivered to the recipient (COD collected).</td><td>“Livré” (delivered)</td><td><code>41</code> DELIVERED</td></tr>
+          <tr><td><code>returned</code></td><td>Returned or being returned to the sender.</td><td>“Retour …”, “Retourné …” (returned), “Echange échoué” (exchange failed), “Colis abandonné” (abandoned)</td><td><code>10</code> IN_TRANSIT_TO_BE_RETURNED, <code>51</code> READY_TO_RETURN, <code>52</code> TAKEN_BY_STORE, <code>53</code> NOT_RECEIVED</td></tr>
+          <tr><td><code>cancelled</code></td><td>Cancelled / deleted before delivery.</td><td>“Annulé” (cancelled), “Supprimé” (deleted)</td><td><code>50</code> ABORTED</td></tr>
+          <tr><td><code>unknown</code></td><td>Native status not mapped. The SDK <strong>never</strong> throws on an unknown native status: it returns <code>unknown</code> and keeps the native label in <code>TrackingEvent.label</code> / <code>raw</code>.</td><td>any other label</td><td>any other code</td></tr>
+        </tbody></table></div>
+        <p>The examples above are excerpts. Each carrier’s full native → unified table is in <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>; it is identical in TypeScript and PHP, enforced by shared fixtures (<a href="https://github.com/developing-off/dz-delivery/tree/main/docs/fixtures">docs/fixtures/</a>).</p>
+        <h3>Mapping a native status (webhooks, imports)</h3>
+        <p>The mappers are exported: use them when you receive a native status outside <code>track()</code>, for example in a <a href="../php/#maystro-webhooks">Maystro webhook</a>.</p>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { mapYalidineStatus, mapMaystroStatus, <span class="c-type">PARCEL_STATUSES</span> } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
+
+<span class="c-fn">mapYalidineStatus</span>(<span class="c-str">&#x27;Sorti en livraison&#x27;</span>);  <span class="c-cmt">// &#x27;in_transit&#x27;</span>
+<span class="c-fn">mapMaystroStatus</span>(<span class="c-num">41</span>);                     <span class="c-cmt">// &#x27;delivered&#x27; (code or name)</span>
+<span class="c-type">PARCEL_STATUSES</span>;                          <span class="c-cmt">// the 7 statuses, in order</span>
+<span class="c-cmt">// Also: mapZRExpressStatus, mapEcotrackStatus, mapNoestStatus, mapEcomStatus, mapMdmStatus, mapElogistiaStatus</span></pre></div>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Support</span>\<span class="c-type">StatusMapper</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelStatus</span>;
+
+<span class="c-type">StatusMapper</span>::<span class="c-fn">map</span>(<span class="c-str">&#x27;yalidine&#x27;</span>, <span class="c-str">&#x27;Sorti en livraison&#x27;</span>);  <span class="c-cmt">// &#x27;in_transit&#x27;</span>
+<span class="c-type">StatusMapper</span>::<span class="c-fn">maystro</span>(<span class="c-num">41</span>);                             <span class="c-cmt">// &#x27;delivered&#x27; (code or name)</span>
+<span class="c-type">ParcelStatus</span>::<span class="c-type">DELIVERED</span>;                               <span class="c-cmt">// constants, ParcelStatus::ALL for the list</span></pre></div>
+      </section>
+
+      <section id="errors" aria-labelledby="errors-title">
+        <h2 id="errors-title">Error codes</h2>
+        <p>Every failure is thrown as a <code>ShippingError</code> (fields in <a href="#shipping-error">Models</a>). Its <code>code</code> is one of:</p>
+        <div class="table-wrap"><table><thead><tr><th><code>code</code></th><th>When</th></tr></thead><tbody>
+          <tr><td><code>AUTH_FAILED</code></td><td>401/403, missing or invalid credentials.</td></tr>
+          <tr><td><code>VALIDATION_ERROR</code></td><td>400/422, or SDK-side input validation failure (before any HTTP call).</td></tr>
+          <tr><td><code>NOT_FOUND</code></td><td>404, parcel / location not found, or name resolution (<code>wilayaName</code>, <code>communeName</code>) failed.</td></tr>
+          <tr><td><code>RATE_LIMITED</code></td><td>429.</td></tr>
+          <tr><td><code>NOT_SUPPORTED</code></td><td>The carrier does not support this operation (e.g. cancellation).</td></tr>
+          <tr><td><code>PROVIDER_ERROR</code></td><td>5xx or an unexpected/unparseable carrier response.</td></tr>
+          <tr><td><code>NETWORK_ERROR</code></td><td>Timeout, DNS, connection refused.</td></tr>
+          <tr><td><code>UNKNOWN</code></td><td>Anything else.</td></tr>
+        </tbody></table></div>
+        <p>Default HTTP → code mapping: <code>400, 422 → VALIDATION_ERROR</code>, <code>401, 403 → AUTH_FAILED</code>, <code>404 → NOT_FOUND</code>, <code>429 → RATE_LIMITED</code>, <code>5xx → PROVIDER_ERROR</code>, other <code>4xx → UNKNOWN</code>.</p>
+        <p>Handling examples (retry on <code>RATE_LIMITED</code>, showing validation errors): <a href="../php/#errors">PHP guide</a>.</p>
+      </section>
+
+      <section id="conventions" aria-labelledby="conventions-title">
+        <h2 id="conventions-title">Conventions</h2>
+        <div class="table-wrap"><table><thead><tr><th>Topic</th><th>Rule</th></tr></thead><tbody>
+          <tr><td>Naming</td><td><code>camelCase</code> for fields and methods in <strong>both</strong> TS and PHP (PHP objects expose public readonly properties with the same names).</td></tr>
+          <tr><td>IDs</td><td>All IDs returned by the SDK are <strong>strings</strong> (carriers use UUIDs, integers or codes). Inputs accept <code>string | int</code>.</td></tr>
+          <tr><td>Money</td><td>Amounts are in <strong>DZD</strong>, as numbers (dinars, not centimes). <code>currency</code> is always <code>"DZD"</code>.</td></tr>
+          <tr><td>Weight / size</td><td>Weight in <strong>kg</strong>, dimensions in <strong>cm</strong>.</td></tr>
+          <tr><td>Dates</td><td>ISO 8601 strings with timezone (e.g. <code>2025-12-23T15:23:54+00:00</code>) in both TS and PHP.</td></tr>
+          <tr><td>Phones</td><td>Strings. Providers normalize to the carrier’s format (e.g. <code>0550123456</code> ↔ <code>+213550123456</code>).</td></tr>
+          <tr><td>Optional</td><td><code>?</code> = optional. Absent optional values are <code>undefined</code> (TS) / <code>null</code> (PHP).</td></tr>
+          <tr><td>Async</td><td>TS methods return <code>Promise&lt;T&gt;</code>. PHP methods are synchronous and return <code>T</code>.</td></tr>
+          <tr><td>Errors</td><td>All failures are thrown as <code>ShippingError</code> (see <a href="#errors">Error codes</a>). Never <code>null</code> / <code>false</code> to signal an error.</td></tr>
+        </tbody></table></div>
+        <h3>The <code>raw</code> field</h3>
+        <p>Every returned model (<code>Parcel</code>, <code>TrackingEvent</code>, <code>FeeQuote</code>, <code>Location</code>, <code>ShippingError</code>) may carry an optional <code>raw</code> field with the <strong>unmodified native API response</strong> (or the relevant fragment).</p>
+        <ul class="notes">
+          <li><code>raw</code> is for power users and debugging. Its shape is <strong>not</strong> part of the contract and may change when the carrier changes its API.</li>
+          <li>Application code should not depend on <code>raw</code> for core logic.</li>
+          <li><code>raw</code> is populated by default; the client option <code>includeRaw: false</code> disables it.</li>
+        </ul>
+      </section>
+
+      <section id="models" aria-labelledby="models-title">
+        <h2 id="models-title">Models</h2>
+        <p>The same models, with the same field names, in TypeScript and PHP.</p>
+
+        <h3 id="parcel-input"><code>ParcelInput</code> (input to <code>createParcel</code>)</h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>recipientName</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Full name of the recipient.</td></tr>
+          <tr><td><code>phone</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Primary phone number.</td></tr>
+          <tr><td><code>phone2</code></td><td><code>string</code></td><td>no</td><td>Secondary phone number.</td></tr>
+          <tr><td><code>address</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Street address / free text.</td></tr>
+          <tr><td><code>wilayaId</code></td><td><code>string | int</code></td><td>one of¹</td><td>Provider <code>Location.id</code> <strong>or</strong> official wilaya code <code>1</code>–<code>58</code>.</td></tr>
+          <tr><td><code>wilayaName</code></td><td><code>string</code></td><td>one of¹</td><td>Wilaya name (resolved by the provider, case- and accent-insensitive).</td></tr>
+          <tr><td><code>communeId</code></td><td><code>string | int</code></td><td>one of²</td><td>Provider <code>Location.id</code> of the commune.</td></tr>
+          <tr><td><code>communeName</code></td><td><code>string</code></td><td>one of²</td><td>Commune name (resolved within the wilaya).</td></tr>
+          <tr><td><code>productName</code></td><td><code>string</code></td><td>one of³</td><td>Single free-text product description.</td></tr>
+          <tr><td><code>productList</code></td><td><code>ProductItem[]</code></td><td>one of³</td><td>Detailed list of products.</td></tr>
+          <tr><td><code>price</code></td><td><code>number</code></td><td><strong>yes</strong></td><td>Amount to collect from the recipient (COD), in DZD. <code>0</code> for prepaid.</td></tr>
+          <tr><td><code>weight</code></td><td><code>number</code></td><td>no</td><td>Total weight in kg.</td></tr>
+          <tr><td><code>length</code>, <code>width</code>, <code>height</code></td><td><code>number</code></td><td>no</td><td>Package dimensions in cm.</td></tr>
+          <tr><td><code>isStopDesk</code></td><td><code>boolean</code></td><td>no</td><td><code>true</code> = delivery to a stop desk / pickup point. Default <code>false</code> (home delivery).</td></tr>
+          <tr><td><code>stopDeskId</code></td><td><code>string</code></td><td>if <code>isStopDesk</code></td><td>Provider ID of the stop desk / hub.</td></tr>
+          <tr><td><code>remark</code></td><td><code>string</code></td><td>no</td><td>Note for the delivery agent.</td></tr>
+          <tr><td><code>orderId</code></td><td><code>string</code></td><td>no</td><td>Your own order reference (stored as external ID when supported).</td></tr>
+          <tr><td><code>stockType</code></td><td><code>"none" | "local" | "warehouse"</code></td><td>no</td><td>Default stock mode for products that omit <code>ProductItem.stockType</code>. Used by ZRExpress, ignored by the other carriers. Default <code>"none"</code> (no catalog).</td></tr>
+        </tbody></table></div>
+        <p>¹ Exactly one of <code>wilayaId</code> / <code>wilayaName</code>. ² Exactly one of <code>communeId</code> / <code>communeName</code>. ³ Exactly one of <code>productName</code> / <code>productList</code>: providers that need a list convert <code>productName</code> to <code>[{ name, quantity: 1, unitPrice: price }]</code>; providers that need a string join the <code>productList</code> names.</p>
+        <p>Whether <code>price</code> includes the delivery fee depends on the carrier (documented in <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md">PROVIDERS.md</a>).</p>
+
+        <h3 id="product-item"><code>ProductItem</code></h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>name</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Product name.</td></tr>
+          <tr><td><code>quantity</code></td><td><code>int</code></td><td><strong>yes</strong></td><td>Quantity (≥ 1).</td></tr>
+          <tr><td><code>unitPrice</code></td><td><code>number</code></td><td>no</td><td>Unit price in DZD.</td></tr>
+          <tr><td><code>sku</code></td><td><code>string</code></td><td>no</td><td>Merchant SKU.</td></tr>
+          <tr><td><code>productId</code></td><td><code>string</code></td><td>no</td><td>Carrier catalog product id (ZRExpress when <code>stockType</code> is <code>local</code> / <code>warehouse</code>).</td></tr>
+          <tr><td><code>stockType</code></td><td><code>"none" | "local" | "warehouse"</code></td><td>no</td><td>Per-item stock mode; overrides <code>ParcelInput.stockType</code>.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="parcel"><code>Parcel</code></h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Carrier’s internal parcel ID (may equal <code>trackingNumber</code> for some carriers).</td></tr>
+          <tr><td><code>trackingNumber</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Tracking number shown to customers.</td></tr>
+          <tr><td><code>status</code></td><td><code>ParcelStatus</code></td><td><strong>yes</strong></td><td>Unified status (see <a href="#statuses">Statuses</a>).</td></tr>
+          <tr><td><code>provider</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Provider key, e.g. <code>"zrexpress"</code>, <code>"yalidine"</code>.</td></tr>
+          <tr><td><code>labelUrl</code></td><td><code>string</code></td><td>no</td><td>Shipping label (bordereau) URL when the carrier returns one with the parcel (Yalidine). Carriers whose labels need a separate call (ZRExpress, Maystro PDF) expose them as a provider extra instead.</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>no</td><td>Native response.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="tracking-event"><code>TrackingEvent</code> and <code>TrackResult</code></h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>status</code></td><td><code>ParcelStatus</code></td><td><strong>yes</strong></td><td>Unified status after this event.</td></tr>
+          <tr><td><code>label</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Human-readable native label (e.g. <code>"Prêt à expédier"</code>, ready to ship).</td></tr>
+          <tr><td><code>at</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>ISO 8601 timestamp of the event.</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>no</td><td>Native event.</td></tr>
+        </tbody></table></div>
+        <p><code>track()</code> returns a <code>TrackResult</code> = <code>{ parcel, events }</code>: <code>parcel</code> is the current state, <code>events</code> the history sorted by <code>at</code> ascending (oldest first), possibly empty if the carrier exposes no history.</p>
+
+        <h3 id="fee-query"><code>FeeQuery</code> (input to <code>getFees</code>)</h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>toWilayaId</code></td><td><code>string | int</code></td><td><strong>yes</strong></td><td>Destination wilaya (provider <code>Location.id</code> or code <code>1</code>–<code>58</code>).</td></tr>
+          <tr><td><code>toCommuneId</code></td><td><code>string | int</code></td><td>no</td><td>Destination commune, for carriers that price per commune.</td></tr>
+          <tr><td><code>fromWilayaId</code></td><td><code>string | int</code></td><td>no</td><td>Origin wilaya. Defaults to the account’s origin when the carrier knows it.</td></tr>
+          <tr><td><code>weight</code></td><td><code>number</code></td><td>no</td><td>Weight in kg (for overweight surcharges).</td></tr>
+          <tr><td><code>length</code>, <code>width</code>, <code>height</code></td><td><code>number</code></td><td>no</td><td>Package dimensions in cm, for carriers that bill volumetric weight.</td></tr>
+          <tr><td><code>isStopDesk</code></td><td><code>boolean</code></td><td>no</td><td>Quote for stop-desk delivery instead of home delivery.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="fee-quote"><code>FeeQuote</code></h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>deliveryFee</code></td><td><code>number</code></td><td><strong>yes</strong></td><td>Fee for the requested mode (home, or stop desk if <code>isStopDesk: true</code>).</td></tr>
+          <tr><td><code>returnFee</code></td><td><code>number</code></td><td>no</td><td>Fee charged if the parcel is returned.</td></tr>
+          <tr><td><code>stopDeskFee</code></td><td><code>number</code></td><td>no</td><td>Stop-desk fee, when the carrier returns both prices.</td></tr>
+          <tr><td><code>currency</code></td><td><code>"DZD"</code></td><td><strong>yes</strong></td><td>Always <code>"DZD"</code>.</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>no</td><td>Native response.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="location"><code>Location</code> (wilayas and communes)</h3>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Provider ID: pass it back as <code>wilayaId</code> / <code>communeId</code>.</td></tr>
+          <tr><td><code>name</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Display name.</td></tr>
+          <tr><td><code>parentId</code></td><td><code>string</code></td><td>no</td><td>For communes: the wilaya <code>id</code>. Absent for wilayas.</td></tr>
+          <tr><td><code>code</code></td><td><code>string</code></td><td>no</td><td>Official code when known (wilaya <code>"1"</code>–<code>"58"</code>, or postal code for communes). Lets apps match wilayas across providers, since some carriers (e.g. ZRExpress) use UUIDs as IDs.</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>no</td><td>Native object.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="shipping-error"><code>ShippingError</code></h3>
+        <p>Thrown as an exception (TS: <code>class ShippingError extends Error</code>; PHP: <code>class ShippingError extends \RuntimeException</code>).</p>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>code</code></td><td><code>ShippingErrorCode</code></td><td><strong>yes</strong></td><td>Normalized code (see <a href="#errors">Error codes</a>).</td></tr>
+          <tr><td><code>message</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Human-readable message (native message when available).</td></tr>
+          <tr><td><code>httpStatus</code></td><td><code>int</code></td><td>no</td><td>HTTP status of the failed call.</td></tr>
+          <tr><td><code>details</code></td><td><code>object</code> / <code>array</code></td><td>no</td><td>Normalized details, e.g. validation errors <code>[{ field?, message }]</code>.</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>no</td><td>Native error body.</td></tr>
+          <tr><td><code>provider</code></td><td><code>string</code></td><td>no</td><td>Provider key that raised the error.</td></tr>
+          <tr><td><code>retryAfter</code></td><td><code>int</code></td><td>no</td><td><code>RATE_LIMITED</code> only: seconds to wait, from the <code>Retry-After</code> header when the carrier sends it.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="stop-desk"><code>StopDeskQuery</code> and <code>StopDesk</code></h3>
+        <p>Input to <code>getStopDesks</code>: <code>wilayaId</code> (<code>string | int</code>, <strong>required</strong>: provider <code>Location.id</code>, code <code>1</code>–<code>58</code> or name) and <code>communeId</code> (<code>string | int</code>, optional: provider <code>Location.id</code> or name). Some carriers require <code>communeId</code> (<a href="../maystro/">Maystro</a>); elsewhere it is an optional filter, and wilaya-only is the safer choice when unsure.</p>
+        <div class="table-wrap"><table><thead><tr><th><code>StopDesk</code> field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Pass it back as <code>ParcelInput.stopDeskId</code>.</td></tr>
+          <tr><td><code>name</code></td><td><code>string</code></td><td><strong>yes</strong></td><td>Display name.</td></tr>
+          <tr><td><code>address</code></td><td><code>string</code></td><td>no</td><td>Street address, when the carrier returns it.</td></tr>
+          <tr><td><code>communeId</code></td><td><code>string</code></td><td>no</td><td>Provider commune id.</td></tr>
+          <tr><td><code>wilayaId</code></td><td><code>string</code></td><td>no</td><td>Provider wilaya id.</td></tr>
+          <tr><td><code>phone</code></td><td><code>string</code></td><td>no</td><td>Primary phone, when the carrier returns it.</td></tr>
+          <tr><td><code>openingHours</code></td><td><code>string</code></td><td>no</td><td>Opening hours text, when available.</td></tr>
+          <tr><td><code>lat</code>, <code>lng</code></td><td><code>number</code></td><td>no</td><td>Latitude, longitude.</td></tr>
+          <tr><td><code>type</code></td><td><code>string</code></td><td>no</td><td>Carrier hub/desk type label when exposed (e.g. ZRExpress <code>"stopdesk"</code>).</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>no</td><td>Native object.</td></tr>
+        </tbody></table></div>
+
+        <h3 id="parcel-list"><code>ParcelListQuery</code> and <code>ParcelListPage</code></h3>
+        <div class="table-wrap"><table><thead><tr><th><code>ParcelListQuery</code> field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>page</code></td><td><code>int</code></td><td>1-based page. Default <code>1</code>.</td></tr>
+          <tr><td><code>pageSize</code></td><td><code>int</code></td><td>Page size. Default <code>50</code>. Carriers may clamp it (ZRExpress ≤ 1000).</td></tr>
+          <tr><td><code>keyword</code></td><td><code>string</code></td><td>Free-text search (tracking, customer name, phone… when the carrier supports it).</td></tr>
+          <tr><td><code>orderId</code></td><td><code>string</code></td><td>Merchant order reference (<code>ParcelInput.orderId</code> / carrier external id).</td></tr>
+          <tr><td><code>status</code></td><td><code>ParcelStatus</code></td><td>Unified status filter, applied after mapping when the carrier has no equivalent filter (the usual case).</td></tr>
+          <tr><td><code>updatedSince</code></td><td><code>string</code></td><td>ISO 8601: only parcels whose status changed at or after this instant (when the carrier exposes an update timestamp).</td></tr>
+          <tr><td><code>allPages</code></td><td><code>boolean</code></td><td><code>true</code>: follow <code>hasNext</code> and merge pages (with a safety cap). Default <code>false</code>.</td></tr>
+        </tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th><code>ParcelListPage</code> field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>parcels</code></td><td><code>Parcel[]</code></td><td>Mapped parcels for this response (or all pages with <code>allPages</code>).</td></tr>
+          <tr><td><code>page</code></td><td><code>int</code></td><td>Page that was fetched (<code>1</code> when <code>allPages</code> merged everything).</td></tr>
+          <tr><td><code>pageSize</code></td><td><code>int</code></td><td>Requested/effective page size.</td></tr>
+          <tr><td><code>totalCount</code></td><td><code>int</code></td><td>Carrier-reported total matching the query (before client-side filters such as <code>status</code>, or E-com <code>orderId</code>). When the carrier reports no total for a page (E-com after page 1), a lower bound: <code>(page - 1) * pageSize + items on the page</code>.</td></tr>
+          <tr><td><code>hasNext</code></td><td><code>boolean</code></td><td>More pages available (<code>false</code> when <code>allPages</code> finished or the carrier has no more).</td></tr>
+          <tr><td><code>raw</code></td><td><code>unknown</code> / <code>mixed</code></td><td>Native page payload (last page with <code>allPages</code>).</td></tr>
+        </tbody></table></div>
+      </section>
+
+      <section id="interface" aria-labelledby="interface-title">
+        <h2 id="interface-title">The <code>ShippingProvider</code> interface</h2>
+        <p>Every client implements the same interface: <code>ShippingProvider</code> in TypeScript, <code>ShippingProviderInterface</code> in PHP.</p>
+        <div class="table-wrap"><table><thead><tr><th>Method</th><th>Input</th><th>Output</th></tr></thead><tbody>
+          <tr><td><code>createParcel(input)</code></td><td><code>ParcelInput</code></td><td><code>Parcel</code></td></tr>
+          <tr><td><code>track(trackingNumber)</code></td><td><code>string</code></td><td><code>TrackResult</code> = <code>{ parcel, events }</code></td></tr>
+          <tr><td><code>getFees(query)</code></td><td><code>FeeQuery</code></td><td><code>FeeQuote</code></td></tr>
+          <tr><td><code>getWilayas()</code></td><td>—</td><td><code>Location[]</code></td></tr>
+          <tr><td><code>getCommunes(wilayaId)</code></td><td><code>string | int</code> (provider id or code 1–58)</td><td><code>Location[]</code></td></tr>
+          <tr><td><code>cancelParcel(trackingNumberOrId)</code></td><td><code>string</code></td><td><code>void</code></td></tr>
+          <tr><td><code>getStopDesks(query)</code></td><td><code>StopDeskQuery</code></td><td><code>StopDesk[]</code></td></tr>
+          <tr><td><code>listParcels(query?)</code></td><td><code>ParcelListQuery</code></td><td><code>ParcelListPage</code></td></tr>
+          <tr><td><code>healthCheck()</code></td><td>—</td><td><code>HealthCheckResult</code> = <code>{ ok: true, provider, latencyMs }</code></td></tr>
+        </tbody></table></div>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">export</span> <span class="c-key">type</span> <span class="c-type">ParcelStatus</span> =
+  | <span class="c-str">&#x27;pending&#x27;</span> | <span class="c-str">&#x27;created&#x27;</span> | <span class="c-str">&#x27;in_transit&#x27;</span> | <span class="c-str">&#x27;delivered&#x27;</span>
+  | <span class="c-str">&#x27;returned&#x27;</span> | <span class="c-str">&#x27;cancelled&#x27;</span> | <span class="c-str">&#x27;unknown&#x27;</span>;
+
+<span class="c-key">export</span> <span class="c-key">interface</span> <span class="c-type">HealthCheckResult</span> {
+  ok: <span class="c-key">true</span>;
+  provider: <span class="c-type">string</span>;
+  <span class="c-cmt">/** Round-trip duration in milliseconds. */</span>
+  latencyMs: <span class="c-type">number</span>;
+}
+
+<span class="c-key">export</span> <span class="c-key">interface</span> <span class="c-type">ShippingProvider</span> {
+  <span class="c-key">readonly</span> name: <span class="c-type">string</span>; <span class="c-cmt">// &#x27;zrexpress&#x27; | &#x27;yalidine&#x27; | ...</span>
+  <span class="c-fn">createParcel</span>(input: <span class="c-type">ParcelInput</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">Parcel</span>&gt;;
+  <span class="c-fn">track</span>(trackingNumber: <span class="c-type">string</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">TrackResult</span>&gt;;
+  <span class="c-fn">getFees</span>(query: <span class="c-type">FeeQuery</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">FeeQuote</span>&gt;;
+  <span class="c-fn">getWilayas</span>(): <span class="c-type">Promise</span>&lt;<span class="c-type">Location</span>[]&gt;;
+  <span class="c-fn">getCommunes</span>(wilayaId: <span class="c-type">string</span> | <span class="c-type">number</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">Location</span>[]&gt;;
+  <span class="c-fn">getStopDesks</span>(query: <span class="c-type">StopDeskQuery</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">StopDesk</span>[]&gt;;
+  <span class="c-fn">listParcels</span>(query?: <span class="c-type">ParcelListQuery</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">ParcelListPage</span>&gt;;
+  <span class="c-fn">cancelParcel</span>(trackingNumberOrId: <span class="c-type">string</span>): <span class="c-type">Promise</span>&lt;<span class="c-type">void</span>&gt;;
+  <span class="c-fn">healthCheck</span>(): <span class="c-type">Promise</span>&lt;<span class="c-type">HealthCheckResult</span>&gt;;
+}</pre></div>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">namespace</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Contracts</span>;
+
+<span class="c-key">interface</span> <span class="c-type">ShippingProviderInterface</span>
+{
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getName</span>(): <span class="c-type">string</span>;
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">createParcel</span>(<span class="c-type">ParcelInput</span>|<span class="c-type">array</span> <span class="c-var">$input</span>): <span class="c-type">Parcel</span>;
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">track</span>(<span class="c-type">string</span> <span class="c-var">$trackingNumber</span>): <span class="c-type">TrackResult</span>;
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getFees</span>(<span class="c-type">FeeQuery</span>|<span class="c-type">array</span> <span class="c-var">$query</span>): <span class="c-type">FeeQuote</span>;
+    <span class="c-cmt">/** @return Location[] */</span>
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getWilayas</span>(): <span class="c-type">array</span>;
+    <span class="c-cmt">/** @return Location[] */</span>
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getCommunes</span>(<span class="c-type">string</span>|<span class="c-type">int</span> <span class="c-var">$wilayaId</span>): <span class="c-type">array</span>;
+    <span class="c-cmt">/** @return StopDesk[] */</span>
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getStopDesks</span>(<span class="c-type">StopDeskQuery</span>|<span class="c-type">array</span> <span class="c-var">$query</span>): <span class="c-type">array</span>;
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">listParcels</span>(<span class="c-type">ParcelListQuery</span>|<span class="c-type">array</span>|<span class="c-key">null</span> <span class="c-var">$query</span> = <span class="c-key">null</span>): <span class="c-type">ParcelListPage</span>;
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">cancelParcel</span>(<span class="c-type">string</span> <span class="c-var">$trackingNumberOrId</span>): <span class="c-type">void</span>;
+    <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">healthCheck</span>(): <span class="c-type">HealthCheckResult</span>;
+}</pre></div>
+        <h3>Method behavior</h3>
+        <ul class="notes">
+          <li><strong><code>createParcel</code></strong>: validates required fields client-side (<code>VALIDATION_ERROR</code> before any HTTP call) and resolves <code>wilayaName</code> / <code>communeName</code> / wilaya codes to provider IDs. If the carrier only returns an ID on creation, the provider may do a follow-up read to fill <code>trackingNumber</code> and <code>status</code>.</li>
+          <li><strong><code>track</code></strong>: returns the current <code>Parcel</code> plus history. If the carrier needs an internal ID for history, the provider resolves it from the tracking number.</li>
+          <li><strong><code>getFees</code></strong>: returns a single quote for the requested destination and mode. <code>NOT_FOUND</code> if the destination has no rate.</li>
+          <li><strong><code>getWilayas</code> / <code>getCommunes</code></strong>: return only deliverable locations when the carrier exposes that information. Results may be cached in memory for the client’s lifetime.</li>
+          <li><strong><code>cancelParcel</code></strong>: accepts a tracking number or an internal ID. <code>NOT_SUPPORTED</code> if the carrier cannot cancel, <code>VALIDATION_ERROR</code> / <code>PROVIDER_ERROR</code> if the parcel is past the cancellable state. Returns <code>void</code> because some carriers answer <code>204 No Content</code>: call <code>track()</code> afterwards if you need the new status.</li>
+          <li><strong><code>getStopDesks</code></strong>: lists the stop desks / pickup points of a wilaya (optionally one commune). <code>VALIDATION_ERROR</code> when a carrier needs <code>communeId</code> and it is missing, <code>NOT_SUPPORTED</code> when the carrier exposes no listing. May throw <code>NOT_FOUND</code> with an actionable <code>details</code> hint when a commune filter yields no desks but the wilaya still has some (typical for ZRExpress hubs).</li>
+          <li><strong><code>listParcels</code></strong>: paginated list of the account’s parcels with their unified <code>status</code>, <strong>without</strong> history (call <code>track()</code> for that). <code>NOT_SUPPORTED</code> when the carrier exposes no listing. Prefer webhooks over aggressive polling when available.</li>
+          <li><strong><code>healthCheck</code></strong>: probes credentials and connectivity with a lightweight authenticated request (the wilayas listing). <strong>Always hits the network</strong> (bypasses the cache). Returns <code>{ ok: true, provider, latencyMs }</code>, otherwise throws <code>ShippingError</code> (<code>AUTH_FAILED</code>, <code>NETWORK_ERROR</code>, <code>RATE_LIMITED</code>, …). Never throws <code>NOT_SUPPORTED</code>.</li>
+        </ul>
+      </section>
+
+      <section id="client" aria-labelledby="client-title">
+        <h2 id="client-title">Creating a client</h2>
+        <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">const</span> client = <span class="c-fn">createClient</span>(<span class="c-str">&#x27;zrexpress&#x27;</span>, { apiKey, tenant, <span class="c-cmt">/* baseUrl?, timeoutMs?, includeRaw? */</span> });</pre></div>
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-var">$client</span> = <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-str">&#x27;zrexpress&#x27;</span>, [<span class="c-str">&#x27;apiKey&#x27;</span> =&gt; ..., <span class="c-str">&#x27;tenant&#x27;</span> =&gt; ..., <span class="c-cmt">/* &#x27;baseUrl&#x27;, &#x27;timeoutMs&#x27;, &#x27;includeRaw&#x27; */</span>]);</pre></div>
+        <div class="table-wrap"><table><thead><tr><th>Common option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
+          <tr><td><code>baseUrl</code></td><td><code>string</code></td><td>provider default</td><td>Override the API base URL (sandbox, proxy, tests).</td></tr>
+          <tr><td><code>timeoutMs</code></td><td><code>int</code></td><td><code>15000</code></td><td>HTTP timeout.</td></tr>
+          <tr><td><code>includeRaw</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Populate <code>raw</code> fields.</td></tr>
+        </tbody></table></div>
+        <p>Provider-specific credentials:</p>
+        <div class="table-wrap"><table><thead><tr><th>Provider</th><th>Config keys</th><th>Env vars (<code>.env.example</code>)</th></tr></thead><tbody>
+          <tr><td><a href="../zrexpress/"><code>zrexpress</code></a></td><td><code>apiKey</code>, <code>tenant</code></td><td><code>ZREXPRESS_API_KEY</code>, <code>ZREXPRESS_TENANT</code></td></tr>
+          <tr><td><a href="../yalidine/"><code>yalidine</code></a></td><td><code>apiId</code>, <code>apiToken</code></td><td><code>YALIDINE_API_ID</code>, <code>YALIDINE_API_TOKEN</code></td></tr>
+          <tr><td><a href="../maystro/"><code>maystro</code></a></td><td><code>apiToken</code></td><td><code>MAYSTRO_API_TOKEN</code></td></tr>
+          <tr><td><a href="../ecotrack/"><code>ecotrack</code></a></td><td><code>token</code>, <code>courier</code> or <code>baseUrl</code> (https)</td><td><code>ECOTRACK_TOKEN</code>, <code>ECOTRACK_COURIER</code> / <code>ECOTRACK_BASE_URL</code></td></tr>
+          <tr><td><a href="../noest/"><code>noest</code></a></td><td><code>apiToken</code>, <code>userGuid</code>, <code>autoValidate?</code></td><td><code>NOEST_API_TOKEN</code>, <code>NOEST_USER_GUID</code></td></tr>
+          <tr><td><a href="../ecom/"><code>ecom</code></a></td><td><code>apiKey</code>, <code>apiToken</code>, <code>autoValidate?</code></td><td><code>ECOM_API_KEY</code>, <code>ECOM_API_TOKEN</code></td></tr>
+          <tr><td><a href="../mdm/"><code>mdm</code></a></td><td><code>apiKey</code>, <code>storeId</code> (required by <code>createParcel</code>)</td><td><code>MDM_API_KEY</code>, <code>MDM_STORE_ID</code></td></tr>
+          <tr><td><a href="../elogistia/"><code>elogistia</code></a></td><td><code>apiKey</code>, <code>email?</code></td><td><code>ELOGISTIA_API_KEY</code></td></tr>
+        </tbody></table></div>
+        <p>A <code>baseUrl</code> override must be an <code>https:</code> URL (credentials travel in headers); anything else throws <code>VALIDATION_ERROR</code>. Detailed PHP configuration: <a href="../php/#configure">PHP guide</a>.</p>
+      </section>
+
+      <section id="scope" aria-labelledby="scope-title">
+        <h2 id="scope-title">Outside the unified contract</h2>
+        <p>Intentionally not part of the common interface: catalog endpoints (products, categories, stock), parcel updates (address, amount, products), exchanges, refunds, pickup bags, claims, customers, treasury and payments, reports, and webhook endpoint management. They may come later as optional, carrier-specific modules that do not change <code>ShippingProvider</code>.</p>
+        <p>Richer carrier features ship as extras on the concrete provider class, for example ZRExpress bulk create/delete, labels and webhook verification (<a href="../zrexpress/#extras">ZRExpress page</a>, <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZREXPRESS.md</a>).</p>
+        <p>This contract is versioned (<code>v0.1</code>): breaking changes to the models or the interface require a version bump and a matching release of both packages.</p>
+      </section>
+
+      <section id="others" aria-labelledby="others-title">
+        <h2 id="others-title">Further reading</h2>
+        <ul class="doc-links">
+          <li><a href="../php/">PHP / Laravel guide</a></li>
+          <li><a href="../yalidine/">Yalidine API</a></li>
+          <li><a href="../zrexpress/">ZRExpress API</a></li>
+          <li><a href="../maystro/">Maystro API</a></li>
+          <li><a href="../ecotrack/">Ecotrack API</a></li>
+          <li><a href="../noest/">NoEST API</a></li>
+          <li><a href="../ecom/">E-com Delivery API</a></li>
+          <li><a href="../mdm/">MDM Express API</a></li>
+          <li><a href="../elogistia/">Elogistia API</a></li>
+          <li><a href="../">Full documentation</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div><strong>dz-delivery</strong> · MIT · <a href="https://github.com/developing-off/dz-delivery">developing-off</a></div>
+        <div>
+          <a href="https://www.npmjs.com/package/@dz-delivery/core">npm</a>
+          ·
+          <a href="https://packagist.org/packages/dz-delivery/sdk">Packagist</a>
+          ·
+          <a href="https://github.com/developing-off/dz-delivery/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".copy").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = "Copied";
+          btn.classList.add("ok");
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1400);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

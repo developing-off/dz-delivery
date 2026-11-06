@@ -79,3 +79,6 @@ jobs:
             echo "Old GitHub Pages URL found in the site output" >&2
             exit 1
           fi
+
+      - name: Check canonicals, hreflang, images and links
+        run: node scripts/check-site.mjs

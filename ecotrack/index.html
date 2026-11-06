@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API Ecotrack en TypeScript ou PHP pour DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog et tous les transporteurs Ecotrack : créer, valider, suivre et annuler des colis, frais et stop desks." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/ecotrack/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/ecotrack/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/ecotrack/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/ecotrack/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/ecotrack/" />
   <meta property="og:title" content="API Ecotrack (DHD, Anderson, World Express…) en Node.js et PHP — SDK dz-delivery" />
   <meta property="og:description" content="Intégrer l’API Ecotrack en TypeScript ou PHP pour DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog et tous les transporteurs Ecotrack : créer, valider, suivre et annuler des colis, frais et stop desks." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/ecotrack.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/ecotrack.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/">MDM</a>
         <a href="../elogistia/">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/ecotrack/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -165,7 +172,7 @@
 } <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
     <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
 }</pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Installation, Laravel, erreurs et tests&nbsp;: consultez le <a href="../php/">guide PHP complet</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
@@ -177,6 +184,13 @@
         <h2 id="couriers-title">Transporteurs Ecotrack intégrés</h2>
         <p>Ces clés <code>courier</code> sont prêtes à l’emploi. Pour un autre transporteur Ecotrack, passez son URL en <code>baseUrl</code> (HTTPS uniquement).</p>
         <div class="table-wrap"><table><thead><tr><th>Transporteur</th><th><code>courier</code></th><th>Domaine</th></tr></thead><tbody><tr><td>DHD</td><td><code>dhd</code></td><td><code>platform.dhd-dz.com</code></td></tr><tr><td>Anderson Delivery</td><td><code>anderson</code></td><td><code>anderson-ecommerce.ecotrack.dz</code></td></tr><tr><td>World Express</td><td><code>worldexpress</code></td><td><code>world-express.ecotrack.dz</code></td></tr><tr><td>48Hr Express</td><td><code>48hrexpress</code></td><td><code>48hr.ecotrack.dz</code></td></tr><tr><td>EcoRapid</td><td><code>ecorapid</code></td><td><code>ecorapide-express.ecotrack.dz</code></td></tr><tr><td>Conexlog</td><td><code>conexlog</code></td><td><code>app.conexlog-dz.com</code></td></tr><tr><td>MSM Go</td><td><code>msmgo</code></td><td><code>msmgo.ecotrack.dz</code></td></tr><tr><td>Packers</td><td><code>packers</code></td><td><code>packers.ecotrack.dz</code></td></tr><tr><td>Rocket Delivery</td><td><code>rocketdelivery</code></td><td><code>rocketdelivery.ecotrack.dz</code></td></tr></tbody></table></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts Ecotrack → statuts unifiés</h2>
+        <p>Le SDK ne convertit que les clés stables d’Ecotrack (clés d’activité et de statut de commande), sans tenir compte de la casse. Les libellés français affichés varient d’un transporteur à l’autre et donnent <code>unknown</code>.</p>
+        <div class="table-wrap"><table><thead><tr><th>Clé Ecotrack</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>prete_a_expedier</code>, <code>prete_a_preparer</code></td><td><code>pending</code></td></tr><tr><td><code>order_information_received_by_carrier</code>, <code>en_preparation_stock</code>, <code>en_ramassage</code></td><td><code>created</code></td></tr><tr><td><code>picked</code>, <code>accepted_by_carrier</code>, <code>dispatched_to_driver</code>, <code>attempt_delivery</code>, <code>vers_hub</code>, <code>en_hub</code>, <code>vers_wilaya</code>, <code>en_preparation</code>, <code>en_livraison</code>, <code>suspendu</code></td><td><code>in_transit</code></td></tr><tr><td><code>livred</code>, <code>encaissed</code>, <code>payed</code>, <code>livre_non_encaisse</code>, <code>encaisse_non_paye</code>, <code>paiements_prets</code>, <code>paye_et_archive</code></td><td><code>delivered</code></td></tr><tr><td><code>return_asked</code>, <code>return_in_transit</code>, <code>return_received</code>, <code>retour_chez_livreur</code>, <code>retour_transit_entrepot</code>, <code>retour_en_traitement</code>, <code>retour_recu</code>, <code>retour_archive</code></td><td><code>returned</code></td></tr><tr><td><code>annule</code></td><td><code>cancelled</code></td></tr><tr><td>Toute autre valeur (dont <code>notification_on_order</code> et les libellés français)</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>Signification de chaque statut unifié&nbsp;: <a href="../statuts/">liste complète des statuts unifiés</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">

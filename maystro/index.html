@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, suivre, lister et annuler les commandes. Exemple complet avec dz-delivery." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/maystro/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/maystro/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/maystro/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/maystro/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/maystro/" />
   <meta property="og:title" content="API Maystro Delivery en Node.js et PHP — SDK dz-delivery" />
   <meta property="og:description" content="Intégrer l’API Maystro Delivery en TypeScript ou PHP : créer des commandes, calculer les frais, lister wilayas, communes et points relais, suivre, lister et annuler les commandes. Exemple complet avec dz-delivery." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/maystro.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/maystro.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/">MDM</a>
         <a href="../elogistia/">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/maystro/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -161,7 +168,7 @@
     <span class="c-str">&#x27;orderId&#x27;</span>       =&gt; <span class="c-str">&#x27;ORDER-1001&#x27;</span>,
 ]);
 <span class="c-var">$tracked</span> = <span class="c-var">$maystro</span>-&gt;<span class="c-fn">track</span>(<span class="c-var">$parcel</span>-&gt;trackingNumber); <span class="c-cmt">// ou $parcel-&gt;id</span></pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Installation, Laravel, erreurs et tests&nbsp;: consultez le <a href="../php/">guide PHP complet</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
@@ -197,7 +204,14 @@
 <span class="c-key">if </span>((<span class="c-var">$event</span>[<span class="c-str">&#x27;event&#x27;</span>] ?? <span class="c-key">null</span>) === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
     <span class="c-var">$status</span> = <span class="c-type">StatusMapper</span>::<span class="c-fn">maystro</span>(<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;status&#x27;</span>] ?? <span class="c-key">null</span>); <span class="c-cmt">// 41 → &#x27;delivered&#x27;</span>
 }</pre></div>
-        <p>Exemple complet (décodage base64, sécurisation de l’URL)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md#7-maystro-webhooks">guide PHP §7</a>.</p>
+        <p>Exemple complet (décodage base64, sécurisation de l’URL)&nbsp;: <a href="../php/#maystro-webhooks">guide PHP, section webhooks Maystro</a>.</p>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts Maystro → statuts unifiés</h2>
+        <p>Maystro utilise des codes numériques, y compris dans les webhooks (<code>payload.status</code>). <code>mapMaystroStatus</code> / <code>StatusMapper::maystro()</code> acceptent le code (<code>41</code>, <code>"41"</code>) ou le nom (<code>DELIVERED</code>, <code>ready to return</code>), sans tenir compte de la casse ni des séparateurs.</p>
+        <div class="table-wrap"><table><thead><tr><th>Code</th><th>Statut Maystro</th><th>Statut unifié</th><th>Notes</th></tr></thead><tbody><tr><td><code>4</code></td><td><code>CREATED</code></td><td><code>pending</code></td><td>Enregistrée, pas encore remise, enlèvement non demandé.</td></tr><tr><td><code>11</code></td><td><code>PENDING</code></td><td><code>pending</code></td><td>En attente avant préparation.</td></tr><tr><td><code>12</code></td><td><code>OUT_OF_STOCK</code></td><td><code>pending</code></td><td>Boutiques Premium&nbsp;: ne peut pas encore être préparée.</td></tr><tr><td><code>5</code></td><td><code>PICK_UP_REQUESTED</code></td><td><code>created</code></td><td>Prête à être enlevée par Maystro.</td></tr><tr><td><code>6</code></td><td><code>IN_PROCESS</code></td><td><code>created</code></td><td>En traitement / préparation chez Maystro, pas encore en route.</td></tr><tr><td><code>8</code></td><td><code>WAITING_TRANSIT</code></td><td><code>in_transit</code></td><td>Au hub, en attente de transfert.</td></tr><tr><td><code>9</code></td><td><code>IN_TRANSIT_TO_BE_SHIPPED</code></td><td><code>in_transit</code></td><td></td></tr><tr><td><code>15</code></td><td><code>READY_TO_SHIP</code></td><td><code>in_transit</code></td><td>Détenue par Maystro (enlevée pour Starter, en entrepôt pour Premium), prête pour un livreur.</td></tr><tr><td><code>22</code></td><td><code>ASSIGNED</code></td><td><code>in_transit</code></td><td>Attribuée à un livreur.</td></tr><tr><td><code>31</code></td><td><code>SHIPPED</code></td><td><code>in_transit</code></td><td>En cours de livraison.</td></tr><tr><td><code>32</code></td><td><code>ALERTED</code></td><td><code>in_transit</code></td><td>Problème de livraison / tentative échouée.</td></tr><tr><td><code>42</code></td><td><code>POSTPONED</code></td><td><code>in_transit</code></td><td></td></tr><tr><td><code>41</code></td><td><code>DELIVERED</code></td><td><code>delivered</code></td><td></td></tr><tr><td><code>50</code></td><td><code>ABORTED</code></td><td><code>cancelled</code></td><td>Maystro l’appelle aussi «&nbsp;CANCELLED&nbsp;». Si le colis était déjà expédié, les statuts <code>51</code> / <code>10</code> / <code>52</code> qui suivent donnent <code>returned</code>.</td></tr><tr><td><code>10</code></td><td><code>IN_TRANSIT_TO_BE_RETURNED</code></td><td><code>returned</code></td><td></td></tr><tr><td><code>51</code></td><td><code>READY_TO_RETURN</code></td><td><code>returned</code></td><td>Alias <code>READY_TO_BE_RETURNED</code>.</td></tr><tr><td><code>52</code></td><td><code>TAKEN_BY_STORE</code></td><td><code>returned</code></td><td>Retour remis à la boutique.</td></tr><tr><td><code>53</code></td><td><code>NOT_RECEIVED</code></td><td><code>returned</code></td><td>Retour déclaré non reçu par la boutique.</td></tr><tr><td>Autre</td><td>—</td><td><code>unknown</code></td><td></td></tr></tbody></table></div>
+        <p>Les alias de nom <code>CANCELLED</code> / <code>CANCELED</code> donnent aussi <code>cancelled</code>. Signification de chaque statut unifié&nbsp;: <a href="../statuts/">liste complète des statuts unifiés</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">

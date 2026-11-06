@@ -7,16 +7,22 @@
   <meta name="description" content="Intégrer l’API Yalidine (et GuepEx) en TypeScript ou PHP : créer un colis, suivre, calculer les frais, lister wilayas, communes et stop desks. Exemple complet avec le SDK open source dz-delivery." />
   <meta name="theme-color" content="#f4f5f2" />
   <link rel="canonical" href="https://dz-delivery.younes-sarni.com/yalidine/" />
+  <link rel="alternate" hreflang="fr" href="https://dz-delivery.younes-sarni.com/yalidine/" />
+  <link rel="alternate" hreflang="en" href="https://dz-delivery.younes-sarni.com/en/yalidine/" />
+  <link rel="alternate" hreflang="x-default" href="https://dz-delivery.younes-sarni.com/yalidine/" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="dz-delivery" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:url" content="https://dz-delivery.younes-sarni.com/yalidine/" />
   <meta property="og:title" content="API Yalidine en Node.js et PHP — SDK dz-delivery (GuepEx inclus)" />
   <meta property="og:description" content="Intégrer l’API Yalidine (et GuepEx) en TypeScript ou PHP : créer un colis, suivre, calculer les frais, lister wilayas, communes et stop desks. Exemple complet avec le SDK open source dz-delivery." />
-  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta property="og:image" content="https://dz-delivery.younes-sarni.com/assets/og/yalidine.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og.png" />
+  <meta name="twitter:image" content="https://dz-delivery.younes-sarni.com/assets/og/yalidine.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@450;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -75,6 +81,7 @@
         <a href="../mdm/">MDM</a>
         <a href="../elogistia/">Elogistia</a>
         <a href="https://github.com/developing-off/dz-delivery">GitHub</a>
+        <a class="nav-lang" href="../en/yalidine/" hreflang="en" lang="en" title="English version">EN</a>
       </nav>
     </header>
 
@@ -176,7 +183,7 @@
 } <span class="c-key">catch </span>(<span class="c-type">ShippingError</span> <span class="c-var">$e</span>) {
     <span class="c-key">echo</span> <span class="c-str">&quot;{$e-&gt;code}: {$e-&gt;getMessage()}&quot;</span>;
 }</pre></div>
-        <p>Guide PHP complet (Laravel, erreurs, tests)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/guide-php.md">guide-php.md</a>.</p>
+        <p>Installation, Laravel, erreurs et tests&nbsp;: consultez le <a href="../php/">guide PHP complet</a>.</p>
       </section>
 
       <section id="support" aria-labelledby="support-title">
@@ -204,6 +211,13 @@
     <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>,
     <span class="c-str">&#x27;baseUrl&#x27;</span>      =&gt; <span class="c-type">YalidineProvider</span>::<span class="c-type">GUEPEX_DEFAULT_BASE_URL</span>,
 ]);</pre></div>
+      </section>
+
+      <section id="statuses" aria-labelledby="statuses-title">
+        <h2 id="statuses-title">Statuts Yalidine → statuts unifiés</h2>
+        <p>Le SDK convertit le <code>status</code> / <code>last_status</code> renvoyé par Yalidine en statut unifié, sans tenir compte de la casse ni des accents. Le mapping est identique pour GuepEx.</p>
+        <div class="table-wrap"><table><thead><tr><th>Statut Yalidine</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>En préparation</code>, <code>A vérifier</code></td><td><code>pending</code></td></tr><tr><td><code>Pas encore expédié</code>, <code>Pas encore ramassé</code>, <code>Prêt à expédier</code>, <code>En passation</code></td><td><code>created</code></td></tr><tr><td><code>Ramassé</code>, <code>Expédié</code>, <code>Centre</code>, <code>En localisation</code>, <code>En transit</code>, <code>Vers Wilaya</code>, <code>Reçu à Wilaya</code>, <code>Transfert</code>, <code>Vers Station</code>, <code>En station</code>, <code>Prêt pour livreur</code>, <code>Dispatché</code>, <code>Sorti en livraison</code>, <code>En attente du client</code>, <code>En attente</code>, <code>Tentative échouée</code>, <code>Echèc livraison</code>, <code>En alerte</code>, <code>Alerte résolue</code>, <code>Bloqué</code>, <code>Débloqué</code></td><td><code>in_transit</code></td></tr><tr><td><code>Livré</code></td><td><code>delivered</code></td></tr><tr><td><code>Retour …</code>, <code>Retourné …</code>, <code>Echange échoué</code>, <code>Colis abandonné</code></td><td><code>returned</code></td></tr><tr><td><code>Annulé</code>, <code>Supprimé</code></td><td><code>cancelled</code></td></tr><tr><td>Tout autre statut</td><td><code>unknown</code></td></tr></tbody></table></div>
+        <p>Signification de chaque statut unifié&nbsp;: <a href="../statuts/">liste complète des statuts unifiés</a>.</p>
       </section>
 
       <section id="notes" aria-labelledby="notes-title">
