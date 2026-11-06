@@ -1,0 +1,9 @@
+# Cloudflare Pages headers (copied into _site/ by scripts/build-site.sh).
+# Only the custom domain should be indexed: keep the *.pages.dev production
+# alias and every preview deployment out of search engines.
+
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

@@ -9,7 +9,7 @@
 >
 > Un seul SDK pour créer, suivre et tarifer des colis avec les transporteurs algériens.
 
-🌐 **Docs & site : <https://developing-off.github.io/dz-delivery/>**
+🌐 **Docs & site : <https://dz-delivery.younes-sarni.com/>**
 
 `dz-delivery` gives e-commerce developers in Algeria a **single, simple interface** to create parcels, track shipments, quote fees and list wilayas/communes — regardless of which carrier is behind it.
 
@@ -25,25 +25,25 @@ composer require dz-delivery/sdk   # PHP ≥ 8.2 (Guzzle 7)
 ## Supported carriers
 
 <p align="center">
-  <a href="https://developing-off.github.io/dz-delivery/yalidine/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/yalidine.png" alt="Yalidine" title="Yalidine" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/noest/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/ecom/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/mdm/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/mdm.png" alt="MDM Express" title="MDM Express" height="60"></a>
-  <a href="https://developing-off.github.io/dz-delivery/elogistia/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/elogistia.png" alt="Elogistia" title="Elogistia" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/yalidine/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/yalidine.png" alt="Yalidine" title="Yalidine" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/zrexpress/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/zrexpress.png" alt="ZRExpress" title="ZRExpress" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/maystro/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/maystro.png" alt="Maystro Delivery" title="Maystro Delivery" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/ecotrack/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecotrack.png" alt="Ecotrack" title="Ecotrack" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/noest/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/noest.png" alt="NoEST" title="NoEST" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/ecom/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/ecom.png" alt="E-com Delivery" title="E-com Delivery" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/mdm/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/mdm.png" alt="MDM Express" title="MDM Express" height="60"></a>
+  <a href="https://dz-delivery.younes-sarni.com/elogistia/"><img src="https://raw.githubusercontent.com/developing-off/dz-delivery/main/assets/logos/elogistia.png" alt="Elogistia" title="Elogistia" height="60"></a>
 </p>
 
 <p align="center"><sub>Logos are trademarks of their respective owners, shown only to indicate which carriers the SDK works with. dz-delivery is an independent open-source project, not affiliated with or endorsed by these companies.</sub></p>
 
 | Carrier | Key | TypeScript | PHP | Guide |
 |---------|-----|------------|-----|-------|
-| Yalidine | `yalidine` | yes (+ `listParcels`, label URL) | yes (+ `listParcels`, label URL) | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/) |
-| GuepEx (Yalidine platform) | `yalidine` + GuepEx `baseUrl` | yes | yes | [Yalidine API](https://developing-off.github.io/dz-delivery/yalidine/#guepex) |
-| ZRExpress | `zrexpress` | yes (+ bulk, labels, webhooks) | yes (+ bulk, labels, webhooks) | [ZRExpress API](https://developing-off.github.io/dz-delivery/zrexpress/) |
-| Maystro Delivery | `maystro` | yes (+ `listParcels`, PDF labels) | yes (+ `listParcels`, PDF labels) | [Maystro API](https://developing-off.github.io/dz-delivery/maystro/) |
-| Ecotrack (DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers, …) | `ecotrack` | yes | yes | [Ecotrack API](https://developing-off.github.io/dz-delivery/ecotrack/) |
+| Yalidine | `yalidine` | yes (+ `listParcels`, label URL) | yes (+ `listParcels`, label URL) | [Yalidine API](https://dz-delivery.younes-sarni.com/yalidine/) |
+| GuepEx (Yalidine platform) | `yalidine` + GuepEx `baseUrl` | yes | yes | [Yalidine API](https://dz-delivery.younes-sarni.com/yalidine/#guepex) |
+| ZRExpress | `zrexpress` | yes (+ bulk, labels, webhooks) | yes (+ bulk, labels, webhooks) | [ZRExpress API](https://dz-delivery.younes-sarni.com/zrexpress/) |
+| Maystro Delivery | `maystro` | yes (+ `listParcels`, PDF labels) | yes (+ `listParcels`, PDF labels) | [Maystro API](https://dz-delivery.younes-sarni.com/maystro/) |
+| Ecotrack (DHD, Anderson, World Express, 48Hr Express, EcoRapid, Conexlog, MSM Go, Packers, …) | `ecotrack` | yes | yes | [Ecotrack API](https://dz-delivery.younes-sarni.com/ecotrack/) |
 | NoEST | `noest` | yes (no `listParcels`) | yes (no `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#noest) |
 | E-com Delivery | `ecom` | yes (+ `listParcels`) | yes (+ `listParcels`) | [PROVIDERS.md](./docs/PROVIDERS.md#ecom) |
 | MDM Express | `mdm` | yes (products from the MDM catalog; no `cancelParcel`) | yes (same) | [PROVIDERS.md](./docs/PROVIDERS.md#mdm) |
@@ -150,13 +150,13 @@ Full PHP guide (install, every method, errors, Laravel, webhooks): [`docs/guide-
 ## FAQ
 
 **How do I use the Yalidine API in Node.js or PHP?**
-`createClient('yalidine', { apiId, apiToken, fromWilayaId })` in TypeScript, `ClientFactory::create('yalidine', [...])` in PHP. See the [Yalidine guide](https://developing-off.github.io/dz-delivery/yalidine/).
+`createClient('yalidine', { apiId, apiToken, fromWilayaId })` in TypeScript, `ClientFactory::create('yalidine', [...])` in PHP. See the [Yalidine guide](https://dz-delivery.younes-sarni.com/yalidine/).
 
 **Comment intégrer l'API ZR Express dans mon site e-commerce ?**
-Installez `@dz-delivery/core` (Node.js) ou `dz-delivery/sdk` (PHP / Laravel), puis créez un client `zrexpress` avec votre `apiKey` et votre `tenant`. Voir le [guide ZRExpress](https://developing-off.github.io/dz-delivery/zrexpress/).
+Installez `@dz-delivery/core` (Node.js) ou `dz-delivery/sdk` (PHP / Laravel), puis créez un client `zrexpress` avec votre `apiKey` et votre `tenant`. Voir le [guide ZRExpress](https://dz-delivery.younes-sarni.com/zrexpress/).
 
 **Does it work with DHD and other Ecotrack couriers?**
-Yes — one `ecotrack` provider covers every courier on the Ecotrack platform, with a built-in `courier` key (`dhd`, `anderson`, `worldexpress`, …) or your tenant `baseUrl`. See the [Ecotrack guide](https://developing-off.github.io/dz-delivery/ecotrack/).
+Yes — one `ecotrack` provider covers every courier on the Ecotrack platform, with a built-in `courier` key (`dhd`, `anderson`, `worldexpress`, …) or your tenant `baseUrl`. See the [Ecotrack guide](https://dz-delivery.younes-sarni.com/ecotrack/).
 
 **Can I switch carriers without rewriting my code?**
 Yes. Every carrier returns the same models and the same normalized statuses, so only the client configuration changes.
