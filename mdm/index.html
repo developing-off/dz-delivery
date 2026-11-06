@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Tous les transporteurs implémentent la même interface&nbsp;: le même code fonctionne avec les autres une fois le client configuré, mais certaines opérations n’existent pas chez tous et lèvent <code>NOT_SUPPORTED</code> (voir la <a href="../#matrix">matrice de compatibilité</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -120,9 +120,9 @@
   storeId: process.env.<span class="c-type">MDM_STORE_ID</span>!,  <span class="c-cmt">// STR-…</span>
 });
 
-<span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> mdm.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -135,12 +135,12 @@
   });
 
   <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> mdm.<span class="c-fn">track</span>(parcel.trackingNumber);
+
+  <span class="c-cmt">// Colis livrés, filtrés côté MDM</span>
+  <span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });
 } <span class="c-key">catch </span>(err) {
   <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
-}
-
-<span class="c-cmt">// Colis livrés, filtrés côté MDM</span>
-<span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });</pre></div>
+}</pre></div>
       </section>
 
       <section id="php" aria-labelledby="php-title">
@@ -189,7 +189,7 @@
           <li><strong>Testé en réel</strong> (octobre 2026, lecture seule)&nbsp;: wilayas, communes, bureaux, tarifs, liste, suivi, erreurs.</li>
           <li><strong>Fulfilment</strong>&nbsp;: MDM expédie des produits stockés chez lui. Chaque ligne de <code>productList</code> doit porter son id catalogue MDM&nbsp;; un produit inconnu → <code>VALIDATION_ERROR</code> sur <code>productList</code>.</li>
           <li><code>price</code> est ce que paie le destinataire&nbsp;: MDM n’ajoute pas de frais de livraison par-dessus.</li>
-          <li>MDM n’a pas de champ «&nbsp;référence commande&nbsp;»&nbsp;: <code>orderId</code> est écrit dans les notes (<code>Ref: …</code>) et reste filtrable avec <code>listParcels({ orderId })</code>.</li>
+          <li>MDM n’a pas de champ «&nbsp;référence commande&nbsp;»&nbsp;: <code>orderId</code> est écrit dans les notes (<code>Ref: …</code>). L’API de recherche MDM n’a pas de filtre pour ce champ&nbsp;: le SDK filtre donc <code>orderId</code> sur chaque page lue. Utilisez <code>listParcels({ orderId, allPages: true })</code> (<code>'allPages' =&gt; true</code> en PHP) pour chercher dans toutes les pages, pas seulement la première.</li>
           <li>Le <code>baseUrl</code> doit être en HTTPS.</li>
         </ul>
         <p>Mapping natif détaillé (endpoints, champs, statuts)&nbsp;: <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#mdm">PROVIDERS.md</a>.</p>

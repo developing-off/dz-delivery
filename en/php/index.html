@@ -221,7 +221,7 @@
     <span class="c-str">&#x27;communeName&#x27;</span>   =&gt; <span class="c-str">&#x27;Bab Ezzouar&#x27;</span>,    <span class="c-cmt">// or &#x27;communeId&#x27; =&gt; ...</span>
     <span class="c-str">&#x27;productList&#x27;</span>   =&gt; [
         [<span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;Mug&#x27;</span>, <span class="c-str">&#x27;quantity&#x27;</span> =&gt; <span class="c-num">2</span>],
-        [<span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>],
+        [<span class="c-str">&#x27;name&#x27;</span> =&gt; <span class="c-str">&#x27;T-shirt&#x27;</span>, <span class="c-str">&#x27;quantity&#x27;</span> =&gt; <span class="c-num">1</span>],
     ],                                   <span class="c-cmt">// or &#x27;productName&#x27; =&gt; &#x27;T-shirt&#x27;</span>
     <span class="c-str">&#x27;price&#x27;</span>         =&gt; <span class="c-num">3200</span>,             <span class="c-cmt">// what the recipient pays, in DZD</span>
     <span class="c-str">&#x27;weight&#x27;</span>        =&gt; <span class="c-num">1.5</span>,
@@ -526,7 +526,8 @@
         <span class="c-var">$this</span>-&gt;app-&gt;<span class="c-fn">singleton</span>(<span class="c-type">ShippingProviderInterface</span>::<span class="c-key">class</span>, <span class="c-key">function</span> () {
             <span class="c-var">$provider</span> = <span class="c-fn">config</span>(<span class="c-str">&#x27;services.dz_delivery.default&#x27;</span>);
 
-            <span class="c-key">return</span> <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-var">$provider</span>, <span class="c-fn">config</span>(<span class="c-str">&quot;services.dz_delivery.$provider&quot;</span>));
+            <span class="c-cmt">// [] when the carrier has no config entry: the SDK then throws its usual AUTH_FAILED, not a TypeError</span>
+            <span class="c-key">return</span> <span class="c-type">ClientFactory</span>::<span class="c-fn">create</span>(<span class="c-var">$provider</span>, <span class="c-fn">config</span>(<span class="c-str">&quot;services.dz_delivery.$provider&quot;</span>, []));
         });
     }
 }</pre></div>
@@ -558,7 +559,7 @@
         <span class="c-key">return</span> <span class="c-fn">back</span>();
     }
 }</pre></div>
-        <p>Several carriers at once? Bind a small factory instead (e.g. <code>fn (string $p) =&gt; ClientFactory::create($p, config("services.dz_delivery.$p"))</code>) and keep one client per carrier.</p>
+        <p>Several carriers at once? Bind a small factory instead (e.g. <code>fn (string $p) =&gt; ClientFactory::create($p, config("services.dz_delivery.$p", []))</code>) and keep one client per carrier.</p>
       </section>
 
       <section id="maystro-webhooks" aria-labelledby="maystro-webhooks-title">
@@ -575,6 +576,14 @@
 <span class="c-key">require</span> __DIR__ . <span class="c-str">&#x27;/../vendor/autoload.php&#x27;</span>;
 
 <span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Support</span>\<span class="c-type">StatusMapper</span>;
+
+<span class="c-cmt">// Shared secret: register the URL as /maystro-webhook.php?key=&lt;MAYSTRO_WEBHOOK_SECRET&gt;</span>
+<span class="c-var">$secret</span> = (<span class="c-type">string</span>) <span class="c-fn">getenv</span>(<span class="c-str">&#x27;MAYSTRO_WEBHOOK_SECRET&#x27;</span>);
+<span class="c-var">$given</span>  = (<span class="c-type">string</span>) (<span class="c-var">$_GET</span>[<span class="c-str">&#x27;key&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>);
+<span class="c-key">if</span> (<span class="c-var">$secret</span> === <span class="c-str">&#x27;&#x27;</span> || !<span class="c-fn">hash_equals</span>(<span class="c-var">$secret</span>, <span class="c-var">$given</span>)) {
+    <span class="c-fn">http_response_code</span>(<span class="c-num">401</span>);
+    <span class="c-key">exit</span>;
+}
 
 <span class="c-var">$body</span> = <span class="c-fn">json_decode</span>(<span class="c-fn">file_get_contents</span>(<span class="c-str">&#x27;php://input&#x27;</span>) ?: <span class="c-str">&#x27;&#x27;</span>, <span class="c-key">true</span>);
 <span class="c-var">$data</span> = <span class="c-var">$body</span>[<span class="c-str">&#x27;message&#x27;</span>][<span class="c-str">&#x27;data&#x27;</span>] ?? <span class="c-key">null</span>;
@@ -601,7 +610,7 @@
 }
 
 <span class="c-fn">http_response_code</span>(<span class="c-num">201</span>);</pre></div>
-        <p>The docs describe no signature for webhook requests. Protect the endpoint yourself, e.g. with a long secret in the URL (<code>/maystro-webhook.php?key=…</code>) that you check before processing. See also <a href="../maystro/#webhooks">webhooks on the Maystro page</a>.</p>
+        <p>The docs describe no signature for webhook requests, so the SDK has no verification helper for Maystro: protect the endpoint yourself. The example above puts a long random secret in the URL (<code>/maystro-webhook.php?key=…</code>) and compares it with <code>hash_equals</code> before reading the body; keep the secret out of your logs. See also <a href="../maystro/#webhooks">webhooks on the Maystro page</a>.</p>
       </section>
 
       <section id="testing" aria-labelledby="testing-title">
@@ -632,13 +641,14 @@
       <section id="zrexpress-extras" aria-labelledby="zrexpress-extras-title">
         <h2 id="zrexpress-extras-title">9. ZRExpress extras</h2>
         <p>Bulk create/delete, shipping labels and signed webhook verification live on <code>ZRExpressProvider</code> (and <code>DzDelivery\Providers\ZRExpress\Webhook</code>), <strong>not</strong> on <code>ShippingProviderInterface</code>. Overview on the <a href="../zrexpress/#extras">ZRExpress page</a>; full matrix and examples in <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/ZREXPRESS.md">ZREXPRESS.md</a>.</p>
-        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpressProvider</span>;
+        <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ClientOptions</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpressProvider</span>;
 <span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Providers</span>\<span class="c-type">ZRExpress</span>\<span class="c-type">Webhook</span>;
 
-<span class="c-var">$zr</span> = <span class="c-key">new</span> <span class="c-fn">ZRExpressProvider</span>([
+<span class="c-var">$zr</span> = <span class="c-key">new</span> <span class="c-fn">ZRExpressProvider</span>(<span class="c-type">ClientOptions</span>::<span class="c-fn">fromArray</span>([
     <span class="c-str">&#x27;apiKey&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_API_KEY&#x27;</span>),
     <span class="c-str">&#x27;tenant&#x27;</span> =&gt; <span class="c-fn">getenv</span>(<span class="c-str">&#x27;ZREXPRESS_TENANT&#x27;</span>),
-]);
+]));
 
 <span class="c-var">$bulk</span> = <span class="c-var">$zr</span>-&gt;<span class="c-fn">createParcelsBulk</span>([
     <span class="c-cmt">// each item MUST include orderId (externalId)</span>

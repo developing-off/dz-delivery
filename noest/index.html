@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Tous les transporteurs implémentent la même interface&nbsp;: le même code fonctionne avec les autres une fois le client configuré, mais certaines opérations n’existent pas chez tous et lèvent <code>NOT_SUPPORTED</code> (voir la <a href="../#matrix">matrice de compatibilité</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -121,10 +121,10 @@
   autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// remettre le colis au transporteur tout de suite</span>
 });
 
-<span class="c-key">const</span> desks = <span class="c-key">await</span> noest.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
-<span class="c-key">const</span> quote = <span class="c-key">await</span> noest.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> noest.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> noest.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> noest.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -153,9 +153,9 @@
     <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
 ]);
 
-<span class="c-var">$quote</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
-
 <span class="c-key">try</span> {
+    <span class="c-var">$quote</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
     <span class="c-var">$parcel</span> = <span class="c-var">$noest</span>-&gt;<span class="c-fn">createParcel</span>([
         <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
         <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -182,7 +182,7 @@
       <section id="statuses" aria-labelledby="statuses-title">
         <h2 id="statuses-title">Statuts NoEST → statuts unifiés</h2>
         <p><code>track</code> lit le <code>event_key</code> de chaque ligne de <code>activity[]</code> (à défaut, le libellé anglais <code>event</code>, ex. <code>Delivered</code>) et le traduit en statut unifié. Les événements de remarque (<code>edited_informations</code>, <code>edit_price</code>, <code>edit_wilaya</code>, <code>extra_fee</code>) conservent le statut précédent&nbsp;; les libellés d’affichage en français (« Validé ») ne sont pas reconnus et donnent <code>unknown</code>.</p>
-        <div class="table-wrap"><table><thead><tr><th>Statut NoEST (<code>event_key</code>)</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>upload</code></td><td><code>pending</code></td></tr><tr><td><code>customer_validation</code></td><td><code>created</code></td></tr><tr><td><code>validation_collect_colis</code>, <code>validation_reception_admin</code>, <code>validation_reception</code>, <code>fdr_activated</code>, <code>sent_to_redispatch</code>, <code>nouvel_tentative_asked_by_customer</code>, <code>mise_a_jour</code>, <code>colis_suspendu</code>, <code>return_redispatched_to_livraison</code>, <code>pickedup</code>, <code>valid_return_pickup</code></td><td><code>in_transit</code></td></tr><tr><td><code>livre</code>, <code>livred</code>, <code>verssement_*</code>, <code>validation_reception_cash_by_partener</code>, <code>echange_valide</code>, <code>echange_valid_by_hub</code>, <code>pickup_picked_recu</code>, <code>colis_pickup_transmit_to_partner</code></td><td><code>delivered</code></td></tr><tr><td><code>return_*</code> (sauf <code>return_redispatched_to_livraison</code>), <code>retour_dispatched_to_partenaires</code>, <code>colis_retour_transmit_to_partner</code>, <code>annulation_dispatch_retour</code>, <code>cancel_return_dispatched_to_partenaire</code>, <code>livraison_echoue_recu</code></td><td><code>returned</code></td></tr><tr><td><code>ask_to_delete_by_admin</code>, <code>ask_to_delete_by_hub</code></td><td><code>cancelled</code></td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Statut NoEST (<code>event_key</code>)</th><th>Statut unifié</th></tr></thead><tbody><tr><td><code>upload</code></td><td><code>pending</code></td></tr><tr><td><code>customer_validation</code></td><td><code>created</code></td></tr><tr><td><code>validation_collect_colis</code>, <code>validation_reception_admin</code>, <code>validation_reception</code>, <code>fdr_activated</code>, <code>sent_to_redispatch</code>, <code>nouvel_tentative_asked_by_customer</code>, <code>mise_a_jour</code>, <code>colis_suspendu</code>, <code>return_redispatched_to_livraison</code>, <code>pickedup</code>, <code>valid_return_pickup</code></td><td><code>in_transit</code></td></tr><tr><td><code>livre</code>, <code>livred</code>, <code>verssement_admin_cust</code>, <code>verssement_admin_cust_canceled</code>, <code>verssement_hub_cust_canceled</code>, <code>validation_reception_cash_by_partener</code>, <code>echange_valide</code>, <code>echange_valid_by_hub</code>, <code>pickup_picked_recu</code>, <code>colis_pickup_transmit_to_partner</code></td><td><code>delivered</code></td></tr><tr><td><code>return_asked_by_customer</code>, <code>return_asked_by_hub</code>, <code>return_dispatched_to_partenaire</code>, <code>return_validated_by_partener</code>, <code>return_dispatched_to_warehouse</code>, <code>retour_dispatched_to_partenaires</code>, <code>colis_retour_transmit_to_partner</code>, <code>annulation_dispatch_retour</code>, <code>cancel_return_dispatched_to_partenaire</code>, <code>livraison_echoue_recu</code></td><td><code>returned</code></td></tr><tr><td><code>ask_to_delete_by_admin</code>, <code>ask_to_delete_by_hub</code></td><td><code>cancelled</code></td></tr></tbody></table></div>
         <p>Liste complète des statuts unifiés et de leur signification&nbsp;: <a href="../statuts/#statuses">statuts du SDK</a>.</p>
       </section>
 

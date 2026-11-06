@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works for the other carriers: only the client configuration changes.</p>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). Every carrier implements the same interface, so the same code works with the others once the client is configured; some operations are not available on every carrier and throw <code>NOT_SUPPORTED</code> (see the <a href="../#matrix">capability matrix</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -119,9 +119,9 @@
   apiKey: process.env.<span class="c-type">ELOGISTIA_API_KEY</span>!,
 });
 
-<span class="c-key">const</span> quote = <span class="c-key">await</span> elogistia.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, isStopDesk: <span class="c-key">true</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> elogistia.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, isStopDesk: <span class="c-key">true</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> elogistia.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,

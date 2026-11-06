@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works for the other carriers: only the client configuration changes.</p>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). Every carrier implements the same interface, so the same code works with the others once the client is configured; some operations are not available on every carrier and throw <code>NOT_SUPPORTED</code> (see the <a href="../#matrix">capability matrix</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -120,9 +120,9 @@
   storeId: process.env.<span class="c-type">MDM_STORE_ID</span>!,  <span class="c-cmt">// STR-…</span>
 });
 
-<span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> mdm.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: <span class="c-str">&#x27;Bab Ezzouar&#x27;</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> mdm.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -135,12 +135,12 @@
   });
 
   <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> mdm.<span class="c-fn">track</span>(parcel.trackingNumber);
+
+  <span class="c-cmt">// Delivered parcels, filtered by MDM</span>
+  <span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });
 } <span class="c-key">catch </span>(err) {
   <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
-}
-
-<span class="c-cmt">// Delivered parcels, filtered by MDM</span>
-<span class="c-key">const</span> delivered = <span class="c-key">await</span> mdm.<span class="c-fn">listParcels</span>({ status: <span class="c-str">&#x27;delivered&#x27;</span>, pageSize: <span class="c-num">50</span> });</pre></div>
+}</pre></div>
       </section>
 
       <section id="php" aria-labelledby="php-title">
@@ -189,7 +189,7 @@
           <li><strong>Tested live</strong> (October 2026, read-only): wilayas, communes, offices, fees, list, tracking, errors.</li>
           <li><strong>Fulfillment</strong>: MDM ships products stocked in its own warehouse. Every <code>productList</code> line must carry its MDM catalog id; an unknown product → <code>VALIDATION_ERROR</code> on <code>productList</code>.</li>
           <li><code>price</code> is what the recipient pays: MDM adds no delivery fee on top.</li>
-          <li>MDM has no “order reference” field: <code>orderId</code> is written to the notes (<code>Ref: …</code>) and can still be filtered with <code>listParcels({ orderId })</code>.</li>
+          <li>MDM has no “order reference” field: <code>orderId</code> is written to the notes (<code>Ref: …</code>). The MDM search API has no filter for it, so the SDK filters <code>orderId</code> on each page it reads: use <code>listParcels({ orderId, allPages: true })</code> (<code>'allPages' =&gt; true</code> in PHP) to search every page, not just the first one.</li>
           <li>The <code>baseUrl</code> must use HTTPS.</li>
         </ul>
         <p>Detailed native mapping (endpoints, fields, statuses): <a href="https://github.com/developing-off/dz-delivery/blob/main/docs/PROVIDERS.md#mdm">PROVIDERS.md</a>.</p>

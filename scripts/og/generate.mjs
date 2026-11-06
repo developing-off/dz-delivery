@@ -80,7 +80,7 @@ images.push(
     eyebrow: 'dz-delivery · référence',
     title: 'Statuts de colis',
     subtitle: 'Un modèle unifié',
-    tagline: 'pending · created · in_transit · delivered · returned · cancelled',
+    tagline: 'pending · created · in_transit · delivered · returned · cancelled · unknown',
   },
   {
     key: 'en-statuses',
@@ -88,7 +88,7 @@ images.push(
     eyebrow: 'dz-delivery · reference',
     title: 'Parcel statuses',
     subtitle: 'One unified model',
-    tagline: 'pending · created · in_transit · delivered · returned · cancelled',
+    tagline: 'pending · created · in_transit · delivered · returned · cancelled · unknown',
   },
 );
 
@@ -169,8 +169,9 @@ function findChrome() {
 }
 
 const only = new Set(process.argv.slice(2));
+const unknown = [...only].filter((key) => !images.some((img) => img.key === key));
+if (unknown.length) throw new Error(`Unknown key(s): ${unknown.join(', ')}`);
 const selected = images.filter((img) => only.size === 0 || only.has(img.key));
-if (selected.length === 0) throw new Error(`Unknown key(s): ${[...only].join(', ')}`);
 
 const chrome = findChrome();
 const tmp = mkdtempSync(join(tmpdir(), 'dz-og-'));

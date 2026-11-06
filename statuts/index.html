@@ -346,6 +346,18 @@
 }</pre></div>
         <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">namespace</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Contracts</span>;
 
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">FeeQuery</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">FeeQuote</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">HealthCheckResult</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">Location</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">Parcel</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelInput</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelListPage</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelListQuery</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">StopDesk</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">StopDeskQuery</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">TrackResult</span>;
+
 <span class="c-key">interface</span> <span class="c-type">ShippingProviderInterface</span>
 {
     <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getName</span>(): <span class="c-type">string</span>;
@@ -387,7 +399,7 @@
         <p>Identifiants propres à chaque transporteur&nbsp;:</p>
         <div class="table-wrap"><table><thead><tr><th>Provider</th><th>Clés de configuration</th><th>Variables d’environnement (<code>.env.example</code>)</th></tr></thead><tbody>
           <tr><td><a href="../zrexpress/"><code>zrexpress</code></a></td><td><code>apiKey</code>, <code>tenant</code></td><td><code>ZREXPRESS_API_KEY</code>, <code>ZREXPRESS_TENANT</code></td></tr>
-          <tr><td><a href="../yalidine/"><code>yalidine</code></a></td><td><code>apiId</code>, <code>apiToken</code></td><td><code>YALIDINE_API_ID</code>, <code>YALIDINE_API_TOKEN</code></td></tr>
+          <tr><td><a href="../yalidine/"><code>yalidine</code></a></td><td><code>apiId</code>, <code>apiToken</code>, <code>fromWilayaId</code> ou <code>fromWilayaName</code> (wilaya d’origine, requise par <code>createParcel</code> et <code>getFees</code>)</td><td><code>YALIDINE_API_ID</code>, <code>YALIDINE_API_TOKEN</code>, <code>YALIDINE_FROM_WILAYA_ID</code></td></tr>
           <tr><td><a href="../maystro/"><code>maystro</code></a></td><td><code>apiToken</code></td><td><code>MAYSTRO_API_TOKEN</code></td></tr>
           <tr><td><a href="../ecotrack/"><code>ecotrack</code></a></td><td><code>token</code>, <code>courier</code> ou <code>baseUrl</code> (https)</td><td><code>ECOTRACK_TOKEN</code>, <code>ECOTRACK_COURIER</code> / <code>ECOTRACK_BASE_URL</code></td></tr>
           <tr><td><a href="../noest/"><code>noest</code></a></td><td><code>apiToken</code>, <code>userGuid</code>, <code>autoValidate?</code></td><td><code>NOEST_API_TOKEN</code>, <code>NOEST_USER_GUID</code></td></tr>
@@ -395,7 +407,7 @@
           <tr><td><a href="../mdm/"><code>mdm</code></a></td><td><code>apiKey</code>, <code>storeId</code> (requis par <code>createParcel</code>)</td><td><code>MDM_API_KEY</code>, <code>MDM_STORE_ID</code></td></tr>
           <tr><td><a href="../elogistia/"><code>elogistia</code></a></td><td><code>apiKey</code>, <code>email?</code></td><td><code>ELOGISTIA_API_KEY</code></td></tr>
         </tbody></table></div>
-        <p>Un <code>baseUrl</code> personnalisé doit être une URL <code>https:</code> (les identifiants voyagent dans les en-têtes)&nbsp;; sinon <code>VALIDATION_ERROR</code>. Configuration détaillée en PHP&nbsp;: <a href="../php/#configure">guide PHP</a>.</p>
+        <p>Un <code>baseUrl</code> personnalisé doit être une URL <code>https:</code>, car les identifiants accompagnent chaque requête (en en-tête, ou dans la query string chez Elogistia). Les clients Ecotrack, NoEST, E-com, MDM et Elogistia refusent toute autre URL avec <code>VALIDATION_ERROR</code>. Configuration détaillée en PHP&nbsp;: <a href="../php/#configure">guide PHP</a>.</p>
       </section>
 
       <section id="scope" aria-labelledby="scope-title">

@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works with the other carriers: only the client configuration changes.</p>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). Every carrier implements the same interface, so the same code works with the others once the client is configured; some operations are not available on every carrier and throw <code>NOT_SUPPORTED</code> (see the <a href="../#matrix">capability matrix</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -119,15 +119,15 @@
   apiToken: process.env.<span class="c-type">MAYSTRO_API_TOKEN</span>!,
 });
 
-<span class="c-key">const</span> wilayas = <span class="c-key">await</span> maystro.<span class="c-fn">getWilayas</span>();
-<span class="c-key">const</span> communes = <span class="c-key">await</span> maystro.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
-
-<span class="c-cmt">// Stop desks / pickup points: Maystro requires communeId</span>
-<span class="c-key">const</span> desks = <span class="c-key">await</span> maystro.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span>, communeId: communes[<span class="c-num">0</span>].id });
-
-<span class="c-key">const</span> quote = <span class="c-key">await</span> maystro.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: communes[<span class="c-num">0</span>].id });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> wilayas = <span class="c-key">await</span> maystro.<span class="c-fn">getWilayas</span>();
+  <span class="c-key">const</span> communes = <span class="c-key">await</span> maystro.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+
+  <span class="c-cmt">// Stop desks / pickup points: Maystro requires communeId</span>
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> maystro.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span>, communeId: communes[<span class="c-num">0</span>].id });
+
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> maystro.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span>, toCommuneId: communes[<span class="c-num">0</span>].id });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> maystro.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -194,13 +194,14 @@
         <p>Set up an HTTPS URL in the Maystro app (Settings → Webhooks). The <code>OrderStatusChanged</code> event carries <code>payload.id</code> (the order id) and <code>payload.status</code> (a numeric code), which the SDK converts to a unified status.</p>
         <div class="panel"><div class="panel-head"><span>TypeScript</span></div><pre><span class="c-key">import</span> { mapMaystroStatus } <span class="c-key">from</span> <span class="c-str">&#x27;@dz-delivery/core&#x27;</span>;
 
-<span class="c-cmt">// event = JSON decoded from message.data (base64)</span>
+<span class="c-cmt">// check the URL secret first (not signed), then: event = JSON decoded from message.data (base64)</span>
 <span class="c-key">if </span>(event.event === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
   <span class="c-key">const</span> status = <span class="c-fn">mapMaystroStatus</span>(event.payload.status); <span class="c-cmt">// 41 → &#x27;delivered&#x27;</span>
   <span class="c-cmt">// update the order whose carrier_id = event.payload.id</span>
 }</pre></div>
         <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Support</span>\<span class="c-type">StatusMapper</span>;
 
+<span class="c-cmt">// $event = JSON decoded from message.data, after checking the URL secret</span>
 <span class="c-key">if </span>((<span class="c-var">$event</span>[<span class="c-str">&#x27;event&#x27;</span>] ?? <span class="c-key">null</span>) === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
     <span class="c-var">$status</span> = <span class="c-type">StatusMapper</span>::<span class="c-fn">maystro</span>(<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;status&#x27;</span>] ?? <span class="c-key">null</span>); <span class="c-cmt">// 41 → &#x27;delivered&#x27;</span>
 }</pre></div>

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Checks the built site in _site/ (run scripts/build-site.sh first):
 // - each page's canonical URL is its own URL,
-// - hreflang alternates point to existing pages and are reciprocal,
+// - each page has exactly the fr, en and x-default alternates, pointing to
+//   built pages and reciprocal,
 // - og:image / twitter:image files exist,
-// - relative links and assets resolve to files in the build.
+// - relative links and assets in every HTML file (404.html included) resolve
+//   to files in the build.
 // Exits with code 1 and lists the problems if anything is wrong.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -22,7 +24,10 @@ function walk(dir, rel = '') {
 }
 
 const files = walk(out);
+const isFile = (rel) => existsSync(join(out, rel)) && statSync(join(out, rel)).isFile();
 const pages = files.filter((f) => f.endsWith('index.html'));
+const htmlFiles = files.filter((f) => f.endsWith('.html'));
+const LANGS = ['en', 'fr', 'x-default'];
 const urlOf = (f) => `${site}/${f.slice(0, -'index.html'.length)}`;
 const fileOf = (url) => {
   if (!url.startsWith(`${site}/`)) return null;
@@ -45,12 +50,16 @@ for (const page of pages) {
     alts[attr(tag, 'hreflang')] = attr(tag, 'href');
   }
   alternates.set(own, alts);
-  if (Object.keys(alts).length && !Object.values(alts).includes(own)) {
+  const langs = Object.keys(alts).sort();
+  if (langs.join(',') !== LANGS.join(',')) {
+    problems.push(`${page}: hreflang must be exactly ${LANGS.join(', ')} (found: ${langs.join(', ') || 'none'})`);
+  }
+  if (langs.length && !Object.values(alts).includes(own)) {
     problems.push(`${page}: hreflang alternates do not include the page itself`);
   }
   for (const [lang, href] of Object.entries(alts)) {
     const f = fileOf(href);
-    if (!f || !files.includes(f)) problems.push(`${page}: hreflang ${lang} → missing page ${href}`);
+    if (!f || !pages.includes(f)) problems.push(`${page}: hreflang ${lang} → not a built page: ${href}`);
   }
 
   for (const tag of html.match(/<meta (property="og:image"|name="twitter:image")[^>]*>/g) || []) {
@@ -58,13 +67,20 @@ for (const page of pages) {
     if (!f || !files.includes(f)) problems.push(`${page}: image not in build: ${attr(tag, 'content')}`);
   }
 
-  const base = posix.dirname(`/${page}`);
+}
+
+for (const file of htmlFiles) {
+  const html = readFileSync(join(out, file), 'utf8');
+  const base = posix.dirname(`/${file}`);
   for (const m of html.matchAll(/\s(?:href|src)="([^"]+)"/g)) {
     const link = m[1];
     if (/^(?:[a-z]+:|\/\/|#|data:)/i.test(link)) continue;
-    const path = posix.resolve(base, link.split('#')[0].split('?')[0]);
-    const target = (path.endsWith('/') ? `${path}index.html` : path).replace(/^\//, '');
-    if (!existsSync(join(out, target))) problems.push(`${page}: broken link ${link}`);
+    const clean = link.split('#')[0].split('?')[0];
+    // posix.resolve drops the trailing slash: a folder link ("../yalidine/", "./", "..") means its index.html.
+    const isDir = /(^|\/)\.{0,2}$/.test(clean);
+    const path = posix.resolve(base, clean);
+    const target = (isDir ? posix.join(path, 'index.html') : path).replace(/^\//, '');
+    if (!isFile(target)) problems.push(`${file}: broken link ${link}`);
   }
 }
 

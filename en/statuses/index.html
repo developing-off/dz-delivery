@@ -346,6 +346,18 @@
 }</pre></div>
         <div class="panel"><div class="panel-head"><span>PHP</span></div><pre><span class="c-key">namespace</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Contracts</span>;
 
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">FeeQuery</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">FeeQuote</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">HealthCheckResult</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">Location</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">Parcel</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelInput</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelListPage</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">ParcelListQuery</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">StopDesk</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">StopDeskQuery</span>;
+<span class="c-key">use</span> <span class="c-type">DzDelivery</span>\<span class="c-type">Models</span>\<span class="c-type">TrackResult</span>;
+
 <span class="c-key">interface</span> <span class="c-type">ShippingProviderInterface</span>
 {
     <span class="c-key">public</span> <span class="c-key">function</span> <span class="c-fn">getName</span>(): <span class="c-type">string</span>;
@@ -387,7 +399,7 @@
         <p>Provider-specific credentials:</p>
         <div class="table-wrap"><table><thead><tr><th>Provider</th><th>Config keys</th><th>Env vars (<code>.env.example</code>)</th></tr></thead><tbody>
           <tr><td><a href="../zrexpress/"><code>zrexpress</code></a></td><td><code>apiKey</code>, <code>tenant</code></td><td><code>ZREXPRESS_API_KEY</code>, <code>ZREXPRESS_TENANT</code></td></tr>
-          <tr><td><a href="../yalidine/"><code>yalidine</code></a></td><td><code>apiId</code>, <code>apiToken</code></td><td><code>YALIDINE_API_ID</code>, <code>YALIDINE_API_TOKEN</code></td></tr>
+          <tr><td><a href="../yalidine/"><code>yalidine</code></a></td><td><code>apiId</code>, <code>apiToken</code>, <code>fromWilayaId</code> or <code>fromWilayaName</code> (origin wilaya, required by <code>createParcel</code> and <code>getFees</code>)</td><td><code>YALIDINE_API_ID</code>, <code>YALIDINE_API_TOKEN</code>, <code>YALIDINE_FROM_WILAYA_ID</code></td></tr>
           <tr><td><a href="../maystro/"><code>maystro</code></a></td><td><code>apiToken</code></td><td><code>MAYSTRO_API_TOKEN</code></td></tr>
           <tr><td><a href="../ecotrack/"><code>ecotrack</code></a></td><td><code>token</code>, <code>courier</code> or <code>baseUrl</code> (https)</td><td><code>ECOTRACK_TOKEN</code>, <code>ECOTRACK_COURIER</code> / <code>ECOTRACK_BASE_URL</code></td></tr>
           <tr><td><a href="../noest/"><code>noest</code></a></td><td><code>apiToken</code>, <code>userGuid</code>, <code>autoValidate?</code></td><td><code>NOEST_API_TOKEN</code>, <code>NOEST_USER_GUID</code></td></tr>
@@ -395,7 +407,7 @@
           <tr><td><a href="../mdm/"><code>mdm</code></a></td><td><code>apiKey</code>, <code>storeId</code> (required by <code>createParcel</code>)</td><td><code>MDM_API_KEY</code>, <code>MDM_STORE_ID</code></td></tr>
           <tr><td><a href="../elogistia/"><code>elogistia</code></a></td><td><code>apiKey</code>, <code>email?</code></td><td><code>ELOGISTIA_API_KEY</code></td></tr>
         </tbody></table></div>
-        <p>A <code>baseUrl</code> override must be an <code>https:</code> URL (credentials travel in headers); anything else throws <code>VALIDATION_ERROR</code>. Detailed PHP configuration: <a href="../php/#configure">PHP guide</a>.</p>
+        <p>A <code>baseUrl</code> override must be an <code>https:</code> URL, because credentials go with every request (in headers, or in the query string for Elogistia). The Ecotrack, NoEST, E-com, MDM and Elogistia clients reject any other URL with <code>VALIDATION_ERROR</code>. Detailed PHP configuration: <a href="../php/#configure">PHP guide</a>.</p>
       </section>
 
       <section id="scope" aria-labelledby="scope-title">

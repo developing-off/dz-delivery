@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copier</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copier</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Le même code fonctionne ensuite pour les autres transporteurs&nbsp;: seule la configuration du client change.</p>
+        <p>Node.js ≥ 18 (aucune dépendance) ou PHP ≥ 8.2 (Guzzle 7). Tous les transporteurs implémentent la même interface&nbsp;: le même code fonctionne avec les autres une fois le client configuré, mais certaines opérations n’existent pas chez tous et lèvent <code>NOT_SUPPORTED</code> (voir la <a href="../#matrix">matrice de compatibilité</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -121,10 +121,10 @@
   autoValidate: <span class="c-key">true</span>,          <span class="c-cmt">// remettre le colis au transporteur tout de suite</span>
 });
 
-<span class="c-key">const</span> desks = <span class="c-key">await</span> ecom.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
-<span class="c-key">const</span> quote = <span class="c-key">await</span> ecom.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
-
 <span class="c-key">try</span> {
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> ecom.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">16</span> });
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> ecom.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">16</span> });
+
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> ecom.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -137,12 +137,12 @@
   });
 
   <span class="c-key">const</span> { parcel: current, events } = <span class="c-key">await</span> ecom.<span class="c-fn">track</span>(parcel.trackingNumber);
+
+  <span class="c-cmt">// Colis modifiés depuis hier, toutes pages</span>
+  <span class="c-key">const</span> page = <span class="c-key">await</span> ecom.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-key">new</span> <span class="c-type">Date</span>(Date.now() - <span class="c-num">86400000</span>).<span class="c-fn">toISOString</span>(), allPages: <span class="c-key">true</span> });
 } <span class="c-key">catch </span>(err) {
   <span class="c-key">if </span>(<span class="c-fn">isShippingError</span>(err)) console.<span class="c-fn">error</span>(err.code, err.message);
-}
-
-<span class="c-cmt">// Colis modifiés depuis hier, toutes pages</span>
-<span class="c-key">const</span> page = <span class="c-key">await</span> ecom.<span class="c-fn">listParcels</span>({ updatedSince: <span class="c-key">new</span> <span class="c-type">Date</span>(Date.now() - <span class="c-num">86400000</span>), allPages: <span class="c-key">true</span> });</pre></div>
+}</pre></div>
       </section>
 
       <section id="php" aria-labelledby="php-title">
@@ -156,9 +156,9 @@
     <span class="c-str">&#x27;autoValidate&#x27;</span> =&gt; <span class="c-key">true</span>,
 ]);
 
-<span class="c-var">$quote</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
-
 <span class="c-key">try</span> {
+    <span class="c-var">$quote</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>]);
+
     <span class="c-var">$parcel</span> = <span class="c-var">$ecom</span>-&gt;<span class="c-fn">createParcel</span>([
         <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
         <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,

@@ -839,7 +839,7 @@ $result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);</
                 <tr>
                   <td><code>maystro</code></td>
                   <td><code>apiToken</code></td>
-                  <td><code>Authorization: Token …</code> — no track/cancel</td>
+                  <td><code>Authorization: Token …</code>. Optional webhooks (<code>mapMaystroStatus</code>)</td>
                 </tr>
                 <tr>
                   <td><code>ecotrack</code></td>
@@ -872,11 +872,12 @@ $result = $shipping-><span class="c-fn">track</span>($parcel->trackingNumber);</
             </div>
             <div class="tab-panel" role="tabpanel" id="cli-php" hidden>
               <pre><span class="c-cmt">use DzDelivery\ClientFactory;
+use DzDelivery\Models\ClientOptions;
 use DzDelivery\Providers\ZRExpressProvider;
 use DzDelivery\Providers\YalidineProvider;</span>
 
 $zr = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'zrexpress'</span>, [<span class="c-str">'apiKey'</span> => $key, <span class="c-str">'tenant'</span> => $tenant]);
-$zrExtra = <span class="c-key">new</span> ZRExpressProvider([<span class="c-str">'apiKey'</span> => $key, <span class="c-str">'tenant'</span> => $tenant]);
+$zrExtra = <span class="c-key">new</span> ZRExpressProvider(ClientOptions::<span class="c-fn">fromArray</span>([<span class="c-str">'apiKey'</span> => $key, <span class="c-str">'tenant'</span> => $tenant]));
 
 $yalidine = ClientFactory::<span class="c-fn">create</span>(<span class="c-str">'yalidine'</span>, [
     <span class="c-str">'apiId'</span> => $id, <span class="c-str">'apiToken'</span> => $token, <span class="c-str">'fromWilayaId'</span> => <span class="c-num">16</span>,
@@ -1017,7 +1018,7 @@ $desks = $shipping-><span class="c-fn">getStopDesks</span>([<span class="c-str">
           </div>
 
           <h3 class="sub" id="listParcels">listParcels</h3>
-          <p class="prose">Paginated list of the account’s parcels with their unified status. No event history — use <span class="mono">track()</span> for that. ZRExpress goes through <span class="mono">parcels/search</span>; other carriers return <span class="mono">NOT_SUPPORTED</span> for now. Prefer webhooks in production.</p>
+          <p class="prose">Paginated list of the account’s parcels with their unified status. No event history — use <span class="mono">track()</span> for that. Available on ZRExpress, Yalidine, Maystro, E-com and MDM; Ecotrack (not implemented yet), NoEST and Elogistia throw <span class="mono">NOT_SUPPORTED</span> (see the <a href="#matrix">compatibility matrix</a>). Prefer webhooks in production.</p>
           <div class="panel code-block" data-tabs>
             <div class="tabs" role="tablist" aria-label="listParcels">
               <button type="button" class="tab" role="tab" aria-controls="lp-ts" aria-selected="true">TypeScript</button>
@@ -1194,7 +1195,7 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
                 </tr>
                 <tr>
                   <td><code>track</code></td>
-                  <td class="ok">yes</td><td class="ok">yes</td><td class="no">webhooks</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td>
+                  <td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td>
                 </tr>
                 <tr>
                   <td><code>getFees</code></td>
@@ -1210,11 +1211,11 @@ $health = $shipping-><span class="c-fn">healthCheck</span>();</pre>
                 </tr>
                 <tr>
                   <td><code>listParcels</code></td>
-                  <td class="ok">yes</td><td class="no">soon</td><td class="no">webhooks</td><td class="no">soon</td><td class="no">no</td><td class="ok">yes</td><td class="ok">yes</td><td class="no">no</td>
+                  <td class="ok">yes</td><td class="ok">yes</td><td class="ok">yes</td><td class="no">soon</td><td class="no">no</td><td class="ok">yes</td><td class="ok">yes</td><td class="no">no</td>
                 </tr>
                 <tr>
                   <td><code>cancelParcel</code></td>
-                  <td class="ok">yes</td><td class="ok">if “En préparation”</td><td class="no">no</td><td class="ok">if not validated</td><td class="ok">if not validated</td><td class="ok">if preparing</td><td class="no">no</td><td class="no">no</td>
+                  <td class="ok">yes</td><td class="ok">if “En préparation”</td><td class="ok">yes</td><td class="ok">if not validated</td><td class="ok">if not validated</td><td class="ok">if preparing</td><td class="no">no</td><td class="no">no</td>
                 </tr>
                 <tr>
                   <td><code>healthCheck</code></td>
@@ -1333,7 +1334,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="prose">Amount ≤ 150,000 DZD (fees included). Phone numbers in international format (<span class="mono">+213…</span>). Stop desks are hubs; filter by wilaya only. Without a <span class="mono">stateId</span>, the parcel stays in <span class="mono">OrderReceived</span> until it is switched to “prêt à expédier” (ready to ship) in the portal.</p>
 
           <h3 class="sub"><a href="yalidine/">Yalidine / GuepEx</a></h3>
-          <p class="prose"><span class="mono">fromWilayaId</span> is required when constructing the client. Cancellation only while the parcel is “En préparation” (preparing). GuepEx = same API, different <span class="mono">baseUrl</span>.</p>
+          <p class="prose"><span class="mono">fromWilayaId</span> (or <span class="mono">fromWilayaName</span>), the origin wilaya, goes in the client config: <span class="mono">createParcel</span> and <span class="mono">getFees</span> need it. Cancellation only while the parcel is “En préparation” (preparing). GuepEx = same API, different <span class="mono">baseUrl</span>.</p>
 
           <h3 class="sub"><a href="maystro/">Maystro</a></h3>
           <p class="prose"><span class="mono">track</span> / <span class="mono">cancelParcel</span> / <span class="mono">listParcels</span> and PDF labels (<span class="mono">getLabels</span>); optional webhooks with <span class="mono">mapMaystroStatus</span>. <span class="mono">getStopDesks</span> requires <span class="mono">communeId</span>.</p>
@@ -1348,7 +1349,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
           <p class="prose"><span class="mono">apiKey</span> + <span class="mono">apiToken</span> (API v2). Full contract, including <span class="mono">listParcels</span> with <span class="mono">updatedSince</span>. Name ≤ 60 characters, address ≤ 100.</p>
 
           <h3 class="sub"><a href="mdm/">MDM Express</a></h3>
-          <p class="prose"><span class="mono">apiKey</span> + <span class="mono">storeId</span>. Products are stocked at MDM (catalog id <span class="mono">PRD-…</span>). <span class="mono">listParcels</span> is filtered server-side; no cancellation through the API.</p>
+          <p class="prose"><span class="mono">apiKey</span> + <span class="mono">storeId</span>. Products are stocked at MDM (catalog id <span class="mono">PRD-…</span>). <span class="mono">listParcels</span> filters status and dates server-side (<span class="mono">orderId</span> page by page in the SDK); no cancellation through the API.</p>
 
           <h3 class="sub"><a href="elogistia/">Elogistia</a></h3>
           <p class="prose"><span class="mono">apiKey</span> (in the URL). Create, track, fees, wilayas, communes. No stop desk list, parcel list or cancellation.</p>
@@ -1379,7 +1380,7 @@ $deleted = $zr-><span class="c-fn">deleteParcelsBulk</span>([$uuid, <span class=
             </details>
             <details>
               <summary>Can I switch carriers without rewriting my code?</summary>
-              <p>Yes. Every carrier returns the same objects and the same normalized statuses (<span class="mono">pending</span>, <span class="mono">in_transit</span>, <span class="mono">delivered</span>…). Only the client configuration changes.</p>
+              <p>Yes. Every carrier returns the same objects and the same normalized statuses (<span class="mono">pending</span>, <span class="mono">in_transit</span>, <span class="mono">delivered</span>…). Only the client configuration changes, except for operations a carrier’s API does not offer: those throw <span class="mono">NOT_SUPPORTED</span> (see the <a href="#matrix">compatibility matrix</a>).</p>
             </details>
             <details>
               <summary>Does it work with Laravel, WooCommerce or Shopify?</summary>

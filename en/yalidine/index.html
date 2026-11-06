@@ -103,7 +103,7 @@
           <div class="panel"><div class="panel-head"><span>TypeScript · npm</span><button type="button" class="copy" data-copy="npm install @dz-delivery/core">Copy</button></div><pre>npm install @dz-delivery/core</pre></div>
           <div class="panel"><div class="panel-head"><span>PHP · Composer</span><button type="button" class="copy" data-copy="composer require dz-delivery/sdk">Copy</button></div><pre>composer require dz-delivery/sdk</pre></div>
         </div>
-        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). The same code then works with the other carriers: only the client configuration changes.</p>
+        <p>Node.js ≥ 18 (zero dependencies) or PHP ≥ 8.2 (Guzzle 7). Every carrier implements the same interface, so the same code works with the others once the client is configured; some operations are not available on every carrier and throw <code>NOT_SUPPORTED</code> (see the <a href="../#matrix">capability matrix</a>).</p>
       </section>
 
       <section id="credentials" aria-labelledby="cred-title">
@@ -121,17 +121,17 @@
   fromWilayaId: <span class="c-num">16</span>, <span class="c-cmt">// origin wilaya (Algiers)</span>
 });
 
-<span class="c-cmt">// Wilayas, communes, offices (stop desks)</span>
-<span class="c-key">const</span> wilayas = <span class="c-key">await</span> yalidine.<span class="c-fn">getWilayas</span>();            <span class="c-cmt">// id = official code 1–58</span>
-<span class="c-key">const</span> communes = <span class="c-key">await</span> yalidine.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
-<span class="c-key">const</span> desks = <span class="c-key">await</span> yalidine.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">31</span> });
-
-<span class="c-cmt">// Delivery fees (weight in kg, dimensions in cm)</span>
-<span class="c-key">const</span> quote = <span class="c-key">await</span> yalidine.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">31</span>, weight: <span class="c-num">2</span> });
-<span class="c-cmt">// { deliveryFee, stopDeskFee, returnFee?, currency: &#x27;DZD&#x27; }</span>
-
-<span class="c-cmt">// Create a parcel (cash on delivery)</span>
 <span class="c-key">try</span> {
+  <span class="c-cmt">// Wilayas, communes, offices (stop desks)</span>
+  <span class="c-key">const</span> wilayas = <span class="c-key">await</span> yalidine.<span class="c-fn">getWilayas</span>();            <span class="c-cmt">// id = official code 1–58</span>
+  <span class="c-key">const</span> communes = <span class="c-key">await</span> yalidine.<span class="c-fn">getCommunes</span>(<span class="c-num">16</span>);
+  <span class="c-key">const</span> desks = <span class="c-key">await</span> yalidine.<span class="c-fn">getStopDesks</span>({ wilayaId: <span class="c-num">31</span> });
+
+  <span class="c-cmt">// Delivery fees (weight in kg, dimensions in cm)</span>
+  <span class="c-key">const</span> quote = <span class="c-key">await</span> yalidine.<span class="c-fn">getFees</span>({ toWilayaId: <span class="c-num">31</span>, weight: <span class="c-num">2</span> });
+  <span class="c-cmt">// { deliveryFee, stopDeskFee, returnFee?, currency: &#x27;DZD&#x27; }</span>
+
+  <span class="c-cmt">// Create a parcel (cash on delivery)</span>
   <span class="c-key">const</span> parcel = <span class="c-key">await</span> yalidine.<span class="c-fn">createParcel</span>({
     recipientName: <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
     phone: <span class="c-str">&#x27;0550123456&#x27;</span>,
@@ -162,11 +162,11 @@
     <span class="c-str">&#x27;fromWilayaId&#x27;</span> =&gt; <span class="c-num">16</span>, <span class="c-cmt">// or &#x27;fromWilayaName&#x27; =&gt; &#x27;Alger&#x27;</span>
 ]);
 
-<span class="c-var">$wilayas</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getWilayas</span>();
-<span class="c-var">$desks</span>   = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getStopDesks</span>([<span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-num">31</span>]);
-<span class="c-var">$quote</span>   = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">31</span>, <span class="c-str">&#x27;weight&#x27;</span> =&gt; <span class="c-num">2</span>]);
-
 <span class="c-key">try</span> {
+    <span class="c-var">$wilayas</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getWilayas</span>();
+    <span class="c-var">$desks</span>   = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getStopDesks</span>([<span class="c-str">&#x27;wilayaId&#x27;</span> =&gt; <span class="c-num">31</span>]);
+    <span class="c-var">$quote</span>   = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">getFees</span>([<span class="c-str">&#x27;toWilayaId&#x27;</span> =&gt; <span class="c-num">31</span>, <span class="c-str">&#x27;weight&#x27;</span> =&gt; <span class="c-num">2</span>]);
+
     <span class="c-var">$parcel</span> = <span class="c-var">$yalidine</span>-&gt;<span class="c-fn">createParcel</span>([
         <span class="c-str">&#x27;recipientName&#x27;</span> =&gt; <span class="c-str">&#x27;Mohamed Amine&#x27;</span>,
         <span class="c-str">&#x27;phone&#x27;</span>         =&gt; <span class="c-str">&#x27;0550123456&#x27;</span>,

@@ -11,7 +11,9 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-SITE_URL="${SITE_URL:-https://dz-delivery.younes-sarni.com}"
+# Production origin, as written in the pages' hreflang links.
+PROD_URL=https://dz-delivery.younes-sarni.com
+SITE_URL="${SITE_URL:-$PROD_URL}"
 SITE_URL="${SITE_URL%/}"
 # Origin only (scheme + host[:port]): it is concatenated into URLs and written
 # unescaped into sitemap.xml.
@@ -70,7 +72,8 @@ EOF
     echo "  <url>"
     echo "    <loc>$SITE_URL/${f%index.html}</loc>"
     echo "    <lastmod>$(lastmod "$f")</lastmod>"
-    sed -n 's#^ *<link rel="alternate" hreflang="\([^"]*\)" href="\([^"]*\)" */>.*#    <xhtml:link rel="alternate" hreflang="\1" href="\2"/>#p' "$f"
+    sed -n 's#^ *<link rel="alternate" hreflang="\([^"]*\)" href="\([^"]*\)" */>.*#    <xhtml:link rel="alternate" hreflang="\1" href="\2"/>#p' "$f" \
+      | sed "s#$PROD_URL/#$SITE_URL/#g"
     echo "  </url>"
   done
   echo '</urlset>'
