@@ -370,7 +370,7 @@ Provider-specific credentials:
 | Provider | Config keys | Env vars (`.env.example`) |
 |----------|-------------|---------------------------|
 | `zrexpress` | `apiKey`, `tenant` | `ZREXPRESS_API_KEY`, `ZREXPRESS_TENANT` |
-| `yalidine` | `apiId`, `apiToken`, `fromWilayaId` or `fromWilayaName` (origin, required by `createParcel` and `getFees`) | `YALIDINE_API_ID`, `YALIDINE_API_TOKEN`, `YALIDINE_FROM_WILAYA_ID` |
+| `yalidine` | `apiId`, `apiToken`, `fromWilayaId` or `fromWilayaName` (origin: required by `createParcel`; `getFees` uses it unless the query sets `fromWilayaId`) | `YALIDINE_API_ID`, `YALIDINE_API_TOKEN`, `YALIDINE_FROM_WILAYA_ID` |
 | `maystro` | `apiToken` | `MAYSTRO_API_TOKEN` |
 | `ecotrack` | `token`, `courier` or `baseUrl` (https) | `ECOTRACK_TOKEN`, `ECOTRACK_COURIER` / `ECOTRACK_BASE_URL` |
 | `noest` | `apiToken`, `userGuid`, `autoValidate?` | `NOEST_API_TOKEN`, `NOEST_USER_GUID` |

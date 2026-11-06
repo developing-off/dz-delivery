@@ -604,7 +604,7 @@
 }
 
 <span class="c-key">if</span> ((<span class="c-var">$event</span>[<span class="c-str">&#x27;event&#x27;</span>] ?? <span class="c-key">null</span>) === <span class="c-str">&#x27;OrderStatusChanged&#x27;</span>) {
-    <span class="c-var">$orderId</span> = (<span class="c-type">string</span>) (<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;id&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>);
+    <span class="c-var">$orderId</span> = <span class="c-fn">trim</span>((<span class="c-type">string</span>) (<span class="c-var">$event</span>[<span class="c-str">&#x27;payload&#x27;</span>][<span class="c-str">&#x27;id&#x27;</span>] ?? <span class="c-str">&#x27;&#x27;</span>));
     <span class="c-key">if</span> (<span class="c-var">$orderId</span> === <span class="c-str">&#x27;&#x27;</span>) {
         <span class="c-fn">http_response_code</span>(<span class="c-num">400</span>);
         <span class="c-key">exit</span>;

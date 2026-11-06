@@ -626,7 +626,7 @@ if (!is_array($event)) {
 }
 
 if (($event['event'] ?? null) === 'OrderStatusChanged') {
-    $orderId = (string) ($event['payload']['id'] ?? '');
+    $orderId = trim((string) ($event['payload']['id'] ?? ''));
     if ($orderId === '') {
         http_response_code(400);
         exit;
