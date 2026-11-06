@@ -299,6 +299,18 @@ export interface ShippingProvider {
 ```php
 namespace DzDelivery\Contracts;
 
+use DzDelivery\Models\FeeQuery;
+use DzDelivery\Models\FeeQuote;
+use DzDelivery\Models\HealthCheckResult;
+use DzDelivery\Models\Location;
+use DzDelivery\Models\Parcel;
+use DzDelivery\Models\ParcelInput;
+use DzDelivery\Models\ParcelListPage;
+use DzDelivery\Models\ParcelListQuery;
+use DzDelivery\Models\StopDesk;
+use DzDelivery\Models\StopDeskQuery;
+use DzDelivery\Models\TrackResult;
+
 interface ShippingProviderInterface
 {
     public function getName(): string;
@@ -358,7 +370,7 @@ Provider-specific credentials:
 | Provider | Config keys | Env vars (`.env.example`) |
 |----------|-------------|---------------------------|
 | `zrexpress` | `apiKey`, `tenant` | `ZREXPRESS_API_KEY`, `ZREXPRESS_TENANT` |
-| `yalidine` | `apiId`, `apiToken` | `YALIDINE_API_ID`, `YALIDINE_API_TOKEN` |
+| `yalidine` | `apiId`, `apiToken`, `fromWilayaId` or `fromWilayaName` (origin, required by `createParcel` and `getFees`) | `YALIDINE_API_ID`, `YALIDINE_API_TOKEN`, `YALIDINE_FROM_WILAYA_ID` |
 | `maystro` | `apiToken` | `MAYSTRO_API_TOKEN` |
 | `ecotrack` | `token`, `courier` or `baseUrl` (https) | `ECOTRACK_TOKEN`, `ECOTRACK_COURIER` / `ECOTRACK_BASE_URL` |
 | `noest` | `apiToken`, `userGuid`, `autoValidate?` | `NOEST_API_TOKEN`, `NOEST_USER_GUID` |
@@ -366,7 +378,7 @@ Provider-specific credentials:
 | `mdm` | `apiKey`, `storeId` (required by `createParcel`) | `MDM_API_KEY`, `MDM_STORE_ID` |
 | `elogistia` | `apiKey`, `email?` | `ELOGISTIA_API_KEY` |
 
-A `baseUrl` override must be an `https:` URL (credentials travel in headers); anything else throws `VALIDATION_ERROR`.
+Use an `https:` `baseUrl`: credentials travel in headers (in the query string for Elogistia). The `ecotrack`, `noest`, `ecom`, `mdm` and `elogistia` clients reject any other URL with `VALIDATION_ERROR`.
 
 ---
 

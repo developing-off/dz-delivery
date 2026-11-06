@@ -16,10 +16,11 @@ await zr.generateLabels(['16-ABC123-ZR']);
 ```
 
 ```php
+use DzDelivery\Models\ClientOptions;
 use DzDelivery\Providers\ZRExpressProvider;
 use DzDelivery\Providers\ZRExpress\Webhook;
 
-$zr = new ZRExpressProvider(['apiKey' => ..., 'tenant' => ...]);
+$zr = new ZRExpressProvider(ClientOptions::fromArray(['apiKey' => ..., 'tenant' => ...]));
 $zr->createParcelsBulk([...]);
 $event = Webhook::verify($rawBody, $headers, $signingSecret);
 ```

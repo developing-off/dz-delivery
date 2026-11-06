@@ -151,7 +151,7 @@ $parcel = $client->createParcel([
     'communeName'   => 'Bab Ezzouar',    // or 'communeId' => ...
     'productList'   => [
         ['name' => 'Mug', 'quantity' => 2],
-        ['name' => 'T-shirt'],
+        ['name' => 'T-shirt', 'quantity' => 1],
     ],                                   // or 'productName' => 'T-shirt'
     'price'         => 3200,             // what the recipient pays, in DZD
     'weight'        => 1.5,
@@ -539,7 +539,8 @@ final class ShippingServiceProvider extends ServiceProvider
         $this->app->singleton(ShippingProviderInterface::class, function () {
             $provider = config('services.dz_delivery.default');
 
-            return ClientFactory::create($provider, config("services.dz_delivery.$provider"));
+            // [] when the carrier has no config block: the SDK then fails with AUTH_FAILED, not a TypeError.
+            return ClientFactory::create($provider, config("services.dz_delivery.$provider", []));
         });
     }
 }
@@ -577,7 +578,7 @@ final class ShipmentController
 }
 ```
 
-Several carriers at once? Bind a small factory instead (e.g. `fn (string $p) => ClientFactory::create($p, config("services.dz_delivery.$p"))`) and keep one client per carrier.
+Several carriers at once? Bind a small factory instead (e.g. `fn (string $p) => ClientFactory::create($p, config("services.dz_delivery.$p", []))`) and keep one client per carrier.
 
 ---
 
@@ -596,7 +597,16 @@ What the Maystro docs say about the request body (we have not captured a real re
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use DzDelivery\Support\StatusMapper;
+use DzDelivery\ClientFactory;
+use DzDelivery\Errors\ShippingError;
+
+// Shared secret: register the URL as /maystro-webhook.php?key=<MAYSTRO_WEBHOOK_SECRET>
+$secret = (string) getenv('MAYSTRO_WEBHOOK_SECRET');
+$given  = (string) ($_GET['key'] ?? '');
+if ($secret === '' || !hash_equals($secret, $given)) {
+    http_response_code(401);
+    exit;
+}
 
 $body = json_decode(file_get_contents('php://input') ?: '', true);
 $data = $body['message']['data'] ?? null;
@@ -617,15 +627,27 @@ if (!is_array($event)) {
 
 if (($event['event'] ?? null) === 'OrderStatusChanged') {
     $orderId = (string) ($event['payload']['id'] ?? '');
-    $status = StatusMapper::maystro($event['payload']['status'] ?? null);  // e.g. 41 → 'delivered'
+    if ($orderId === '') {
+        http_response_code(400);
+        exit;
+    }
 
-    // update your order where carrier_id = $orderId ...
+    // Do not trust the pushed status: read the order back from Maystro.
+    $maystro = ClientFactory::create('maystro', ['apiToken' => getenv('MAYSTRO_API_TOKEN')]);
+    try {
+        $parcel = $maystro->track($orderId)->parcel;  // accepts the order UUID
+    } catch (ShippingError $e) {  // unknown order or Maystro unavailable
+        http_response_code(502);  // non-2xx answer: the event is not acknowledged
+        exit;
+    }
+
+    // update your order where carrier_id = $orderId with $parcel->status ...
 }
 
 http_response_code(201);
 ```
 
-The docs describe no signature for webhook requests. Protect the endpoint yourself, e.g. with a long secret in the URL (`/maystro-webhook.php?key=…`) that you check before processing.
+The docs describe no signature for webhook requests, so the SDK has no verification helper for Maystro: protect the endpoint yourself. The example puts a long random secret in the URL (`/maystro-webhook.php?key=…`) and compares it with `hash_equals` before reading the body. A secret in the URL can end up in server or proxy logs: exclude the query string from logs for this route and rotate the secret if it leaks. Above all, the example does not trust the pushed status: it only uses the event as a signal and reads the order back with `track()`, so a forged event cannot set a status. `StatusMapper::maystro()` is still available to convert a pushed code without a network call (e.g. 41 → `delivered`).
 
 ---
 
@@ -667,13 +689,14 @@ Bulk create/delete, shipping labels, and signed webhook verification live on `ZR
 Full matrix and examples: [`ZREXPRESS.md`](./ZREXPRESS.md).
 
 ```php
+use DzDelivery\Models\ClientOptions;
 use DzDelivery\Providers\ZRExpressProvider;
 use DzDelivery\Providers\ZRExpress\Webhook;
 
-$zr = new ZRExpressProvider([
+$zr = new ZRExpressProvider(ClientOptions::fromArray([
     'apiKey' => getenv('ZREXPRESS_API_KEY'),
     'tenant' => getenv('ZREXPRESS_TENANT'),
-]);
+]));
 
 $bulk = $zr->createParcelsBulk([
     // each item MUST include orderId (externalId)

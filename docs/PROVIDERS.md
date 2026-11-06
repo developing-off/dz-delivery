@@ -619,15 +619,15 @@ Steps 1–2 behave as before; step 3 only turns former `NOT_FOUND` errors into a
 
 ### Status mapping
 
-From `activity[].event_key`; when a row has no key, from the English `event` label (`Delivered`, …). French display labels (`Validé`) are not mapped. Remark events (`edited_informations`, `edit_price`, `edit_wilaya`, `extra_fee`) keep the previous status. Full table: [`fixtures/noest/statuses.json`](./fixtures/noest/statuses.json).
+From `activity[].event_key`; when a row has no key, from the English `event` label (`Delivered`, …). French display labels (`Validé`) are not mapped. Keys are matched exactly (no prefix rules): an unlisted `verssement_…` or `return_…` key maps to `unknown`. Remark events (`edited_informations`, `edit_price`, `edit_wilaya`, `extra_fee`) keep the previous status. Full table: [`fixtures/noest/statuses.json`](./fixtures/noest/statuses.json).
 
 | Native | Unified |
 |--------|---------|
 | `upload` | `pending` |
 | `customer_validation` | `created` |
 | `validation_collect_colis`, `validation_reception_admin`, `validation_reception`, `fdr_activated`, `sent_to_redispatch`, `nouvel_tentative_asked_by_customer`, `mise_a_jour`, `colis_suspendu`, `return_redispatched_to_livraison`, `pickedup`, `valid_return_pickup` | `in_transit` |
-| `livre`, `livred`, `verssement_*`, `validation_reception_cash_by_partener`, `echange_valide`, `echange_valid_by_hub`, `pickup_picked_recu`, `colis_pickup_transmit_to_partner` | `delivered` |
-| `return_*`, `retour_dispatched_to_partenaires`, `colis_retour_transmit_to_partner`, `annulation_dispatch_retour`, `cancel_return_dispatched_to_partenaire`, `livraison_echoue_recu` (except `return_redispatched_to_livraison`) | `returned` |
+| `livre`, `livred`, `verssement_admin_cust`, `verssement_admin_cust_canceled`, `verssement_hub_cust_canceled`, `validation_reception_cash_by_partener`, `echange_valide`, `echange_valid_by_hub`, `pickup_picked_recu`, `colis_pickup_transmit_to_partner` | `delivered` |
+| `return_asked_by_customer`, `return_asked_by_hub`, `return_dispatched_to_partenaire`, `return_validated_by_partener`, `return_dispatched_to_warehouse`, `retour_dispatched_to_partenaires`, `colis_retour_transmit_to_partner`, `annulation_dispatch_retour`, `cancel_return_dispatched_to_partenaire`, `livraison_echoue_recu` | `returned` |
 | `ask_to_delete_by_admin`, `ask_to_delete_by_hub` | `cancelled` |
 
 ### Errors
