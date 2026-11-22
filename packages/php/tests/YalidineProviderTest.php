@@ -90,6 +90,66 @@ final class YalidineProviderTest extends TestCase
         ]], $body);
     }
 
+    public function testCreateParcelDeliveryFeeOnRecipientSendsFreeshippingFalse(): void
+    {
+        $client = $this->client('yalidine', [
+            self::json(200, self::WILAYAS),
+            self::json(200, self::COMMUNES_16),
+            self::json(200, ['O1' => ['success' => true, 'order_id' => 'O1', 'tracking' => 'yal-1']]),
+        ]);
+
+        $client->createParcel([
+            'recipientName' => 'Client', 'phone' => '0550123456', 'address' => 'x',
+            'wilayaId' => 16, 'communeId' => 1630, 'productName' => 'Tee', 'price' => 2500,
+            'orderId' => 'O1', 'deliveryFeeOnRecipient' => true,
+        ]);
+
+        $body = json_decode((string) $this->history[2]['request']->getBody(), true);
+        self::assertSubset([['freeshipping' => false, 'price' => 2500]], $body);
+    }
+
+    #[DataProvider('merchantPaysValues')]
+    public function testCreateParcelDeliveryFeeOnMerchantSendsFreeshippingTrue(mixed $value): void
+    {
+        $client = $this->client('yalidine', [
+            self::json(200, self::WILAYAS),
+            self::json(200, self::COMMUNES_16),
+            self::json(200, ['O1' => ['success' => true, 'order_id' => 'O1', 'tracking' => 'yal-1']]),
+        ]);
+
+        $client->createParcel([
+            'recipientName' => 'Client', 'phone' => '0550123456', 'address' => 'x',
+            'wilayaId' => 16, 'communeId' => 1630, 'productName' => 'Tee', 'price' => 2500,
+            'orderId' => 'O1', 'deliveryFeeOnRecipient' => $value,
+        ]);
+
+        $body = json_decode((string) $this->history[2]['request']->getBody(), true);
+        self::assertSubset([['freeshipping' => true]], $body);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function merchantPaysValues(): array
+    {
+        return ['false' => [false], 'string false' => ['false'], 'string 0' => ['0'], 'null' => [null]];
+    }
+
+    public function testCreateParcelRejectsNonBooleanDeliveryFeeOnRecipient(): void
+    {
+        $client = $this->client('yalidine', []);
+
+        try {
+            $client->createParcel([
+                'recipientName' => 'Client', 'phone' => '0550123456', 'address' => 'x',
+                'wilayaId' => 16, 'communeId' => 1630, 'productName' => 'Tee', 'price' => 2500,
+                'deliveryFeeOnRecipient' => 'maybe',
+            ]);
+            self::fail('ShippingError expected');
+        } catch (ShippingError $e) {
+            self::assertSame(ShippingError::VALIDATION_ERROR, $e->code);
+            self::assertSame('deliveryFeeOnRecipient', $e->details[0]['field'] ?? null);
+        }
+    }
+
     public function testCreateParcelRejectedByYalidineIsValidationError(): void
     {
         $client = $this->client('yalidine', [

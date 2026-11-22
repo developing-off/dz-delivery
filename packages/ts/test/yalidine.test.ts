@@ -101,6 +101,51 @@ describe('Yalidine', () => {
     expect((mock.calls[2]!.body as Record<string, unknown>[])[0]).toMatchObject({ length: 20, width: 0, height: 0, weight: 2 });
   });
 
+  it('sends freeshipping: true by default, false with deliveryFeeOnRecipient', async () => {
+    const send = async (extra: { deliveryFeeOnRecipient?: boolean }) => {
+      const mock = mockFetch([
+        { status: 200, body: wilayas },
+        { status: 200, body: { has_more: false, data: [{ id: 1601, name: 'Alger Centre', wilaya_id: 16 }] } },
+        { status: 200, body: { O1: { success: true, order_id: 'O1', tracking: 'yal-1' } } },
+      ]);
+      const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fromWilayaId: 16, fetch: mock.fetch });
+      await c.createParcel({
+        recipientName: 'Test',
+        phone: '0550123456',
+        address: 'x',
+        wilayaId: 16,
+        communeId: 1601,
+        productName: 'Mug',
+        price: 2500,
+        orderId: 'O1',
+        ...extra,
+      });
+      return (mock.calls[2]!.body as Record<string, unknown>[])[0];
+    };
+    expect(await send({})).toMatchObject({ freeshipping: true, price: 2500 });
+    expect(await send({ deliveryFeeOnRecipient: false })).toMatchObject({ freeshipping: true });
+    expect(await send({ deliveryFeeOnRecipient: true })).toMatchObject({ freeshipping: false, price: 2500 });
+    expect(await send({ deliveryFeeOnRecipient: null as unknown as boolean })).toMatchObject({ freeshipping: true });
+  });
+
+  it('rejects a non-boolean deliveryFeeOnRecipient before any HTTP call', async () => {
+    const mock = mockFetch([]);
+    const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fromWilayaId: 16, fetch: mock.fetch });
+    await expect(
+      c.createParcel({
+        recipientName: 'Test',
+        phone: '0550123456',
+        address: 'x',
+        wilayaId: 16,
+        communeId: 1601,
+        productName: 'Mug',
+        price: 100,
+        deliveryFeeOnRecipient: 'true' as unknown as boolean,
+      }),
+    ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', details: [{ field: 'deliveryFeeOnRecipient' }] });
+    expect(mock.calls).toHaveLength(0);
+  });
+
   it('aligns stopdesk to_commune_name / to_wilaya_name with the center', async () => {
     const mock = mockFetch([
       { status: 200, body: wilayas },

@@ -201,7 +201,8 @@ Extra client option: **`fromWilayaId`** (code `1`–`58`) or **`fromWilayaName`*
 | `communeId` / `communeName` | `to_commune_name` | Resolved to the canonical name via `communes/?wilaya_id=`. |
 | — | `from_wilaya_name` | From the `fromWilayaId` / `fromWilayaName` client option. |
 | `productName` / `productList` | `product_list` | String; list names joined with `, ` (`Mug x2, Tee`). |
-| `price` | `price` | Amount collected. We always send **`freeshipping: true`** so Yalidine does *not* add its fee on top — `price` is exactly what the recipient pays (fees are deducted from the COD). |
+| `price` | `price` | Amount collected. By default we send **`freeshipping: true`** so Yalidine does *not* add its fee on top — `price` is exactly what the recipient pays and the fee is charged to the merchant. |
+| `deliveryFeeOnRecipient` | `freeshipping` | `true` → **`freeshipping: false`**: Yalidine adds its fee to `price`, so the recipient pays `price` + fee and `price` should be the goods only. Omitted / `false` → `freeshipping: true` (above). |
 | — | `declared_value` | `price`; `do_insurance: false`. |
 | `weight`, `length`, `width`, `height` | same names | kg / cm. **Required integers**: always sent, `0` when missing, decimals rounded up. |
 | `isStopDesk` / `stopDeskId` | `is_stopdesk` / `stopdesk_id` | When stop-desk, the SDK loads `centers/?wilaya_id=` and, if the `center_id` matches, sends that center's `commune_name` / `wilaya_name` as `to_*` (avoids API rejection on stopdesk/commune mismatch — same fix as Delivery GuepEx). Unknown `stopDeskId` still posts; the API returns `success: false`. |

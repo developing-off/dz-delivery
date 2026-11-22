@@ -66,6 +66,12 @@ export interface ParcelInput {
    * ZRExpress only (`orderedProducts[].stockType`); default when omitted: `"none"`.
    */
   stockType?: StockType;
+  /**
+   * Yalidine / GuepEx: `true` → the recipient pays the delivery fee on top of `price`
+   * (`freeshipping: false`). Omitted or `false` → the merchant pays it (`freeshipping: true`).
+   * Ignored by other carriers.
+   */
+  deliveryFeeOnRecipient?: boolean;
 }
 
 export interface Parcel {

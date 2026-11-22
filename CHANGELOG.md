@@ -5,6 +5,11 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 
 ## [Unreleased]
 
+## [0.1.13] — 2026-11-22
+
+### Added
+- `ParcelInput.deliveryFeeOnRecipient` (optional), in TypeScript and PHP: on Yalidine / GuepEx, `true` sends `freeshipping: false`, so the recipient pays the delivery fee on top of `price` (the goods only) instead of the fee being charged to the merchant. Omitted keeps the previous behaviour (`freeshipping: true`). Other carriers ignore it.
+
 ## [0.1.12] — 2026-11-01
 
 ### Added
@@ -86,7 +91,8 @@ The project follows [Semantic Versioning](https://semver.org/); while in `0.x`, 
 ### Added
 - First public release: unified `createParcel`, `track`, `getFees`, `getWilayas`, `getCommunes`, `getStopDesks`, `cancelParcel` for ZRExpress, Yalidine, Maystro and Ecotrack, in TypeScript and PHP.
 
-[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.12...HEAD
+[Unreleased]: https://github.com/developing-off/dz-delivery/compare/v0.1.13...HEAD
+[0.1.13]: https://github.com/developing-off/dz-delivery/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/developing-off/dz-delivery/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/developing-off/dz-delivery/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/developing-off/dz-delivery/compare/v0.1.9...v0.1.10

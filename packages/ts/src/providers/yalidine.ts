@@ -286,9 +286,10 @@ export class YalidineProvider implements ShippingProvider {
       width: intOrZero(input.width),
       height: intOrZero(input.height),
       weight: intOrZero(input.weight),
-      // `price` is the full amount collected from the recipient (CONTRACT.md):
+      // Default: `price` is the full amount collected from the recipient (CONTRACT.md),
       // `freeshipping: true` stops Yalidine from adding its fee on top of it.
-      freeshipping: true,
+      // `deliveryFeeOnRecipient` → `freeshipping: false`: recipient pays `price` + fee.
+      freeshipping: input.deliveryFeeOnRecipient !== true,
       is_stopdesk: Boolean(input.isStopDesk),
       has_exchange: false,
     };

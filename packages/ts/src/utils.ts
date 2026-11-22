@@ -200,6 +200,11 @@ export function validateParcelInput(input: ParcelInput, provider: string): void 
     }
   }
 
+  // null is treated as omitted (same as PHP).
+  if (input.deliveryFeeOnRecipient != null && typeof input.deliveryFeeOnRecipient !== 'boolean') {
+    errors.push({ field: 'deliveryFeeOnRecipient', message: 'deliveryFeeOnRecipient must be a boolean' });
+  }
+
   if (input.isStopDesk && !nonEmpty(input.stopDeskId)) {
     errors.push({ field: 'stopDeskId', message: 'stopDeskId is required when isStopDesk is true' });
   }

@@ -143,7 +143,9 @@ final class YalidineProvider implements ShippingProviderInterface
             'width' => self::intOrZero($input->width),
             'height' => self::intOrZero($input->height),
             'weight' => self::intOrZero($input->weight),
-            'freeshipping' => true,
+            // true (default): Yalidine does not add its fee, `price` is all the recipient pays.
+            // deliveryFeeOnRecipient → false: the recipient pays `price` + the delivery fee.
+            'freeshipping' => $input->deliveryFeeOnRecipient !== true,
             'is_stopdesk' => $input->isStopDesk,
             'stopdesk_id' => $input->isStopDesk && ctype_digit((string) $input->stopDeskId) ? (int) $input->stopDeskId : $input->stopDeskId,
             'has_exchange' => false,
