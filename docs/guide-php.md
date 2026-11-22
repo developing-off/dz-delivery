@@ -194,12 +194,13 @@ Input (`ParcelInput`):
 | `communeName` | `string` | one of | Resolved within the wilaya. |
 | `productName` | `string` | one of | Single product description. |
 | `productList` | `array` | one of | `[['name' => string, 'quantity' => int ≥ 1, 'unitPrice' => ?number, 'sku' => ?string], …]`. |
-| `price` | `number` | **yes** | Amount collected from the recipient (COD), in DZD. `0` for prepaid. It is the total the recipient pays: carriers deduct their fee from it. |
+| `price` | `number` | **yes** | Amount collected from the recipient (COD), in DZD. `0` for prepaid. It is the total the recipient pays: carriers deduct their fee from it (except Yalidine / GuepEx with `deliveryFeeOnRecipient`). |
 | `weight` | `number` | no | kg. |
 | `length`, `width`, `height` | `number` | no | cm. **Yalidine** always receives these four fields as integers: `0` when missing, decimals rounded up. ZRExpress puts the dimensions on the first product. Maystro ignores weight and dimensions. |
 | `isStopDesk` | `bool` | no | Default `false` (home delivery). |
 | `stopDeskId` | `string` | if `isStopDesk` | Desk id from `getStopDesks` (ZRExpress: the hub UUID). |
 | `stockType` | `?string` | no | ZRExpress only: `"none"` (default) \| `"local"` \| `"warehouse"`. Per-item override via `productList[].stockType`; `local`/`warehouse` need `productId` + `sku`. |
+| `deliveryFeeOnRecipient` | `?bool` | no | Yalidine / GuepEx only: `true` → the recipient pays the delivery fee on top of `price` (`freeshipping: false`), so `price` is the goods only. Omitted → the merchant pays it (`freeshipping: true`). |
 | `remark` | `string` | no | Note for the driver (sent to Maystro only; not sent to ZRExpress or Yalidine). |
 | `orderId` | `string` | no | Your order reference. Yalidine requires one and generates `dzd-…` when absent. |
 

@@ -90,6 +90,24 @@ final class YalidineProviderTest extends TestCase
         ]], $body);
     }
 
+    public function testCreateParcelDeliveryFeeOnRecipientSendsFreeshippingFalse(): void
+    {
+        $client = $this->client('yalidine', [
+            self::json(200, self::WILAYAS),
+            self::json(200, self::COMMUNES_16),
+            self::json(200, ['O1' => ['success' => true, 'order_id' => 'O1', 'tracking' => 'yal-1']]),
+        ]);
+
+        $client->createParcel([
+            'recipientName' => 'Client', 'phone' => '0550123456', 'address' => 'x',
+            'wilayaId' => 16, 'communeId' => 1630, 'productName' => 'Tee', 'price' => 2500,
+            'orderId' => 'O1', 'deliveryFeeOnRecipient' => true,
+        ]);
+
+        $body = json_decode((string) $this->history[2]['request']->getBody(), true);
+        self::assertSubset([['freeshipping' => false, 'price' => 2500]], $body);
+    }
+
     public function testCreateParcelRejectedByYalidineIsValidationError(): void
     {
         $client = $this->client('yalidine', [

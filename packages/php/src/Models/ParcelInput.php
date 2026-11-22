@@ -39,6 +39,11 @@ final class ParcelInput
         public readonly ?string $orderId = null,
         /** Default stock mode for products that omit ProductItem::$stockType (ZRExpress). */
         public readonly ?string $stockType = null,
+        /**
+         * Yalidine / GuepEx: true → the recipient pays the delivery fee on top of
+         * `price` (`freeshipping: false`). null/false → the merchant pays it (`freeshipping: true`).
+         */
+        public readonly ?bool $deliveryFeeOnRecipient = null,
     ) {
         $this->productList = $productList === null
             ? null
@@ -81,6 +86,7 @@ final class ParcelInput
                 remark: self::stringOrNull($input['remark'] ?? null),
                 orderId: isset($input['orderId']) ? (string) $input['orderId'] : null,
                 stockType: self::stockTypeOrNull($input['stockType'] ?? null, $provider),
+                deliveryFeeOnRecipient: isset($input['deliveryFeeOnRecipient']) ? (bool) $input['deliveryFeeOnRecipient'] : null,
             );
         }
 

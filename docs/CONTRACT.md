@@ -59,6 +59,7 @@ Input to `createParcel`.
 | `remark` | `string` | no | Note for the delivery agent. |
 | `orderId` | `string` | no | Merchant's own order reference (stored as external ID when supported). |
 | `stockType` | `"none" \| "local" \| "warehouse"` | no | Default stock mode for products that omit `ProductItem.stockType`. Used by ZRExpress (`orderedProducts[].stockType`); ignored by other MVP carriers. SDK default when omitted: `"none"` (no catalog). |
+| `deliveryFeeOnRecipient` | `boolean` | no | `true` = the recipient pays the delivery fee **on top of** `price`, so `price` is the goods only. Used by Yalidine / GuepEx (`freeshipping: false`); ignored by other carriers. Default (omitted / `false`): the carrier's usual behaviour, see `docs/PROVIDERS.md`. |
 
 ¹ Exactly one of `wilayaId` / `wilayaName` is required.
 ² Exactly one of `communeId` / `communeName` is required.

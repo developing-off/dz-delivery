@@ -200,6 +200,10 @@ export function validateParcelInput(input: ParcelInput, provider: string): void 
     }
   }
 
+  if (input.deliveryFeeOnRecipient !== undefined && typeof input.deliveryFeeOnRecipient !== 'boolean') {
+    errors.push({ field: 'deliveryFeeOnRecipient', message: 'deliveryFeeOnRecipient must be a boolean' });
+  }
+
   if (input.isStopDesk && !nonEmpty(input.stopDeskId)) {
     errors.push({ field: 'stopDeskId', message: 'stopDeskId is required when isStopDesk is true' });
   }
