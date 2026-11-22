@@ -200,7 +200,8 @@ export function validateParcelInput(input: ParcelInput, provider: string): void 
     }
   }
 
-  if (input.deliveryFeeOnRecipient !== undefined && typeof input.deliveryFeeOnRecipient !== 'boolean') {
+  // null is treated as omitted (same as PHP).
+  if (input.deliveryFeeOnRecipient != null && typeof input.deliveryFeeOnRecipient !== 'boolean') {
     errors.push({ field: 'deliveryFeeOnRecipient', message: 'deliveryFeeOnRecipient must be a boolean' });
   }
 

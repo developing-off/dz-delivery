@@ -125,6 +125,25 @@ describe('Yalidine', () => {
     expect(await send({})).toMatchObject({ freeshipping: true, price: 2500 });
     expect(await send({ deliveryFeeOnRecipient: false })).toMatchObject({ freeshipping: true });
     expect(await send({ deliveryFeeOnRecipient: true })).toMatchObject({ freeshipping: false, price: 2500 });
+    expect(await send({ deliveryFeeOnRecipient: null as unknown as boolean })).toMatchObject({ freeshipping: true });
+  });
+
+  it('rejects a non-boolean deliveryFeeOnRecipient before any HTTP call', async () => {
+    const mock = mockFetch([]);
+    const c = createClient('yalidine', { apiId: 'i', apiToken: 't', fromWilayaId: 16, fetch: mock.fetch });
+    await expect(
+      c.createParcel({
+        recipientName: 'Test',
+        phone: '0550123456',
+        address: 'x',
+        wilayaId: 16,
+        communeId: 1601,
+        productName: 'Mug',
+        price: 100,
+        deliveryFeeOnRecipient: 'true' as unknown as boolean,
+      }),
+    ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', details: [{ field: 'deliveryFeeOnRecipient' }] });
+    expect(mock.calls).toHaveLength(0);
   });
 
   it('aligns stopdesk to_commune_name / to_wilaya_name with the center', async () => {

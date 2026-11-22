@@ -86,7 +86,7 @@ final class ParcelInput
                 remark: self::stringOrNull($input['remark'] ?? null),
                 orderId: isset($input['orderId']) ? (string) $input['orderId'] : null,
                 stockType: self::stockTypeOrNull($input['stockType'] ?? null, $provider),
-                deliveryFeeOnRecipient: isset($input['deliveryFeeOnRecipient']) ? (bool) $input['deliveryFeeOnRecipient'] : null,
+                deliveryFeeOnRecipient: self::boolOrNull($input['deliveryFeeOnRecipient'] ?? null, $provider, 'deliveryFeeOnRecipient'),
             );
         }
 
@@ -184,6 +184,20 @@ final class ParcelInput
     private static function numberOrNull(mixed $value): int|float|null
     {
         return is_numeric($value) ? $value + 0 : null;
+    }
+
+    /** bool, or "true"/"false"/"1"/"0"/1/0 (form or JSON input); anything else → VALIDATION_ERROR. */
+    private static function boolOrNull(mixed $value, ?string $provider, string $field): ?bool
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $bool = is_bool($value) ? $value : filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($bool === null) {
+            throw ShippingError::validation("$field must be a boolean", $provider, $field);
+        }
+
+        return $bool;
     }
 
     private static function stockTypeOrNull(mixed $value, ?string $provider): ?string

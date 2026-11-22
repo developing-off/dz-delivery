@@ -200,7 +200,7 @@ Input (`ParcelInput`):
 | `isStopDesk` | `bool` | no | Default `false` (home delivery). |
 | `stopDeskId` | `string` | if `isStopDesk` | Desk id from `getStopDesks` (ZRExpress: the hub UUID). |
 | `stockType` | `?string` | no | ZRExpress only: `"none"` (default) \| `"local"` \| `"warehouse"`. Per-item override via `productList[].stockType`; `local`/`warehouse` need `productId` + `sku`. |
-| `deliveryFeeOnRecipient` | `?bool` | no | Yalidine / GuepEx only: `true` → the recipient pays the delivery fee on top of `price` (`freeshipping: false`), so `price` is the goods only. Omitted → the merchant pays it (`freeshipping: true`). |
+| `deliveryFeeOnRecipient` | `?bool` | no | Yalidine / GuepEx only: `true` → the recipient pays the delivery fee on top of `price` (`freeshipping: false`), so `price` is the goods only. Omitted / `false` → the merchant pays it (`freeshipping: true`). Strings `"true"` / `"false"` / `"1"` / `"0"` are accepted; any other value → `VALIDATION_ERROR`. |
 | `remark` | `string` | no | Note for the driver (sent to Maystro only; not sent to ZRExpress or Yalidine). |
 | `orderId` | `string` | no | Your order reference. Yalidine requires one and generates `dzd-…` when absent. |
 
